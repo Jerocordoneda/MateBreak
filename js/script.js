@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let progress =
             (windowHeight - rect.top) /
-            (windowHeight + rect.height);
+            (windowHeight + rect.height);hgghgh
 
         // Evita valores extremos
         progress = Math.max(0, Math.min(1, progress));
