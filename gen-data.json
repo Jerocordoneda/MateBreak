@@ -1,0 +1,150 @@
+{
+  "cta": {
+    "h2": "Personalizá el Tuyo",
+    "sub": "Elegí tu mate, tu grabado y tu estilo. MateBreak® lo hace único.",
+    "btn": "Personalizá el Tuyo"
+  },
+  "benefits": [
+    { "icon": "local_shipping", "title": "ENVÍOS GRATIS A TODO EL PAÍS", "sub": "De puerta a puerta" },
+    { "icon": "credit_card", "title": "TARJETA DE CRÉDITO", "sub": "3 cuotas sin interés" },
+    { "icon": "sell", "title": "15% DE DESCUENTO", "sub": "Con transferencia o efectivo" }
+  ],
+  "pages": [
+    {
+      "file": "algarrobo.html",
+      "title": "Mates de Algarrobo — MateBreak®",
+      "badge": "Colección Algarrobo",
+      "h1": "Mates de<br>Algarrobo",
+      "sub": "Torneados a mano en algarrobo negro del norte argentino. Cada veta cuenta una historia, cada pieza es única.",
+      "section": "La Colección Algarrobo",
+      "heroImg": "A6",
+      "navItem": "mates-algarrobo",
+      "navSpan": "Mates",
+      "products": [
+        { "name": "Algarrobo Clásico", "desc": "Madera de algarrobo negro, lijada a mano y terminación satinada natural.", "price": "35.000", "badge": "Artesanal", "img": "A6", "alt": "Sleek torneado mate gourd in dark algarrobo wood with a perfectly smooth slope of yerba inside, moody premium studio lighting on black background." },
+        { "name": "Algarrobo Torneado", "desc": "Torneado a mano con virola de alpaca pulida a espejo.", "price": "42.500", "badge": "Más Vendido", "img": "A1", "alt": "Matte black algarrobo mate with intricate chiseled silver detailing on the rim, dramatic studio lighting, premium minimalistic aesthetic." },
+        { "name": "Algarrobo Camionero", "desc": "Forma camionera clásica en algarrobo reforzado, base estable.", "price": "39.000", "badge": "", "img": "A5", "alt": "Hot water being poured from a sleek thermos into an artisan algarrobo mate at golden hour, warm light catching the steam." },
+        { "name": "Algarrobo Premium", "desc": "Algarrobo genuino con incrustaciones de plata ley 925.", "price": "48.000", "badge": "Edición Limitada", "img": "A7", "alt": "MateBreak algarrobo set on a rocky mountain peak, dramatic landscape background, adventure rugged premium feel." }
+      ]
+    },
+    {
+      "file": "calabaza.html",
+      "title": "Mates de Calabaza — MateBreak®",
+      "badge": "Colección Calabaza",
+      "h1": "Mates de<br>Calabaza",
+      "sub": "Calabaza brasileña de pared gruesa, curada a mano y forrada con los mejores cueros.",
+      "section": "La Colección Calabaza",
+      "heroImg": "A3",
+      "navItem": "mates-calabaza",
+      "navSpan": "Mates",
+      "products": [
+        { "name": "Calabaza Natural", "desc": "Calabaza brasileña de pared gruesa, curada y sellada a mano.", "price": "28.000", "badge": "Artesanal", "img": "A6", "alt": "Close-up of carefully arranged yerba mate creating the perfect slope inside a natural calabaza mate, moody lighting." },
+        { "name": "Calabaza Forrada en Cuero", "desc": "Forro de cuero crudo cosido a mano sobre virola de alpaca.", "price": "36.000", "badge": "Más Vendido", "img": "A3", "alt": "Premium leather materera bag next to a leather-wrapped calabaza mate, dappled sunlight, outdoor premium still life." },
+        { "name": "Calabaza Imperial", "desc": "Virola cincelada artesanalmente. Pieza única, numerada a mano.", "price": "45.000", "badge": "Edición Limitada", "img": "A1", "alt": "Imperial calabaza mate wrapped in premium leather with chiseled silver rim, dark walnut surface, dramatic studio lighting." },
+        { "name": "Kit Calabaza + Bombilla", "desc": "Calabaza natural + bombilla hexagonal de plata 800.", "price": "46.500", "badge": "", "img": "A8", "alt": "Complete MateBreak flat lay set with mate, thermos, bombilla and leather bag on a dark wooden table, minimalist aesthetic." }
+      ]
+    },
+    {
+      "file": "camionero.html",
+      "title": "Mates Camioneros — MateBreak®",
+      "badge": "Colección Camionero",
+      "h1": "Mates<br>Camioneros",
+      "sub": "El compañero de ruta definitivo: pared gruesa, base estable y presencia inconfundible.",
+      "section": "La Colección Camionero",
+      "heroImg": "A1",
+      "navItem": "mates-camionero",
+      "navSpan": "Mates",
+      "products": [
+        { "name": "Camionero de Algarrobo", "desc": "Base ancha y algarrobo torneado. Estabilidad total en la ruta.", "price": "37.000", "badge": "Artesanal", "img": "A1", "alt": "Camionero mate in matte black algarrobo with silver rim detailing, premium studio lighting on dark background." },
+        { "name": "Camionero Calabaza", "desc": "Calabaza de pared gruesa con forro de cuero liso.", "price": "32.000", "badge": "", "img": "A6", "alt": "Camionero calabaza with perfect yerba slope inside, close-up texture of leaves and leather, moody premium aesthetic." },
+        { "name": "Camionero Clásico", "desc": "Forma tradicional con virola de alpaca pulida.", "price": "30.000", "badge": "Más Vendido", "img": "A5", "alt": "Pouring hot water into a camionero mate outdoors at golden hour, steam rising, warm premium lifestyle photography." },
+        { "name": "Kit Camionero Completo", "desc": "Mate camionero + bombilla + materera de cuero.", "price": "59.000", "badge": "", "img": "A8", "alt": "Complete camionero kit flat lay: mate, thermos, bombilla and leather bag packed on dark wood, tech-lifestyle aesthetic." }
+      ]
+    },
+    {
+      "file": "termos-exclusivos.html",
+      "title": "Termos Exclusivos — MateBreak®",
+      "badge": "Colección Termos",
+      "h1": "Termos<br>Exclusivos",
+      "sub": "Acero inoxidable 18/8 y doble pared al vacío. Diseño táctico y minimalista para el ritual moderno.",
+      "section": "Termos Exclusivos",
+      "heroImg": "A4",
+      "navItem": "termos-exclusivos",
+      "navSpan": "Termos",
+      "products": [
+        { "name": "Termo Stealth 1L", "desc": "Doble pared al vacío. Mantiene el agua caliente por 24 horas.", "price": "55.000", "badge": "Más Vendido", "img": "A4", "alt": "Matte black stealth thermos standing upright against dark textured concrete, condensation highlighting cylindrical form." },
+        { "name": "Termo Stealth 750ml", "desc": "Compacto y liviano, sin perder temperatura. Ideal ciudad.", "price": "48.000", "badge": "", "img": "A5", "alt": "Sleek thermos pouring hot water into a mate at golden hour, warm light catching rising steam, premium lifestyle." },
+        { "name": "Termo Expedition 1.2L", "desc": "Aislación extrema para aventuras de altura.", "price": "62.000", "badge": "Edición Limitada", "img": "A7", "alt": "Matte black thermos and modern mate on a mountain peak, dramatic clouds, adventure premium feel." },
+        { "name": "Kit Termo + Mate", "desc": "Termo 1L + mate imperial + bombilla. Listo para cebar.", "price": "89.000", "badge": "", "img": "A8", "alt": "Complete MateBreak kit with thermos, imperial mate, bombilla and leather bag on dark wood, minimalist organized flat lay." }
+      ]
+    },
+    {
+      "file": "termos-personalizados.html",
+      "title": "Termos Personalizados — MateBreak®",
+      "badge": "Personalización",
+      "h1": "Termos<br>Personalizados",
+      "sub": "Grabado láser de alta precisión. Tu nombre, tu logo, tu marca, tu ritual.",
+      "section": "Termos Personalizados",
+      "heroImg": "A4",
+      "navItem": "termos-personalizados",
+      "navSpan": "Termos",
+      "products": [
+        { "name": "Termo Grabado Láser", "desc": "Grabado láser de precisión sobre acero cepillado.", "price": "58.000", "badge": "", "img": "A4", "alt": "Laser engraved matte black thermos on dark concrete background, elegant minimalist product photography." },
+        { "name": "Termo con Identidad", "desc": "Nombre o frase en la cara frontal. Edición única.", "price": "58.000", "badge": "Más Vendido", "img": "A7", "alt": "Personalized thermos with mountain adventure setup, premium outdoor lifestyle photography." },
+        { "name": "Termo Premium Grabado", "desc": "Termo 1.2L con grabado a dos caras y tapa en metal.", "price": "65.000", "badge": "Edición Limitada", "img": "A8", "alt": "Premium engraved thermos flat lay with mate set on dark wooden table, high-end aesthetic." },
+        { "name": "Kit Corporativo", "desc": "Termo + mates grabados para tu equipo o tu cliente.", "price": "95.000", "badge": "", "img": "A3", "alt": "Corporate MateBreak kit with leather materera and engraved components, premium business gift styling." }
+      ]
+    },
+    {
+      "file": "sets-materos.html",
+      "title": "Sets Materos — MateBreak®",
+      "badge": "Sets Premium",
+      "h1": "Sets<br>Materos",
+      "sub": "El ritual completo: todo lo que necesitás para cebar, en un solo set.",
+      "section": "Sets Materos",
+      "heroImg": "A8",
+      "navItem": "sets-materos",
+      "navSpan": "Sets Premium",
+      "products": [
+        { "name": "Set Matero Esencial", "desc": "Mate + bombilla + yerbera. Para arrancar el ritual.", "price": "42.000", "badge": "", "img": "A8", "alt": "Essential matero set flat lay on dark wood: mate, bombilla and yerbera, minimalist organized premium aesthetic." },
+        { "name": "Set Matero Premium", "desc": "Mate imperial + bombilla hexagonal + materera.", "price": "68.000", "badge": "Más Vendido", "img": "A3", "alt": "Premium matero set with leather materera and imperial mate, forest floor dappled sunlight outdoor styling." },
+        { "name": "Set Matero Completo", "desc": "Mate, termo, bombilla, yerbera y materera.", "price": "98.000", "badge": "", "img": "A7", "alt": "Complete matero set on mountain adventure background, thermos and mate in hand, rugged premium feel." },
+        { "name": "Set MateBreak", "desc": "La experiencia completa con todos los accesorios.", "price": "115.000", "badge": "Edición Limitada", "img": "A2", "alt": "Silver hexagonal bombilla detail shot of the MateBreak complete set, soft diffused light, geometric premium aesthetic." }
+      ]
+    },
+    {
+      "file": "sets-parrilleros.html",
+      "title": "Sets Parrilleros — MateBreak®",
+      "badge": "Sets Parrilleros",
+      "h1": "Sets<br>Parrilleros",
+      "sub": "Para el fuego y el asado: mates y termos pensados para las noches largas.",
+      "section": "Sets Parrilleros",
+      "heroImg": "A5",
+      "navItem": "sets-parrilleros",
+      "navSpan": "Sets Premium",
+      "products": [
+        { "name": "Set Parrillero Clásico", "desc": "Mate camionero + termo 750ml. El infaltable del asado.", "price": "58.000", "badge": "", "img": "A5", "alt": "Parrillero set at golden hour outdoors, mate and thermos with steam rising, warm premium lifestyle." },
+        { "name": "Set Parrillero Premium", "desc": "Mate imperial + Termo Stealth 1L + bombilla hexagonal.", "price": "88.000", "badge": "Más Vendido", "img": "A8", "alt": "Premium parrillero kit flat lay with mate, stealth thermos and bombilla on dark wood, organized luxury aesthetic." },
+        { "name": "Set Asador Completo", "desc": "Dos mates, dos bombillas, termo 1.2L y materera.", "price": "118.000", "badge": "", "img": "A3", "alt": "Complete asador set with thick leather materera bags and premium mates, outdoor rustic premium styling." },
+        { "name": "Set Parrillero Number One", "desc": "Edición especial para el asador de la casa.", "price": "132.000", "badge": "Edición Limitada", "img": "A7", "alt": "Number one parrillero edition on mountain peak, flagship mate and thermos, adventure premium aesthetic." }
+      ]
+    },
+    {
+      "file": "sets-premium.html",
+      "title": "Sets Premium — MateBreak®",
+      "badge": "Alta Gama",
+      "h1": "Sets<br>Premium",
+      "sub": "La máxima expresión de MateBreak: materiales nobles, ediciones limitadas y presentaciones de regalo.",
+      "section": "Sets Premium",
+      "heroImg": "A1",
+      "navItem": "sets-premium",
+      "navSpan": "Sets Premium",
+      "products": [
+        { "name": "Set Premium Imperial", "desc": "Mate imperial con virola de plata y bombilla plata 800.", "price": "118.000", "badge": "Más Vendido", "img": "A1", "alt": "Premium imperial set, matte black mate with chiseled silver rim on dark walnut, dramatic studio lighting." },
+        { "name": "Set Premium Ejecutivo", "desc": "Termo Stealth + set matero en presentación premium.", "price": "105.000", "badge": "", "img": "A4", "alt": "Executive premium set centered on a stealth thermos, dark concrete background, minimalist high-tech aesthetic." },
+        { "name": "Set Premium Coleccionista", "desc": "Numerado a mano, caja de roble y certificado de autenticidad.", "price": "150.000", "badge": "Edición Limitada", "img": "A8", "alt": "Collector premium set flat lay with oak box presentation, complete kit on dark wood, luxury collector styling." },
+        { "name": "Set Premium Algarrobo", "desc": "Algarrobo noble y alpaca cincelada en edición de lujo.", "price": "125.000", "badge": "", "img": "A2", "alt": "Luxury set detail featuring silver hexagonal bombilla, soft diffused light, geometric premium aesthetic." }
+      ]
+    }
+  ]
+}

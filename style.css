@@ -1,0 +1,42 @@
+.matebreak-transition {
+    position: relative;
+    width: 100%;
+
+    /* Más espacio para ver el desplazamiento */
+    height: 500px;
+
+    overflow: hidden;
+
+    /* Continúa el color del sector superior (bg-surface) */
+    background: #131313;
+}
+
+.matebreak-curve {
+    position: absolute;
+
+    /* Curva mucho más grande */
+    width: 160%;
+    height: 600px;
+
+    left: 50%;
+    bottom: -500px;
+
+    transform:
+        translateX(-50%)
+        translateY(var(--curve-move, 0px))
+        scale(var(--curve-scale, 1));
+
+    border-radius: 50%;
+
+    /* Continúa el color del sector siguiente (bg-surface-container-lowest) */
+    background: #0e0e0e;
+
+    border-top: 2px solid rgba(216, 195, 165, 0.75);
+
+    box-shadow:
+        0 -4px 10px rgba(216, 195, 165, 0.80),
+        0 -15px 35px rgba(216, 195, 165, 0.35),
+        0 -35px 80px rgba(216, 195, 165, 0.15);
+
+    will-change: transform;
+}
