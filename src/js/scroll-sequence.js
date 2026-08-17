@@ -9,11 +9,11 @@ function initSequence(section) {
     const img = section.querySelector("[data-seq-img]");
     const bar = section.querySelector("[data-seq-bar]");
     const counter = section.querySelector("[data-seq-counter]");
-    if (!img || !bar) return;
+    if (!img) return;
 
     const total = parseInt(section.dataset.seqFrames || "30", 10);
     const dir = section.dataset.seqDir || "src/assets/images/frames-mate1";
-    const LERP = 0.08;
+    const LERP = 0.12;
 
     const frames = [];
     for (let i = 1; i <= total; i++) {
@@ -38,7 +38,7 @@ function initSequence(section) {
         const rect = section.getBoundingClientRect();
         const vh = window.innerHeight;
         const range = rect.height - vh;
-        targetProgress = range > 0 ? -rect.top / range : 0;
+        targetProgress = range > 0 ? (vh - rect.top) / (vh + range) : 0;
         targetProgress = Math.max(0, Math.min(1, targetProgress));
         requestLoop();
     }
@@ -53,7 +53,7 @@ function initSequence(section) {
             if (counter) counter.textContent = String(frame + 1).padStart(2, "0");
         }
 
-        bar.style.transform = "scaleX(" + currentProgress.toFixed(4) + ")";
+        if (bar) bar.style.transform = "scaleX(" + currentProgress.toFixed(4) + ")";
 
         if (Math.abs(targetProgress - currentProgress) > 0.0005) {
             rafId = requestAnimationFrame(loop);
