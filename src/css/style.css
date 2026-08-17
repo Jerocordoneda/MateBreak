@@ -28,8 +28,8 @@
 
     border-radius: 50%;
 
-    /* Continúa el color del sector siguiente (bg-surface-container-lowest) */
-    background: #0e0e0e;
+    /* Continúa el color del sector siguiente (bg-white) */
+    background: #ffffff;
 
     border-top: 2px solid rgba(216, 195, 165, 0.75);
 

@@ -62,8 +62,8 @@
             loop: true,
             autoAdvance: false,
             autoAdvanceSeconds: 4,
-            uiColor: "#000000",
-            uiBackground: "#FFFFFF"
+            uiColor: "#FFFFFF",
+            uiBackground: "#131313"
         };
     }
 
