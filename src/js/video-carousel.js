@@ -30,8 +30,6 @@
             "[data-video-carousel] .vc-arrow{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:999px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;background:var(--vc-ui-bg,#fff);color:var(--vc-ui-color,#000);z-index:3;}",
             "[data-video-carousel] .vc-arrow.vc-prev{left:12px;}",
             "[data-video-carousel] .vc-arrow.vc-next{right:12px;}",
-            "[data-video-carousel] .vc-dots{position:absolute;left:12px;right:12px;bottom:12px;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:3;}",
-            "[data-video-carousel] .vc-dots-inner{display:flex;gap:8px;align-items:center;background:var(--vc-ui-bg,#fff);border-radius:999px;padding:8px 10px;pointer-events:auto;}",
             "[data-video-carousel] .vc-dot{width:8px;height:8px;border-radius:999px;border:none;padding:0;cursor:pointer;}"
         ].join("");
         document.head.appendChild(st);
@@ -52,9 +50,9 @@
             orientation: mount.dataset.orientation || "horizontal",
             cardWidth: small ? 203 : 339,
             cardHeight: small ? 343 : 572,
-            spacing: small ? 168 : 280,
-            depth: small ? 156 : 260,
-            perspective: small ? 700 : 1000,
+            spacing: small ? 102 : 170,
+            depth: small ? 250 : 420,
+            perspective: small ? 650 : 900,
             radius: "16px",
             inactiveBlur: 2,
             inactiveScale: 0.91,
@@ -170,37 +168,15 @@
         nextBtn.addEventListener("pointerup", function (e) { e.stopPropagation(); });
         nextBtn.addEventListener("click", function (e) { e.stopPropagation(); goTo(active + 1); });
 
-        var dotsWrap = document.createElement("div");
-        dotsWrap.className = "vc-dots";
-        var dotsInner = document.createElement("div");
-        dotsInner.className = "vc-dots-inner";
-        var dotEls = [];
-        for (var d = 0; d < count; d++) {
-            (function (idx) {
-                var dot = document.createElement("button");
-                dot.type = "button";
-                dot.className = "vc-dot";
-                dot.setAttribute("aria-label", "Ir al video " + (idx + 1));
-                dot.addEventListener("pointerdown", function (e) { e.stopPropagation(); });
-                dot.addEventListener("pointerup", function (e) { e.stopPropagation(); });
-                dot.addEventListener("click", function (e) { e.stopPropagation(); goTo(idx); });
-                dotEls.push(dot);
-                dotsInner.appendChild(dot);
-            })(d);
-        }
-        dotsWrap.appendChild(dotsInner);
-
         if (count > 1) {
             mount.appendChild(prevBtn);
             mount.appendChild(nextBtn);
-            mount.appendChild(dotsWrap);
         }
 
         function goTo(raw) {
             if (count <= 0) return;
             active = cfg.loop ? wrap(raw, count) : clamp(raw, count);
             layout();
-            renderDots();
             syncPlayback();
             if (cfg.autoAdvance) startAuto();
         }
@@ -226,7 +202,7 @@
                 var abs = Math.abs(rel);
                 var tx = rel * cfg.spacing;
                 var tz = -abs * cfg.depth * 0.35;
-                var rot = rel * -18;
+                var rot = rel * -26;
                 var isActive = rel === 0;
                 var scale = isActive ? 1 : cfg.inactiveScale;
                 var blur = isActive ? 0 : cfg.inactiveBlur;
@@ -267,12 +243,6 @@
                 };
 
                 if (isActive) card.appendChild(muteBtn);
-            });
-        }
-
-        function renderDots() {
-            dotEls.forEach(function (dot, i) {
-                dot.style.background = i === active ? cfg.uiColor : hexToRgba(cfg.uiColor, 0.25);
             });
         }
 
@@ -354,12 +324,10 @@
             resizeT = setTimeout(function () {
                 cfg = getConfig(mount);
                 layout();
-                renderDots();
             }, 150);
         });
 
         layout();
-        renderDots();
         renderMute();
         syncPlayback();
         if (cfg.autoAdvance) startAuto();
