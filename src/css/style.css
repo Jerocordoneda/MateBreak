@@ -40,3 +40,44 @@
 
     will-change: transform;
 }
+
+header .header-row-top,
+header .header-row-bottom a,
+header .header-row-bottom .group > span,
+header .dropdown-menu,
+header .dropdown-menu a {
+    transition: color 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+header.header-dark .header-row-top {
+    color: #0e0e0e !important;
+}
+
+header.header-dark .header-row-bottom a,
+header.header-dark .header-row-bottom .group > span {
+    color: #313030 !important;
+}
+
+header.header-dark .header-row-bottom a:hover,
+header.header-dark .header-row-bottom .group:hover > span,
+header.header-dark .header-row-bottom [aria-current="page"] {
+    color: #805533 !important;
+}
+
+header.header-dark .header-row-top img {
+    filter: sepia(0.3) saturate(0.8) hue-rotate(350deg) brightness(0.35) !important;
+}
+
+header.header-dark .dropdown-menu > div {
+    background: #ffffff !important;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.35) !important;
+}
+
+header.header-dark .dropdown-menu a {
+    color: #313030 !important;
+}
+
+header.header-dark .dropdown-menu a:hover {
+    background: rgba(244, 187, 146, 0.15) !important;
+    color: #805533 !important;
+}
