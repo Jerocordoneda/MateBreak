@@ -1,61 +1,82 @@
-// El header cambia de negro a blanco SOLO cuando la línea dorada
-// de .matebreak-curve toca el borde inferior del header.
-// Permanece blanco hasta que la línea lo vuelve a tocar al subir, y así siempre.
+// El header se funde con el fondo: su color interpola suavemente entre
+// oscuro y claro según la posición de la línea dorada de .matebreak-curve,
+// y tanto el fondo como el blur se desvanecen hacia abajo (sin borde duro).
 document.addEventListener("DOMContentLoaded", () => {
     const header = document.querySelector("header");
     if (!header) return;
 
-    const DARK = "19, 19, 19";
-    const WHITE = "255, 255, 255";
+    const DARK = [19, 19, 19];       // fondo base del sitio (#131313)
+    const WHITE = [255, 255, 255];
+    const FADE_RANGE = 200;          // px de anticipación del difuminado
 
-    function apply(isWhite) {
-        header.classList.toggle("header-dark", isWhite);
-        header.style.backgroundColor = isWhite
-            ? "rgba(" + WHITE + ", 0.95)"
-            : "rgba(" + DARK + ", 0.9)";
+    // Capa de blur con máscara: se disuelve hacia abajo junto al fondo.
+    let blurLayer = header.querySelector(".header-fade-blur");
+    if (!blurLayer) {
+        blurLayer = document.createElement("div");
+        blurLayer.className = "header-fade-blur";
+        header.insertBefore(blurLayer, header.firstChild);
     }
 
-    const transition = document.querySelector(".matebreak-transition");
+    header.style.backgroundColor = "transparent";
+
+    const transitionEl = document.querySelector(".matebreak-transition");
     const curve = document.querySelector(".matebreak-curve");
 
-    // Páginas sin curva: comportamiento clásico (solo secciones blancas)
-    if (!transition || !curve) {
-        const whiteSections = document.querySelectorAll("section.bg-white, footer.bg-white");
-        if (whiteSections.length) {
-            const io = new IntersectionObserver(
-                (entries) => {
-                    const isWhite = entries.some((e) => e.isIntersecting);
-                    apply(isWhite);
-                },
-                { rootMargin: "-128px 0px 0px 0px", threshold: 0 }
-            );
-            whiteSections.forEach((s) => io.observe(s));
+    // Y en viewport del "límite de color": el borde superior de la curva
+    // (donde está dibujada la línea dorada), o del primer sector blanco
+    // en páginas sin curva.
+    function colorBoundary() {
+        if (transitionEl && curve) {
+            const rect = transitionEl.getBoundingClientRect();
+            const move = parseFloat(curve.style.getPropertyValue("--curve-move")) || 0;
+            const scale = parseFloat(curve.style.getPropertyValue("--curve-scale")) || 1;
+            return rect.top + 700 + move - 300 * scale;
         }
-        apply(false);
-        return;
+        const light = document.querySelector("section.bg-white, footer.bg-white");
+        return light ? light.getBoundingClientRect().top : null;
     }
 
-    // Geometría de .matebreak-curve (height 600px, bottom -500px, dentro de
-    // un contenedor de 500px): su borde superior = centro + move - 300 * scale,
-    // con centro = rect.top + 700. Ahí está dibujada la línea dorada.
-    function curveTopEdge() {
-        const rect = transition.getBoundingClientRect();
-        const move = parseFloat(curve.style.getPropertyValue("--curve-move")) || 0;
-        const scale = parseFloat(curve.style.getPropertyValue("--curve-scale")) || 1;
-        return rect.top + 700 + move - 300 * scale;
-    }
+    function lerp(a, b, t) { return a + (b - a) * t; }
+    function smooth(t) { return t * t * (3 - 2 * t); }
+    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
 
-    const headerBottom = header.offsetHeight;
-    let lastWhite = null;
+    let lastP = -1;
+    let lastLight = null;
 
-    function loop() {
-        const isWhite = curveTopEdge() < headerBottom;
-        if (isWhite !== lastWhite) {
-            lastWhite = isWhite;
-            apply(isWhite);
+    function frame() {
+        const headerBottom = header.offsetHeight;
+        const y = colorBoundary();
+
+        let p = 0;
+        if (typeof y === "number" && isFinite(y)) {
+            // p=0 oscuro; p=1 blanco justo cuando la línea toca el header
+            p = clamp01((headerBottom + FADE_RANGE - y) / FADE_RANGE);
         }
-        requestAnimationFrame(loop);
+
+        if (Math.abs(p - lastP) > 0.001 || lastP < 0) {
+            const t = smooth(p);
+            const r = Math.round(lerp(DARK[0], WHITE[0], t));
+            const g = Math.round(lerp(DARK[1], WHITE[1], t));
+            const b = Math.round(lerp(DARK[2], WHITE[2], t));
+
+            // Degradado: casi sólido arriba, se disuelve al llegar abajo
+            header.style.background =
+                "linear-gradient(to bottom," +
+                " rgba(" + r + ", " + g + ", " + b + ", 0.95) 0%," +
+                " rgba(" + r + ", " + g + ", " + b + ", 0.85) 40%," +
+                " rgba(" + r + ", " + g + ", " + b + ", 0.5) 75%," +
+                " rgba(" + r + ", " + g + ", " + b + ", 0) 100%)";
+
+            const isLight = p > 0.5;
+            if (isLight !== lastLight) {
+                lastLight = isLight;
+                header.classList.toggle("header-dark", isLight);
+            }
+            lastP = p;
+        }
+
+        requestAnimationFrame(frame);
     }
 
-    requestAnimationFrame(loop);
+    requestAnimationFrame(frame);
 });
