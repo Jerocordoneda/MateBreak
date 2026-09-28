@@ -3,7 +3,8 @@
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "test": "node --test tests/*.test.mjs",
     "catalog:extract": "node scripts/import-matebreak-products.mjs --extract",
-    "catalog:import": "node --env-file-if-exists=.env scripts/import-matebreak-products.mjs --apply"
+    "catalog:import": "node --env-file-if-exists=.env scripts/import-matebreak-products.mjs --apply",
+    "catalog:reconcile": "node --env-file-if-exists=.env scripts/reconcile-inventory.mjs --out=docs/reconciliacion-variantes.csv"
   },
   "engines": {
     "node": ">=22"
