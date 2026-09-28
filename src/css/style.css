@@ -213,3 +213,21 @@ body > header.fixed {
 body > header.fixed > div:first-child {
     border-bottom: 0 !important;
 }
+
+/* Punto del badge: parpadeo rápido que se ilumina y apaga */
+div.w-2.h-2.rounded-full.bg-secondary.animate-pulse {
+    animation: badge-dot-blink 0.9s ease-in-out infinite;
+}
+
+@keyframes badge-dot-blink {
+    0%, 100% {
+        opacity: 0.15;
+        box-shadow: none;
+    }
+    50% {
+        opacity: 1;
+        box-shadow:
+            0 0 8px rgba(160, 209, 192, 0.9),
+            0 0 18px rgba(160, 209, 192, 0.5);
+    }
+}

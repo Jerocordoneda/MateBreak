@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#131313">
+  <title>Tu carrito · MateBreak</title>
+  <link rel="stylesheet" href="/src/css/commerce.css">
+  <script type="module" src="/src/js/commerce.js"></script>
+  <script type="module" src="/src/js/header-account.js"></script>
+  <link rel="stylesheet" href="/src/css/site-brand.css">
+</head>
+<body data-brand-shell="commerce">
+  <a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+  <main id="contenido" tabindex="-1"><a data-page-brand class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7RvngBOeBB8_8uDG8wLsv7JaOLHl1Szfdd1-BPhDK4VYj7-qs31diindLkxiIHRap1lqiw5OP0rNAeRX3uI8O6DVpU0K7DSEtxmz3ApSOjOZdEqSTidY-vmz9QPYCmHpaQF-eCvMsnGeuoh-at1A7WHij0aplhRiz1m8VhHQ2BgDmp0Gy2Bbwt534XlETZHwYM6wQ4SBXXi2vViExllL4lyVqY2B7hw5wiQJd48ig9ZIfkni4W-uabSz0XNn0Ctq5h1NoOogmT-g-IAg" alt="" width="48" height="48"><span>MateBreak<sup>®</sup></span></a>
+    <nav class="commerce-sections" aria-label="Mi compra"><a href="#catalogo" data-nav="catalogo">Catálogo</a><a href="#carrito" data-nav="carrito">Mi carrito</a><a href="#pedidos" data-nav="pedidos">Mis pedidos</a></nav>
+    <div id="mensaje" class="toast" role="status" aria-live="polite"></div>
+    <section id="carrito" class="page-panel">
+      <div class="page-heading">
+        <div><p class="eyebrow"><span></span> EL RITUAL EMPIEZA ACÁ</p><h1>Tu carrito<span class="accent">.</span></h1><p class="lead">Todo listo para tu próxima pausa.</p></div>
+        <a class="text-link continue-link" href="#catalogo"><span aria-hidden="true">←</span> Seguir explorando</a>
+      </div>
+      <div class="cart-layout">
+        <div class="cart-main">
+          <div class="selection-heading"><h2>Tu selección <span id="selection-count">0 productos</span></h2><span class="eyebrow hide-mobile">HECHO PARA COMPARTIR</span></div>
+          <div id="items" aria-live="polite" aria-busy="true"><div class="loading-state"><span class="spinner"></span> Recuperando tu carrito…</div></div>
+          <div class="cart-note"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12l4 4L19 6M4 20h16"/></svg><div><strong>Tu pausa puede esperar.</strong><p>Guardamos tu carrito para que sigas cuando quieras.</p></div></div>
+        </div>
+        <aside class="order-summary" aria-labelledby="summary-title">
+          <div class="summary-heading"><h2 id="summary-title">Resumen de compra</h2><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+          <div class="price-row"><span>Productos <span id="summary-count">(0)</span></span><strong id="subtotal">$ 0,00</strong></div>
+          <div class="price-row"><span>Entrega</span><span id="shipping-cost" class="muted">A seleccionar</span></div>
+          <form id="checkout">
+            <div class="checkout-options">
+              <label>¿Cómo lo recibís?<select name="envio" required aria-describedby="checkout-notice"><option value="">Cargando opciones…</option></select></label>
+              <div id="address-choice" hidden><label>Dirección de entrega<select name="direccion_id"><option value="">Seleccioná una dirección</option></select></label><a class="small-link" href="#cuenta">Agregar o editar dirección <span aria-hidden="true">↗</span></a></div>
+              <label>Medio de pago<select name="pago" required><option value="">Cargando opciones…</option></select></label>
+              <p id="instrucciones" class="payment-instructions" hidden></p>
+            </div>
+            <div class="summary-total"><div><span>Total estimado</span><span class="currency">PESOS URUGUAYOS</span></div><strong id="total">$ 0,00</strong></div>
+            <p class="price-disclaimer">Confirmamos precio y disponibilidad al crear el pedido.</p>
+            <button id="checkout-button" class="button-primary checkout-button" disabled><span>Confirmar pedido</span><span aria-hidden="true">→</span></button>
+            <p id="checkout-notice" class="checkout-notice">Agregá un producto para empezar.</p>
+            <a id="checkout-login" class="small-link" href="#cuenta" hidden>Ingresar o crear una cuenta</a>
+          </form>
+          <div class="summary-footnote"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="M8 12l3 3 5-6"/></svg><span>Tus datos, siempre privados.</span></div>
+        </aside>
+      </div>
+      <div class="ritual-banner"><span class="ritual-mark" aria-hidden="true">M/B</span><div><p class="eyebrow">MENOS APURO. MÁS RITUAL.</p><p>Lo mejor del día puede ser una pausa.</p></div><a href="#catalogo" class="text-link">Encontrá tu mate <span aria-hidden="true">↗</span></a></div>
+    </section>
+    <section id="catalogo" class="page-panel" hidden>
+      <div class="page-heading"><div><p class="eyebrow"><span></span> OBJETOS PARA TU RITUAL</p><h1>Elegí tu pausa<span class="accent">.</span></h1><p class="lead">Mates y compañía para todos los días.</p></div><a href="#carrito" class="text-link continue-link">Ver mi carrito <span aria-hidden="true">→</span></a></div>
+      <div id="productos" class="product-grid"><div class="loading-state"><span class="spinner"></span> Cargando catálogo…</div></div>
+    </section>
+    <section id="cuenta" class="page-panel" hidden>
+      <div class="page-heading"><div><p class="eyebrow"><span></span> TU ESPACIO EN MATEBREAK</p><h1>Mi cuenta<span class="accent">.</span></h1><p id="usuario" class="lead">Ingresá para guardar tus direcciones y ver tus pedidos.</p></div><a href="#carrito" class="text-link continue-link">Volver al carrito <span aria-hidden="true">→</span></a></div>
+      <form id="login" class="account-card login-form"><h2>Qué bueno tenerte acá.</h2><p class="muted">Ingresá o creá una cuenta con tu email.</p><label>Email<input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="vos@ejemplo.com"></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Tu contraseña"></label><div class="form-actions"><button name="accion" value="login" class="button-primary">Ingresar <span aria-hidden="true">→</span></button><button name="accion" value="registro" class="button-secondary">Crear cuenta</button></div></form>
+      <button id="logout" class="button-secondary" hidden>Cerrar sesión</button>
+      <div id="privado" hidden>
+        <div class="account-grid">
+          <div class="account-card"><h2>Mis datos</h2><form id="perfil" class="field-grid"><label>Nombre<input name="nombre" maxlength="150" required autocomplete="name"></label><label>Teléfono<input name="telefono" maxlength="40" autocomplete="tel"></label><button class="button-primary">Guardar datos</button></form></div>
+          <div class="account-card"><h2>Mis direcciones</h2><div id="direcciones"></div></div>
+        </div>
+        <details id="address-details" class="account-card" open><summary>Agregar o editar una dirección</summary><form id="direccion" class="field-grid"><input name="id" type="hidden"><label>Destinatario<input name="destinatario" required maxlength="150" autocomplete="shipping name"></label><label>Teléfono<input name="telefono" required maxlength="40" autocomplete="shipping tel"></label><label class="full-field">Calle, número y apartamento<input name="calle" required maxlength="250" autocomplete="shipping street-address"></label><label>Ciudad<input name="ciudad" required maxlength="100" autocomplete="shipping address-level2"></label><label>Departamento<input name="departamento" required maxlength="100" autocomplete="shipping address-level1"></label><label>Código postal<input name="codigo_postal" maxlength="20" autocomplete="shipping postal-code"></label><label>País<input name="pais" value="UY" pattern="[A-Z]{2}" maxlength="2" required autocomplete="shipping country"></label><label>Indicaciones de entrega<input name="indicaciones" maxlength="500" placeholder="Timbre, esquina o referencia"></label><div class="form-actions full-field"><button class="button-primary">Guardar dirección</button><button type="reset" class="button-secondary">Nueva dirección</button></div></form></details>
+      </div>
+    </section>
+    <section id="pedidos" class="page-panel" hidden>
+      <div class="page-heading"><div><p class="eyebrow"><span></span> DE NUESTRO TALLER A TU RITUAL</p><h1>Mis pedidos<span class="accent">.</span></h1><p class="lead">El detalle y el recorrido de cada compra.</p></div><a href="#catalogo" class="text-link continue-link">Explorar catálogo <span aria-hidden="true">→</span></a></div>
+      <div id="lista-pedidos" class="orders-list"></div>
+    </section>
+  </main>
+  <footer class="site-footer"><a data-page-brand class="mb-site-brand mb-footer-brand" href="/" aria-label="MateBreak, inicio"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7RvngBOeBB8_8uDG8wLsv7JaOLHl1Szfdd1-BPhDK4VYj7-qs31diindLkxiIHRap1lqiw5OP0rNAeRX3uI8O6DVpU0K7DSEtxmz3ApSOjOZdEqSTidY-vmz9QPYCmHpaQF-eCvMsnGeuoh-at1A7WHij0aplhRiz1m8VhHQ2BgDmp0Gy2Bbwt534XlETZHwYM6wQ4SBXXi2vViExllL4lyVqY2B7hw5wiQJd48ig9ZIfkni4W-uabSz0XNn0Ctq5h1NoOogmT-g-IAg" alt="" width="48" height="48"><span>MateBreak<sup>®</sup></span></a><span>Una buena pausa cambia el día.</span><a href="/src/pages/faqs.html">Preguntas frecuentes <span aria-hidden="true">↗</span></a></footer>
+</body>
+</html>

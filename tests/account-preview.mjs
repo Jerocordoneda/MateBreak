@@ -1,0 +1,25 @@
+// Isolated UI fixtures. Never uses credentials, Supabase or real stock.
+import express from 'express';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {readFile} from 'node:fs/promises';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),app=express();
+app.use(express.json());
+app.get('/demo/:role',(req,res)=>{if(!['cliente','vendedor','administrador','invitado'].includes(req.params.role))return res.sendStatus(404);res.cookie('mb_preview_role',req.params.role,{httpOnly:true,sameSite:'lax'});res.redirect('/mi-cuenta');});
+const products=[{id:'1',nombre:'Mate imperial de algarrobo',sku:'MB-IMP-ALG',precio:null},{id:'2',nombre:'Termo plateado',sku:'MB-TER-PLA',precio:null}];
+const sales=[{id:'11111111-1111-4111-8111-111111111111',cliente:'Cliente de demostración',telefono:'',estado:'por_grabar',creado_en:new Date().toISOString(),total:1500,moneda:'UYU',metodo_pago:'efectivo',notas:'Datos de prueba',items:[{nombre:products[0].nombre,cantidad:1,precio_unitario:1500,personalizacion:'River en la virola'}]}];
+app.get('/api/sesion',(req,res)=>{const role=req.headers.cookie?.match(/mb_preview_role=(\w+)/)?.[1]||'invitado';res.json({usuario:role==='invitado'?null:{id:'demo',email:role+'@example.invalid',rol:role}});});
+app.get('/api/carrito/resumen',(req,res)=>res.json({cantidad:3}));
+app.get('/api/perfil',(req,res)=>res.json({nombre:'Cliente de prueba',telefono:'000'}));
+app.get('/api/emails',(req,res)=>res.json([{id:'e',email:'contacto@example.invalid'}]));
+app.get('/api/pedidos',(req,res)=>res.json([{id:'cccccccc-1111-4111-8111-111111111111',estado:'en_preparacion',creado_en:new Date().toISOString(),total:1850,costo_envio:150,moneda:'UYU',direccion_entrega:{calle:'Dirección de ejemplo 123',ciudad:'Montevideo'},items:[{nombre:'Mate imperial de algarrobo',cantidad:1,subtotal:1700}],pagos:[{metodo:'transferencia',estado:'aprobado'}]}]));
+app.get('/api/admin/usuarios',(req,res)=>res.json({pagina:1,siguiente:false,usuarios:[{id:'demo',email:'administrador@example.invalid',rol:'administrador',confirmado:true},{id:'demo-seller',email:'vendedor@example.invalid',rol:'vendedor',confirmado:true},{id:'demo-client',email:'cliente@example.invalid',rol:'cliente',confirmado:true},{id:'demo-pending',email:'pendiente@example.invalid',rol:'cliente',confirmado:false}]}));
+app.get('/api/admin/dashboard',(req,res)=>res.json({periodo:req.query.periodo||'mes',desde:'2026-09-01T00:00:00Z',hasta:new Date().toISOString(),totales:{ventas:18,facturacion_registrada:68400,facturacion_entregada:51200,monto_pendiente:17200,ticket_promedio_entregado:4267,por_grabar:3,por_entregar:3,entregadas:12,clientes:15,clientes_nuevos:9,clientes_anteriores:6,clientes_recurrentes:5,unidades:26},vendedores:[{id:'s1',nombre:'Santiago',ventas:11,total_registrado:43800,facturacion_entregada:35200,pendientes:3,clientes:9,unidades:16},{id:'s2',nombre:'Jero',ventas:7,total_registrado:24600,facturacion_entregada:16000,pendientes:3,clientes:6,unidades:10}],clientes:[{id:'c1',nombre:'Lucía Fernández',ventas_periodo:2,compras_historicas:4,total_registrado:9500,facturacion_entregada:9500,primera_compra:'2026-04-10T12:00:00Z',ultima_compra:new Date().toISOString(),es_nuevo:false},{id:'c2',nombre:'Tomás Silva',ventas_periodo:1,compras_historicas:1,total_registrado:7800,facturacion_entregada:7800,primera_compra:new Date().toISOString(),ultima_compra:new Date().toISOString(),es_nuevo:true}],recientes:[{id:'v1',vendedor_nombre:'Santiago',cliente:'Lucía Fernández',estado:'entregada',metodo_pago:'transferencia',total:9500,moneda:'UYU',creado_en:new Date().toISOString(),unidades:2},{id:'v2',vendedor_nombre:'Jero',cliente:'Tomás Silva',estado:'por_grabar',metodo_pago:'efectivo',total:7800,moneda:'UYU',creado_en:new Date(Date.now()-86400000).toISOString(),unidades:1}],serie:Array.from({length:9},(_,i)=>({fecha:`2026-09-${String(i+1).padStart(2,'0')}`,ventas:i%3+1,total_registrado:5000+i*700,facturacion_entregada:i===2?0:2500+i*550}))}));
+app.get('/api/direcciones',(req,res)=>res.json([{id:'d',destinatario:'Cliente de prueba',calle:'Dirección de ejemplo 123',ciudad:'Montevideo',departamento:'Montevideo',pais:'UY',telefono:'000'}]));
+app.get('/api/ventas/productos',(req,res)=>res.json(products));
+app.get('/api/ventas',(req,res)=>res.json(sales));
+app.get('/api/admin/inventario',(req,res)=>res.json([{fisico:5354,disponible:5353,reservado:1}]));
+app.use('/api',(req,res)=>res.status(405).json({error:'Vista de demostración: no se guardan operaciones.'}));
+app.get('/mi-cuenta',async(req,res)=>{const html=await readFile(path.join(root,'src/pages/cuenta.html'),'utf8');res.type('html').send(html.replace('<main>','<main><p class="preview-notice">DEMOSTRACIÓN · Datos de prueba. No guarda cambios.</p>'));});
+app.use('/src',express.static(path.join(root,'src')));
+app.listen(3004,'127.0.0.1',()=>console.log('Account UI fixtures: http://localhost:3004/demo/cliente (NO real data)'));

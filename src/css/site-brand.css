@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&display=swap');
+/* Account and cart intentionally have no navigation header. */
+:root{--mb-heading:'Geist',sans-serif;--mb-body:'Inter',sans-serif;--mb-logo:#d8c3a5}
+.mb-site-brand{display:inline-flex;align-items:center;gap:0;color:var(--mb-logo);text-decoration:none;flex-shrink:0;font-family:var(--mb-heading)}
+.mb-site-brand img{width:48px;height:48px;object-fit:contain;filter:sepia(.3) saturate(.8) hue-rotate(350deg) brightness(1.1)}
+.mb-site-brand>span{font:400 36px/40px var(--mb-heading);letter-spacing:-1.8px;white-space:nowrap}
+.mb-site-brand sup{font-size:.6em;position:relative;top:-.5em;vertical-align:baseline;line-height:0;margin-left:2px;letter-spacing:0}
+.mb-page-brand{margin:28px 0 8px}.mb-site-brand:hover{color:var(--mb-logo)}
+.mb-footer-brand>span{font-size:23px;line-height:28px;letter-spacing:-1.1px}.mb-footer-brand img{width:30px;height:30px}
+body[data-brand-shell]{font-family:var(--mb-body)}
+.commerce-sections{display:flex;gap:26px;align-items:center;padding:18px 0 0;font:500 12px/20px var(--mb-heading);color:var(--muted)}
+.commerce-sections a{padding:8px 0;border-bottom:1px solid transparent}.commerce-sections a[aria-current=page]{color:var(--copper);border-bottom-color:var(--copper)}
+.account-filters{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0}.account-filters label{flex:1;min-width:180px}.account-filters label:last-child{flex:0 1 200px}.account-data-note{font-size:12px;line-height:1.8;color:var(--muted);margin:12px 0;overflow-wrap:anywhere}
+@media(max-width:760px){.mb-page-brand{margin:22px 0 6px}.mb-page-brand img{width:29px;height:29px}.mb-page-brand>span{font-size:26px;line-height:32px;letter-spacing:-1.3px}.commerce-sections{gap:22px;padding-top:12px;font-size:11px}.account-filters label,.account-filters label:last-child{flex:1 1 100%}}

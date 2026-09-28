@@ -1,0 +1,47 @@
+begin;
+insert into auth.users(id) values('c4f51139-d697-427a-a742-8cb41591ea01'),('c4f51139-d697-427a-a742-8cb41591ea02'),('c4f51139-d697-427a-a742-8cb41591ea03');
+insert into private.equipo_vendedores(usuario_id) values('c4f51139-d697-427a-a742-8cb41591ea01'),('c4f51139-d697-427a-a742-8cb41591ea02');
+insert into public.producto(id_producto,nombre,precio,tipo,activo) overriding system value values(-903001,'TEST sales base',null,'simple',false);
+insert into public.producto_simple(id_producto,material,stock) values(-903001,'TEST',10);
+insert into private.inventario_ficha(producto_id,sku) values(-903001,'TEST-SALES-ROLLBACK');
+set local role service_role;
+do $$ declare u uuid:='c4f51139-d697-427a-a742-8cb41591ea01'; other_seller uuid:='c4f51139-d697-427a-a742-8cb41591ea02'; c uuid:='c4f51139-d697-427a-a742-8cb41591ea03'; body jsonb; result jsonb; repeated jsonb; n integer; begin
+ if public.mb_rol(u)<>'vendedor' or public.mb_rol(c)<>'cliente' or public.mb_inventario_autorizado(u) then raise exception 'FAIL roles'; end if;
+ begin perform public.mb_ventas(c,'productos');raise exception 'FAIL customer sales access';exception when insufficient_privilege then null;end;
+ begin perform public.mb_inventario(u,'listar');raise exception 'FAIL seller inventory access';exception when insufficient_privilege then null;end;
+ if exists(select 1 from jsonb_array_elements(public.mb_ventas(u,'productos')) x where x ? 'stock' or x ? 'disponible' or x ? 'reservado') then raise exception 'FAIL stock disclosure';end if;
+ body:=jsonb_build_object('idempotencia',gen_random_uuid(),'cliente','TEST customer','telefono','','notas','TEST','estado','por_grabar','metodo_pago','efectivo','items',
+  '[{"producto_id":"-903001","cantidad":2,"precio_unitario":"12.35","personalizacion":"River"},{"producto_id":"-903001","cantidad":1,"precio_unitario":"15.20","personalizacion":"Boca"}]'::jsonb);
+ result:=public.mb_ventas(u,'registrar',body);repeated:=public.mb_ventas(u,'registrar',body);
+ if result<>repeated or (result->>'total')::numeric<>39.90 then raise exception 'FAIL retry or total';end if;
+ if (select stock from public.producto_simple where id_producto=-903001)<>7 or private.inventario_reservado(-903001)<>3 then raise exception 'FAIL pending stock';end if;
+ if jsonb_array_length(public.mb_ventas(other_seller,'listar'))<>0 then raise exception 'FAIL sales ownership';end if;
+ begin perform public.mb_ventas(other_seller,'estado',jsonb_build_object('id',result->>'id','estado','por_entregar'));raise exception using errcode='P0002',message='FAIL other seller update';exception when sqlstate 'P0001' then if sqlerrm<>'Venta no encontrada' then raise;end if;end;
+ begin perform public.mb_ventas(u,'estado',jsonb_build_object('id',result->>'id','estado','entregada'));raise exception using errcode='P0002',message='FAIL skipping engraving';exception when sqlstate 'P0001' then if sqlerrm not like 'La venta debe pasar%' then raise;end if;end;
+ begin perform public.mb_ventas(u,'registrar',body||jsonb_build_object('cliente','Altered'));raise exception using errcode='P0002',message='FAIL changed retry';exception when sqlstate 'P0001' then if sqlerrm<>'Ese identificador ya corresponde a otra venta' then raise;end if;end;
+ begin perform public.mb_ventas(u,'registrar',body||jsonb_build_object('idempotencia',gen_random_uuid(),'items','[{"producto_id":"-903001","cantidad":8,"precio_unitario":"12.35","personalizacion":"River"}]'::jsonb));raise exception using errcode='P0002',message='FAIL oversell';exception when sqlstate 'P0001' then if sqlerrm<>'Stock insuficiente para registrar esta venta' then raise;end if;end;
+ if (select stock from public.producto_simple where id_producto=-903001)<>7 then raise exception 'FAIL failed sale rollback';end if;
+ perform public.mb_ventas(u,'estado',jsonb_build_object('id',result->>'id','estado','por_entregar'));
+ if private.inventario_reservado(-903001)<>3 then raise exception 'FAIL preparation reservation';end if;
+ perform public.mb_ventas(u,'estado',jsonb_build_object('id',result->>'id','estado','entregada'));
+ perform public.mb_ventas(u,'estado',jsonb_build_object('id',result->>'id','estado','entregada'));
+ if private.inventario_reservado(-903001)<>0 or (select stock from public.producto_simple where id_producto=-903001)<>7 then raise exception 'FAIL delivery double discount';end if;
+ if (select count(*) from private.venta_manual_evento where venta_id=(result->>'id')::uuid)<>3 then raise exception 'FAIL events';end if;
+ if (select count(*) from private.inventario_ajuste where producto_id=-903001)<>2 then raise exception 'FAIL stock audit';end if;
+ perform public.mb_ventas(u,'registrar',body||jsonb_build_object('idempotencia',gen_random_uuid(),'estado','entregada'));
+ if private.inventario_reservado(-903001)<>0 or (select stock from public.producto_simple where id_producto=-903001)<>4 then raise exception 'FAIL already delivered sale';end if;
+ if (select precio from public.producto where id_producto=-903001) is not null then raise exception 'FAIL catalog price changed';end if;
+end $$;
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claim.sub','c4f51139-d697-427a-a742-8cb41591ea03',true);
+insert into public.email_contacto(usuario_id,email) values('c4f51139-d697-427a-a742-8cb41591ea03','client-test@example.invalid');
+do $$ begin
+ if has_function_privilege(current_user,'public.mb_ventas(uuid,text,jsonb)','execute') or has_function_privilege(current_user,'public.mb_rol(uuid)','execute') then raise exception 'FAIL public rpc';end if;
+ begin insert into public.email_contacto(usuario_id,email) values('c4f51139-d697-427a-a742-8cb41591ea01','forged@example.invalid');raise exception 'FAIL forged email owner';exception when insufficient_privilege then null;end;
+end $$;
+select set_config('request.jwt.claim.sub','c4f51139-d697-427a-a742-8cb41591ea02',true);
+do $$ begin if exists(select 1 from public.email_contacto where email='client-test@example.invalid') then raise exception 'FAIL email privacy';end if;end $$;
+reset role;
+rollback;
+select 'PASS: roles, private emails, sales ownership, exact totals, shared base stock, reservations, delivery, replay and audit' as resultado;
