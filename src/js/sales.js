@@ -1,6 +1,6 @@
 import {api,element,message,button,overview} from './account.js';
 import {dateTime,filterRecords,saleTotals} from './account-data.js';
-const $=selector=>document.querySelector(selector),money=n=>new Intl.NumberFormat('es-UY',{style:'currency',currency:'UYU'}).format(n);
+const $=selector=>document.querySelector(selector),money=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(n);
 const labels={por_grabar:'Por grabar',por_entregar:'Por entregar',entregada:'Entregada'};
 let products=[],pending,busy=false,records=[];
 function total(){let cents=0;for(const line of document.querySelectorAll('.sale-line')){const q=Number(line.querySelector('[name=cantidad]').value),p=Number(line.querySelector('[name=precio_unitario]').value);if(Number.isFinite(q)&&Number.isFinite(p))cents+=q*Math.round(p*100);}$('#sale-total').textContent=money(cents/100);}
@@ -10,7 +10,7 @@ function addLine(){
  const row=element('div',undefined,'sale-line'),label=element('label','Producto base','product-field'),select=element('select');select.name='producto_id';select.required=true;select.add(new Option('Seleccionar producto',''));
  for(const p of products)select.add(new Option(p.nombre+' · '+p.sku,p.id));label.append(select);
  const qty=field('Cantidad','cantidad','number');qty.input.required=true;qty.input.min=1;qty.input.max=10000;qty.input.step=1;qty.input.value=1;
- const price=field('Precio unitario (UYU)','precio_unitario','number');price.input.required=true;price.input.min='0.01';price.input.max=1000000;price.input.step='0.01';price.input.placeholder='Importe vendido';
+ const price=field('Precio unitario (ARS)','precio_unitario','number');price.input.required=true;price.input.min='0.01';price.input.max=1000000;price.input.step='0.01';price.input.placeholder='Importe vendido';
  const engraving=field('Grabado / diseño solicitado','personalizacion');engraving.label.className='engraving';engraving.input.maxLength=500;engraving.input.placeholder='Ej.: River en la virola, nombre y tipografía';
  const remove=button('Quitar',()=>{if($('#sale-lines').children.length===1){message('La venta necesita al menos un producto.',true);return;}row.remove();total();});remove.setAttribute('aria-label','Quitar línea de venta');
  select.onchange=()=>{const p=products.find(p=>p.id===select.value);price.input.value=p?.precio??'';total();};qty.input.oninput=total;price.input.oninput=total;
@@ -26,7 +26,7 @@ function renderSales(){
  const sales=filterRecords(records,$('#sales-search').value,$('#sales-filter').value,s=>[s.cliente,s.telefono,s.id,...(s.items??[]).map(i=>i.nombre+' '+i.personalizacion)].join(' ')),totals=saleTotals(sales);
  $('#sales-summary').textContent=`${sales.length} de ${records.length} ventas cargadas (máximo 200) · Importe registrado: ${money(totals.cents/100)} · ${totals.units} piezas · ${totals.reserved} pendientes de entrega. No representa pagos verificados.`;
  $('#sales-list').replaceChildren(...sales.map(s=>{
-  const card=element('article',undefined,'sale-card'),head=element('div',undefined,'order-heading');head.append(element('h3',s.cliente),element('span',labels[s.estado],'order-status'));card.append(head,element('p',`${new Date(s.creado_en).toLocaleDateString('es-UY')} · Venta ${s.id.slice(0,8).toUpperCase()} · ${money(s.total)}`));
+  const card=element('article',undefined,'sale-card'),head=element('div',undefined,'order-heading');head.append(element('h3',s.cliente),element('span',labels[s.estado],'order-status'));card.append(head,element('p',`${new Date(s.creado_en).toLocaleDateString('es-AR')} · Venta ${s.id.slice(0,8).toUpperCase()} · ${money(s.total)}`));
   for(const i of s.items){card.append(element('p',`${i.cantidad} × ${i.nombre} · ${money(i.precio_unitario)} c/u`));if(i.personalizacion)card.append(element('p','Grabado: '+i.personalizacion,'engraving-text'));}
   if(s.telefono)card.append(element('p','Teléfono: '+s.telefono));if(s.notas)card.append(element('p',s.notas));
   card.append(element('p','Medio de pago informado: '+s.metodo_pago));

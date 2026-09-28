@@ -3,8 +3,8 @@ import {dateTime} from './account-data.js';
 import {mountTeam} from './account-team.js';
 
 const $=s=>document.querySelector(s);
-const money=new Intl.NumberFormat('es-UY',{style:'currency',currency:'UYU',maximumFractionDigits:0});
-const number=new Intl.NumberFormat('es-UY');
+const money=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
+const number=new Intl.NumberFormat('es-AR');
 const stateLabels={por_grabar:'Por grabar',por_entregar:'Por entregar',entregada:'Entregadas'};
 const periodLabels={mes:'este mes','30_dias':'los últimos 30 días','90_dias':'los últimos 90 días',todo:'todo el historial'};
 
@@ -25,13 +25,13 @@ function renderChart(series){
     const item=element('div',undefined,'chart-column');
     const bar=element('span',undefined,'chart-bar');bar.style.height=Math.max(3,Number(point.facturacion_entregada)/max*100)+'%';
     bar.title=`${point.fecha}: ${money.format(point.facturacion_entregada)} · ${point.ventas} ventas`;
-    item.append(bar,element('small',new Date(point.fecha+'T12:00:00').toLocaleDateString('es-UY',{day:'2-digit',month:'short'})));bars.append(item);
+    item.append(bar,element('small',new Date(point.fecha+'T12:00:00').toLocaleDateString('es-AR',{day:'2-digit',month:'short'})));bars.append(item);
   });target.append(bars);
 }
 
 function renderDashboard(data){
   const t=data.totales;
-  $('#dashboard-period-note').textContent=`Resultados de ${periodLabels[data.periodo]}. Actualizado ${new Date(data.hasta).toLocaleString('es-UY')}.`;
+  $('#dashboard-period-note').textContent=`Resultados de ${periodLabels[data.periodo]}. Actualizado ${new Date(data.hasta).toLocaleString('es-AR')}.`;
   $('#admin-overview').replaceChildren(
     metric('Facturación entregada',money.format(t.facturacion_entregada),`${number.format(t.entregadas)} ventas realizadas`,'primary'),
     metric('Total registrado',money.format(t.facturacion_registrada),`${number.format(t.ventas)} ventas cargadas`),

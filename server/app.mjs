@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inventoryRoutes } from './inventory.mjs';
 import { accountRole, accountRoutes } from './account.mjs';
+import { catalogRoutes } from './catalog.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -108,10 +109,7 @@ export function createApp(config, overrides = {}) {
     const { error } = await auth.auth.exchangeCodeForSession(req.query.code);
     res.redirect(error ? '/mi-cuenta?auth=error' : '/mi-cuenta');
   });
-  app.get('/api/productos', async (req, res) => {
-    const data = await checked(admin.from('producto').select('id_producto,nombre,descripcion,precio,tipo').eq('activo', true).order('id_producto').limit(200));
-    res.json(data.map(p => ({ ...p, id_producto: String(p.id_producto) })));
-  });
+  catalogRoutes(app, { admin });
   app.get('/api/metodos', async (req, res) => {
     const [pagos, envios] = await Promise.all([
       checked(admin.from('metodo_pago').select('codigo,nombre,instrucciones').eq('activo', true)),
@@ -134,9 +132,36 @@ export function createApp(config, overrides = {}) {
     if (cart.estado === 'convertido') { rotateCart(req, res); cart = await rpc(req, 'carrito'); }
     res.json(cart);
   });
+  app.get('/api/carrito/cotizacion', async (req, res) => {
+    const pago=typeof req.query.pago==='string'?req.query.pago:'';
+    const envio=typeof req.query.envio==='string'?req.query.envio:'';
+    if(!pago||!envio||pago==='mercadopago')throw fail(400,'Métodos inválidos');
+    const [payment,shipping]=await Promise.all([
+      checked(admin.from('metodo_pago').select('codigo').eq('codigo',pago).eq('activo',true).maybeSingle()),
+      checked(admin.from('metodo_envio').select('codigo,costo').eq('codigo',envio).eq('activo',true).maybeSingle()),
+    ]);
+    if(!payment||!shipping)throw fail(400,'Métodos no disponibles');
+    const cart=await rpc(req,'carrito');
+    const {data:quote,error}=await admin.rpc('mb_cotizar_catalogo',{p_carrito_id:cart.id,p_pago:pago});
+    if(error)throw fail(503,'No se pudo cotizar el carrito');
+    const variantIds=quote.items.filter(item=>item.variante_id).map(item=>item.producto_id);
+    let free=false;
+    if(variantIds.length===quote.items.length&&variantIds.length){
+      const products=await checked(admin.from('catalogo_producto').select('producto_id,envio_gratis').in('producto_id',variantIds));
+      free=products.length===new Set(variantIds.map(String)).size&&products.every(product=>product.envio_gratis);
+    }
+    const costo_envio=free?0:Number(shipping.costo);
+    res.json({subtotal:Number(quote.subtotal),costo_envio,total:Number(quote.subtotal)+costo_envio,moneda:'ARS'});
+  });
   app.put('/api/carrito/items/:id', async (req, res) => {
     if (!/^[1-9][0-9]{0,18}$/.test(req.params.id) || !Number.isInteger(req.body.cantidad) || req.body.cantidad < 0 || req.body.cantidad > 99) throw fail(400, 'Producto o cantidad inválidos');
     res.json(await rpc(req, 'cantidad', { producto_id: req.params.id, cantidad: req.body.cantidad }));
+  });
+  app.put('/api/carrito/variantes/:id', async (req, res) => {
+    const {cantidad,personalizacion}=req.body??{};
+    if(!/^[1-9][0-9]{0,18}$/.test(req.params.id)||!Number.isInteger(cantidad)||cantidad<0||cantidad>99
+      ||(personalizacion!==undefined&&(typeof personalizacion!=='string'||personalizacion.length>1000)))throw fail(400,'Variante, cantidad o personalización inválidas');
+    res.json(await rpc(req,'variante',{variante_id:req.params.id,cantidad,...(personalizacion===undefined?{}:{personalizacion})}));
   });
   app.get('/api/perfil', async (req, res) => {
     const profile=await checked(req.auth.from('perfil').select('nombre,telefono').eq('id', requireUser(req)).maybeSingle());
@@ -177,6 +202,7 @@ export function createApp(config, overrides = {}) {
   app.use('/src', express.static(path.join(root, 'src'), { dotfiles: 'deny' }));
   app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(root, 'index.html')));
   app.get('/tienda', (req, res) => res.sendFile(path.join(root, 'src/pages/tienda.html')));
+  app.get('/productos/:slug', (req,res)=>res.sendFile(path.join(root,'src/pages/producto.html')));
   app.get('/mi-cuenta', (req, res) => res.sendFile(path.join(root, 'src/pages/cuenta.html')));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);

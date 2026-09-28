@@ -1,6 +1,6 @@
 export function dateTime(value,fallback='Sin registrar'){
  if(!value)return fallback;const date=new Date(value);
- return Number.isNaN(date.getTime())?fallback:date.toLocaleString('es-UY',{dateStyle:'medium',timeStyle:'short'});
+ return Number.isNaN(date.getTime())?fallback:date.toLocaleString('es-AR',{dateStyle:'medium',timeStyle:'short'});
 }
 export const normalize=value=>String(value??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 export function filterRecords(records,query,state,text,stateKey='estado'){

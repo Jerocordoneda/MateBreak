@@ -1,5 +1,5 @@
 const $ = selector => document.querySelector(selector);
-const fmt = value => new Intl.NumberFormat('es-UY').format(value);
+const fmt = value => new Intl.NumberFormat('es-AR').format(value);
 const node = (tag, text, className) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (className) el.className = className; return el; };
 let products = [], selected, pending, busy = false, historySequence = 0;
 const types = { inicial: 'Carga inicial', ingreso: 'Ingreso', egreso: 'Egreso', conteo: 'Conteo físico', reserva: 'Reserva', liberacion: 'Liberación' };
@@ -55,7 +55,7 @@ async function loadHistory(product) {
     const delta = node('span',(m.diferencia > 0 ? '+' : '') + fmt(m.diferencia),'delta' + (m.diferencia < 0 ? ' negative' : ''));
     const details = node('div'); details.append(node('strong',m.nombre + ' · ' + (types[m.tipo] || m.tipo)),node('p',m.motivo));
     details.append(node('small',m.actor_nombre + (m.disponible_anterior !== null ? ' · Disponible: ' + fmt(m.disponible_anterior) + ' → ' + fmt(m.disponible_nuevo) : '') + (m.pedido_id ? ' · Pedido ' + m.pedido_id.slice(0,8) : '')));
-    const date = new Date(m.creado_en), time = node('time',date.toLocaleString('es-UY',{dateStyle:'short',timeStyle:'short'})); time.dateTime = date.toISOString();
+    const date = new Date(m.creado_en), time = node('time',date.toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})); time.dateTime = date.toISOString();
     row.append(delta,details,time); return row;
   }));
   if (!movements.length) $('#history').append(node('p','Todavía no hay movimientos.','empty'));

@@ -34,7 +34,7 @@ Mercado Pago está registrado como opción desactivada. No se implementó integr
 Un operador de confianza puede confirmar una transferencia desde SQL Editor:
 
 ```sql
-select public.mb_confirmar_pago('<pago_uuid>', '<referencia_bancaria_unica>', 1500.00, 'UYU');
+select public.mb_confirmar_pago('<pago_uuid>', '<referencia_bancaria_unica>', 1500.00, 'ARS');
 ```
 
 Debe verificar el ingreso real antes de ejecutar. Para un proveedor online, un webhook futuro debe verificar firma, consultar el pago al proveedor y comprobar referencia, importe, moneda y pedido antes de llamar a la función. El comprador no tiene acceso a esta operación.
@@ -148,7 +148,26 @@ El email de acceso se muestra como solo lectura. Los emails adicionales son cont
 
 `private.venta_manual`, `venta_manual_item` y `venta_manual_evento` conservan ventas, piezas, precios históricos, personalización y cambios de estado. El vendedor solo consulta sus registros (hasta 200, pendientes primero) y una lista de nombres/SKU/precios para elegir artículos. No puede leer existencias exactas, consultar ventas ajenas, editar inventario, concederse permisos ni cambiar el precio del catálogo.
 
-El vendedor informa el precio unitario efectivamente vendido en UYU (moneda actual del backend), ya que los precios del catálogo todavía están pendientes. La base calcula el total con decimales exactos. El medio de pago es informativo: no cobra tarjetas, verifica transferencias ni aprueba pagos online. Señas y referencias pueden anotarse en las notas. La configuración general de moneda aún debe conciliarse con el contenido comercial estático que muestra ARS.
+El vendedor informa el precio unitario efectivamente vendido en ARS. La base calcula el total con decimales exactos. El medio de pago es informativo: no cobra tarjetas, verifica transferencias ni aprueba pagos online. Señas y referencias pueden anotarse en las notas.
+
+## Variantes del catálogo
+
+`20260928210316_ars_variant_checkout.sql` fija ARS sin convertir importes y relaciona cada variante aprobada con uno o más SKU de `producto_simple` mediante `catalogo_variante_mapeo` y `catalogo_variante_componente`. Sólo se aprobaron 41 variantes cuyo modelo y ausencia de bombilla permiten identificar el insumo físico a partir del catálogo y de este documento. Las 176 restantes siguen publicadas y requieren revisión manual; ningún set importado tiene todavía composición física completa aprobada.
+
+La ficha indica si la variante puede comprarse y si tiene stock. El carrito conserva variantes y personalización; el checkout calcula en SQL el precio de la variante, el importe por transferencia y la promoción documentada del 20% al comprar dos o más mates personalizados de esa categoría. Cada variante genera su propia línea de pedido. La reserva suma todos los insumos físicos de las líneas, toma el bloqueo global de inventario y vence a las 24 horas. La clave de idempotencia evita duplicar pedido o reserva. El navegador puede consultar una cotización, pero el checkout recalcula todo dentro de la transacción.
+
+Para revisar las pendientes sin activar stock por similitud de nombre:
+
+```sql
+select p.nombre, cv.id as variante_id, cv.opciones
+from public.catalogo_variante cv
+join public.producto p on p.id_producto=cv.producto_id
+left join public.catalogo_variante_mapeo m on m.variante_id=cv.id
+where cv.vigente and m.variante_id is null
+order by p.nombre, cv.id;
+```
+
+Los métodos de pago y envío continúan desactivados en producción hasta que se definan datos bancarios, coordinación de retiro y cobertura/tarifas. Para el siguiente paso, un pedido `pendiente_pago` puede iniciar un pago de Mercado Pago exclusivamente desde el servidor; el webhook debe verificar firma, referencia, importe y moneda antes de llamar a `mb_confirmar_pago` y pasar el pedido a `pagado`.
 
 Estados: `por_grabar` → `por_entregar` → `entregada`. Registrar una venta pendiente descuenta el disponible y suma una reserva; el físico permanece igual. Registrar una venta ya entregada descuenta el disponible y el físico directamente. Al confirmar la entrega de una venta pendiente, se quita su reserva sin volver a descontar el disponible. Los diseños se guardan por línea; varias líneas con diseños distintos comparten el mismo producto base.
 

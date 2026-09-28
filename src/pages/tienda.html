@@ -9,6 +9,7 @@
   <script type="module" src="/src/js/commerce.js"></script>
   <script type="module" src="/src/js/header-account.js"></script>
   <link rel="stylesheet" href="/src/css/site-brand.css">
+  <link rel="stylesheet" href="/src/css/catalog.css">
 </head>
 <body data-brand-shell="commerce">
   <a class="skip-link" href="#contenido">Saltar al contenido</a>
@@ -38,7 +39,7 @@
               <label>Medio de pago<select name="pago" required><option value="">Cargando opciones…</option></select></label>
               <p id="instrucciones" class="payment-instructions" hidden></p>
             </div>
-            <div class="summary-total"><div><span>Total estimado</span><span class="currency">PESOS URUGUAYOS</span></div><strong id="total">$ 0,00</strong></div>
+            <div class="summary-total"><div><span>Total estimado</span><span class="currency">PESOS ARGENTINOS</span></div><strong id="total">$ 0,00</strong></div>
             <p class="price-disclaimer">Confirmamos precio y disponibilidad al crear el pedido.</p>
             <button id="checkout-button" class="button-primary checkout-button" disabled><span>Confirmar pedido</span><span aria-hidden="true">→</span></button>
             <p id="checkout-notice" class="checkout-notice">Agregá un producto para empezar.</p>
@@ -51,7 +52,7 @@
     </section>
     <section id="catalogo" class="page-panel" hidden>
       <div class="page-heading"><div><p class="eyebrow"><span></span> OBJETOS PARA TU RITUAL</p><h1>Elegí tu pausa<span class="accent">.</span></h1><p class="lead">Mates y compañía para todos los días.</p></div><a href="#carrito" class="text-link continue-link">Ver mi carrito <span aria-hidden="true">→</span></a></div>
-      <div id="productos" class="product-grid"><div class="loading-state"><span class="spinner"></span> Cargando catálogo…</div></div>
+      <div id="productos"><div class="loading-state"><span class="spinner"></span> Cargando catálogo…</div></div>
     </section>
     <section id="cuenta" class="page-panel" hidden>
       <div class="page-heading"><div><p class="eyebrow"><span></span> TU ESPACIO EN MATEBREAK</p><h1>Mi cuenta<span class="accent">.</span></h1><p id="usuario" class="lead">Ingresá para guardar tus direcciones y ver tus pedidos.</p></div><a href="#carrito" class="text-link continue-link">Volver al carrito <span aria-hidden="true">→</span></a></div>
@@ -62,7 +63,7 @@
           <div class="account-card"><h2>Mis datos</h2><form id="perfil" class="field-grid"><label>Nombre<input name="nombre" maxlength="150" required autocomplete="name"></label><label>Teléfono<input name="telefono" maxlength="40" autocomplete="tel"></label><button class="button-primary">Guardar datos</button></form></div>
           <div class="account-card"><h2>Mis direcciones</h2><div id="direcciones"></div></div>
         </div>
-        <details id="address-details" class="account-card" open><summary>Agregar o editar una dirección</summary><form id="direccion" class="field-grid"><input name="id" type="hidden"><label>Destinatario<input name="destinatario" required maxlength="150" autocomplete="shipping name"></label><label>Teléfono<input name="telefono" required maxlength="40" autocomplete="shipping tel"></label><label class="full-field">Calle, número y apartamento<input name="calle" required maxlength="250" autocomplete="shipping street-address"></label><label>Ciudad<input name="ciudad" required maxlength="100" autocomplete="shipping address-level2"></label><label>Departamento<input name="departamento" required maxlength="100" autocomplete="shipping address-level1"></label><label>Código postal<input name="codigo_postal" maxlength="20" autocomplete="shipping postal-code"></label><label>País<input name="pais" value="UY" pattern="[A-Z]{2}" maxlength="2" required autocomplete="shipping country"></label><label>Indicaciones de entrega<input name="indicaciones" maxlength="500" placeholder="Timbre, esquina o referencia"></label><div class="form-actions full-field"><button class="button-primary">Guardar dirección</button><button type="reset" class="button-secondary">Nueva dirección</button></div></form></details>
+        <details id="address-details" class="account-card" open><summary>Agregar o editar una dirección</summary><form id="direccion" class="field-grid"><input name="id" type="hidden"><label>Destinatario<input name="destinatario" required maxlength="150" autocomplete="shipping name"></label><label>Teléfono<input name="telefono" required maxlength="40" autocomplete="shipping tel"></label><label class="full-field">Calle, número y apartamento<input name="calle" required maxlength="250" autocomplete="shipping street-address"></label><label>Ciudad<input name="ciudad" required maxlength="100" autocomplete="shipping address-level2"></label><label>Departamento<input name="departamento" required maxlength="100" autocomplete="shipping address-level1"></label><label>Código postal<input name="codigo_postal" maxlength="20" autocomplete="shipping postal-code"></label><label>País<input name="pais" value="AR" pattern="[A-Z]{2}" maxlength="2" required autocomplete="shipping country"></label><label>Indicaciones de entrega<input name="indicaciones" maxlength="500" placeholder="Timbre, esquina o referencia"></label><div class="form-actions full-field"><button class="button-primary">Guardar dirección</button><button type="reset" class="button-secondary">Nueva dirección</button></div></form></details>
       </div>
     </section>
     <section id="pedidos" class="page-panel" hidden>

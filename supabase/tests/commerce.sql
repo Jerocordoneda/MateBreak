@@ -36,11 +36,11 @@ begin
  o:=public.mb_comercio(repeat('b',64),u,'checkout',jsonb_build_object('idempotencia',gen_random_uuid(),'pago','transferencia','envio','retiro'));
  select id into g from public.pago where pedido_id=(o->>'id')::uuid;
  begin
-  perform public.mb_confirmar_pago(g,'test-ref',1,'UYU');
+  perform public.mb_confirmar_pago(g,'test-ref',1,'ARS');
   raise exception using errcode='P0002',message='FAIL invalid payment';
  exception when sqlstate 'P0001' then if sqlerrm<>'Pago no coincide' then raise; end if; end;
- perform public.mb_confirmar_pago(g,'test-ref',450,'UYU');
- perform public.mb_confirmar_pago(g,'test-ref',450,'UYU');
+ perform public.mb_confirmar_pago(g,'test-ref',450,'ARS');
+ perform public.mb_confirmar_pago(g,'test-ref',450,'ARS');
  perform public.mb_actualizar_envio((o->>'id')::uuid,'preparando');
  perform public.mb_actualizar_envio((o->>'id')::uuid,'enviado','TEST','TEST-123');
  perform public.mb_actualizar_envio((o->>'id')::uuid,'entregado');

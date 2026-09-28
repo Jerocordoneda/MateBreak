@@ -1,8 +1,11 @@
+import {mountCatalog} from './catalog-ui.js';
+import {money as formatMoney} from '../services/products.js';
 const $ = selector => document.querySelector(selector);
-const money = value => new Intl.NumberFormat('es-UY', { style: 'currency', currency: 'UYU' }).format(value);
+const money = value => formatMoney(value,cart.moneda||'ARS');
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let cart = { items: [], total: 0 }, addresses = [], methods = { pagos: [], envios: [] };
 let signedIn = false, loaded = false, cartBusy = false, submittingOrder = false, toastTimer;
+let quote = null, quoteSequence = 0;
 let checkoutKey;
 try { checkoutKey = sessionStorage.getItem('mb_checkout_key'); } catch { /* Private browsing may disable storage. */ }
 const statuses = { pendiente_pago: 'Pendiente de pago', pagado: 'Pago confirmado', en_preparacion: 'En preparación', enviado: 'En camino', entregado: 'Entregado', cancelado: 'Cancelado', pendiente: 'Pendiente', aprobado: 'Aprobado', rechazado: 'Rechazado', reembolsado: 'Reembolsado', preparando: 'En preparación' };
@@ -61,43 +64,60 @@ function updateSummary() {
   $('#selection-count').textContent = `${count} ${count === 1 ? 'producto' : 'productos'}`; $('#summary-count').textContent = `(${count})`;
   const shipment = methods.envios.find(e => e.codigo === $('#checkout [name=envio]').value);
   const payment = methods.pagos.find(p => p.codigo === $('#checkout [name=pago]').value);
+  const shownQuote=quote?.key===`${cart.id}|${payment?.codigo}|${shipment?.codigo}`?quote.data:null;
   const needsAddress = Boolean(shipment?.requiere_direccion);
   $('#address-choice').hidden = !needsAddress; $('#checkout [name=direccion_id]').required = needsAddress;
-  $('#subtotal').textContent = money(cart.total);
-  $('#shipping-cost').textContent = !count ? '—' : shipment ? (Number(shipment.costo) === 0 ? 'Sin costo' : money(shipment.costo)) : 'A seleccionar';
-  // Display estimate only: the database always recalculates the final order.
-  $('#total').textContent = money(Number(cart.total) + (count && shipment ? Number(shipment.costo) : 0));
+  $('#subtotal').textContent = money(shownQuote?.subtotal??cart.total);
+  const shippingCost=shownQuote?.costo_envio??shipment?.costo;
+  $('#shipping-cost').textContent = !count ? '—' : shipment ? (Number(shippingCost) === 0 ? 'Sin costo' : money(shippingCost)) : 'A seleccionar';
+  $('#total').textContent = money(shownQuote?.total??(Number(cart.total) + (count && shipment ? Number(shipment.costo) : 0)));
   $('#instrucciones').textContent = payment?.instrucciones || ''; $('#instrucciones').hidden = !payment?.instrucciones;
   const available = methods.envios.length > 0 && methods.pagos.length > 0;
   const invalidItems = cart.items.some(i => i.activo === false);
-  $('#checkout-button').disabled = !loaded || !count || !available || invalidItems || cartBusy || submittingOrder;
+  $('#checkout-button').disabled = !loaded || !count || !available || invalidItems || cartBusy || submittingOrder || cart.requiere_confirmacion_catalogo;
   $('#checkout-button span:first-child').textContent = submittingOrder ? 'Creando pedido…' : signedIn ? 'Confirmar pedido' : 'Ingresar para continuar';
   // Guests use the button as navigation and do not need checkout fields yet.
   $('#checkout').noValidate = !signedIn;
   $('#checkout-login').hidden = signedIn || !count;
   $('#checkout-notice').textContent = !loaded ? 'Cargando tu selección…' : !count ? 'Agregá un producto para empezar.' : invalidItems ? 'Quitá los productos no disponibles para continuar.' : !available ? 'Por el momento no se pueden confirmar pedidos online.' : !signedIn ? 'Tu selección se conserva al ingresar a tu cuenta.' : 'El pedido se creará pendiente de confirmación de pago.';
+  if(cart.requiere_confirmacion_catalogo)$('#checkout-notice').textContent='Tu selección está guardada. Una variante requiere confirmar su relación con el inventario o su stock.';
+  $('.summary-total .currency').textContent='PESOS ARGENTINOS';
+}
+async function refreshQuote(){
+  const sequence=++quoteSequence,pago=$('#checkout [name=pago]').value,envio=$('#checkout [name=envio]').value;
+  quote=null;updateSummary();
+  if(!cart.items.length||!pago||!envio)return;
+  try{
+    const data=await api(`/carrito/cotizacion?pago=${encodeURIComponent(pago)}&envio=${encodeURIComponent(envio)}`);
+    if(sequence!==quoteSequence)return;
+    quote={key:`${cart.id}|${pago}|${envio}`,data};updateSummary();
+  }catch(error){if(sequence===quoteSequence)message(error.message,true);}
 }
 function renderCart() {
+  quote=null;quoteSequence++;
   $('#items').replaceChildren(); $('#items').setAttribute('aria-busy', String(cartBusy));
   if (!cart.items.length) $('#items').append(emptyState('A tu carrito le falta un buen mate.', 'Elegí ese compañero de todos los días. Nosotros te guardamos el lugar.', 'Explorar el catálogo', '#catalogo'));
   for (const item of [...cart.items].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))) {
     const row = el('article', undefined, 'cart-item' + (item.activo === false ? ' unavailable' : ''));
     const symbol = el('div', undefined, 'product-symbol'); symbol.append(icon('mate'));
     const detail = el('div'); detail.append(el('h3', item.nombre), el('p', `${money(item.precio)} por unidad`, 'unit-price'));
+    if(item.opciones)detail.append(el('p',Object.values(item.opciones).join(' · '),'unit-price'));
+    if(item.personalizacion)detail.append(el('p',item.personalizacion,'unit-price'));
     if (item.activo === false) detail.append(el('p', 'Este producto ya no está disponible.', 'stock-warning'));
     const bottom = el('div', undefined, 'item-bottom'), stepper = el('div', undefined, 'quantity-control');
     stepper.setAttribute('role', 'group'); stepper.setAttribute('aria-label', `Cantidad de ${item.nombre}`);
-    const minus = action('−', () => changeQuantity(item.producto_id, item.cantidad - 1), 'quantity-minus');
-    const plus = action('+', () => changeQuantity(item.producto_id, item.cantidad + 1), 'quantity-plus');
+    const itemKey=item.variante_id?'v-'+item.variante_id:item.producto_id;
+    const minus = action('−', () => changeQuantity(itemKey, item.cantidad - 1), 'quantity-minus');
+    const plus = action('+', () => changeQuantity(itemKey, item.cantidad + 1), 'quantity-plus');
     minus.setAttribute('aria-label', `Reducir cantidad de ${item.nombre}`); plus.setAttribute('aria-label', `Aumentar cantidad de ${item.nombre}`);
     minus.disabled = item.cantidad <= 1 || cartBusy; plus.disabled = item.cantidad >= 99 || cartBusy || item.activo === false;
-    for (const button of [minus, plus]) { button.dataset.cartAction = ''; button.dataset.product = item.producto_id; }
+    for (const button of [minus, plus]) { button.dataset.cartAction = ''; button.dataset.product = itemKey; }
     stepper.append(minus, el('output', item.cantidad), plus);
-    const remove = action('Quitar', () => changeQuantity(item.producto_id, 0), 'remove-item'); remove.dataset.cartAction = ''; remove.setAttribute('aria-label', `Quitar ${item.nombre}`);
+    const remove = action('Quitar', () => changeQuantity(itemKey, 0), 'remove-item'); remove.dataset.cartAction = ''; remove.setAttribute('aria-label', `Quitar ${item.nombre}`);
     bottom.append(stepper, remove); detail.append(bottom);
     row.append(symbol, detail, el('strong', money(item.subtotal), 'item-total')); $('#items').append(row);
   }
-  updateSummary();
+  updateSummary();refreshQuote();
 }
 async function changeQuantity(productId, quantity) {
   if (cartBusy || submittingOrder) return;
@@ -106,7 +126,7 @@ async function changeQuantity(productId, quantity) {
   cartBusy = true; $('#items').setAttribute('aria-busy', 'true'); updateSummary();
   document.querySelectorAll('[data-cart-action]').forEach(b => { b.disabled = true; });
   let succeeded = false;
-  try { cart = await api(`/carrito/items/${productId}`, 'PUT', { cantidad: quantity }); succeeded = true; }
+  try { cart = await api(productId.startsWith('v-')?`/carrito/variantes/${productId.slice(2)}`:`/carrito/items/${productId}`, 'PUT', { cantidad: quantity }); succeeded = true; }
   finally {
     cartBusy = false; renderCart();
     document.querySelectorAll('#productos [data-cart-action]').forEach(b => { b.disabled = false; });
@@ -127,7 +147,7 @@ function renderMethods() {
     select.disabled = !entries.length;
     if (entries.some(e => e.codigo === previous)) select.value = previous;
   }
-  updateSummary();
+  updateSummary();refreshQuote();
 }
 async function renderPrivate() {
   const { usuario } = await api('/sesion'); signedIn = !!usuario;
@@ -155,7 +175,7 @@ async function renderPrivate() {
   for (const order of orders) {
     const row = el('article', undefined, 'order-card'), heading = el('div', undefined, 'order-heading');
     heading.append(el('h3', `Pedido ${order.id.slice(0, 8).toUpperCase()}`), el('span', statuses[order.estado] || order.estado, 'order-status'));
-    row.append(heading, el('p', `${new Date(order.creado_en).toLocaleDateString('es-UY')} · ${money(order.total)}`));
+    row.append(heading, el('p', `${new Date(order.creado_en).toLocaleDateString('es-AR')} · ${money(order.total)}`));
     for (const item of order.items || []) row.append(el('p', `${item.cantidad} × ${item.nombre} · ${money(item.subtotal)}`));
     for (const pago of order.pagos || []) row.append(el('p', `Pago: ${methods.pagos.find(p => p.codigo === pago.metodo)?.nombre || pago.metodo} · ${statuses[pago.estado] || pago.estado}`));
     if (order.envio) row.append(el('p', `Entrega: ${statuses[order.envio.estado] || order.envio.estado}${order.envio.seguimiento ? ' · Seguimiento: ' + order.envio.seguimiento : ''}`));
@@ -185,8 +205,8 @@ form('#direccion', async data => {
   const { id, ...fields } = data; const saved = await api('/direcciones' + (id ? '/' + id : ''), id ? 'PUT' : 'POST', fields);
   $('#direccion').reset(); await renderPrivate(); $('#checkout [name=direccion_id]').value = saved.id; updateSummary(); message('Dirección guardada. Ya podés seleccionarla para tu pedido.');
 });
-$('#checkout [name=envio]').onchange = updateSummary;
-$('#checkout [name=pago]').onchange = updateSummary;
+$('#checkout [name=envio]').onchange = refreshQuote;
+$('#checkout [name=pago]').onchange = refreshQuote;
 form('#checkout', async data => {
   if (!signedIn) { location.hash = '#cuenta'; return; }
   if (cartBusy || submittingOrder || !cart.items.length) return;
@@ -201,23 +221,17 @@ form('#checkout', async data => {
 });
 async function init() {
   try {
-    const [products, initialCart, available] = await Promise.all([api('/productos'), api('/carrito'), api('/metodos')]);
-    cart = initialCart; methods = available; loaded = true; renderCart(); renderMethods(); $('#productos').replaceChildren();
-    if (!products.length) $('#productos').append(emptyState('Estamos preparando buenos momentos.', 'Muy pronto vas a encontrar acá los productos de MateBreak.', 'Conocer MateBreak', '/'));
-    for (const product of products) {
-      const card = el('article', undefined, 'product-card'), symbol = el('div', undefined, 'product-symbol'); symbol.append(icon(product.tipo === 'combo' ? 'combo' : 'mate'));
-      const add = action('Agregar al carrito  +', async () => { const quantity = cart.items.find(i => i.producto_id === product.id_producto)?.cantidad || 0; if (quantity >= 99) throw Error('Podés agregar hasta 99 unidades de un mismo producto.'); await changeQuantity(product.id_producto, quantity + 1); }, 'button-primary'); add.dataset.cartAction = '';
-      card.append(symbol, el('span', product.tipo === 'combo' ? 'PARA COMPARTIR' : 'PARA TU RITUAL', 'eyebrow'), el('h3', product.nombre), el('p', product.descripcion || ''), el('p', money(product.precio), 'product-price'), add); $('#productos').append(card);
-    }
+    const [initialCart, available] = await Promise.all([api('/carrito'), api('/metodos')]);
+    cart = initialCart; methods = available; loaded = true; renderCart(); renderMethods();
     await renderPrivate();
   } catch (error) {
     $('#items').setAttribute('aria-busy', 'false');
     if (!loaded) {
       const state = emptyState('No pudimos cargar tu carrito.', 'Tu selección sigue guardada. Probá nuevamente en unos segundos.'); state.append(action('Reintentar', init, 'button-primary')); $('#items').replaceChildren(state);
-      $('#productos').replaceChildren(el('p', 'No pudimos cargar el catálogo. Volvé a intentar desde el carrito.', 'muted'));
     }
     message(error.message, true);
   }
 }
 init();
+mountCatalog($('#productos'),{category:new URLSearchParams(location.search).get('categoria')||'',search:new URLSearchParams(location.search).get('q')||''});
 import './header-account.js';

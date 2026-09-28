@@ -1,7 +1,7 @@
 import {api,element,button,message} from './account.js';
 import {dateTime,filterRecords} from './account-data.js';
 const states={pendiente_pago:'Pendiente de pago',pagado:'Pago confirmado',en_preparacion:'En preparación',enviado:'En camino',entregado:'Entregado',cancelado:'Cancelado'};
-const money=(value,currency)=>new Intl.NumberFormat('es-UY',{style:'currency',currency:currency||'UYU'}).format(Number(value));
+const money=(value,currency)=>new Intl.NumberFormat('es-AR',{style:'currency',currency:currency||'ARS'}).format(Number(value));
 let records=[];
 export async function loadOrders(){
  records=await api('/pedidos');
@@ -13,7 +13,7 @@ function renderOrders(){
  document.querySelector('#orders-summary').textContent=`${orders.length} de ${records.length} pedidos cargados (máximo 100)`;
  list.replaceChildren(...orders.map(order=>{
   const card=element('details',undefined,'customer-order'),head=element('summary'),title=element('div'),end=element('div',undefined,'order-summary-end');
-  title.append(element('strong','Pedido #'+order.id.slice(0,8).toUpperCase()),element('small',new Date(order.creado_en).toLocaleDateString('es-UY',{day:'numeric',month:'long',year:'numeric'})));
+  title.append(element('strong','Pedido #'+order.id.slice(0,8).toUpperCase()),element('small',new Date(order.creado_en).toLocaleDateString('es-AR',{day:'numeric',month:'long',year:'numeric'})));
   const badge=element('span',states[order.estado]||order.estado,'order-status');badge.dataset.state=order.estado;
   end.append(badge,element('strong',money(order.total,order.moneda)),element('span','⌄'));
   head.append(title,end);card.append(head);

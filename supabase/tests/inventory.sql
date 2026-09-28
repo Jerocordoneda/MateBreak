@@ -48,7 +48,7 @@ do $$ declare u uuid:='b4f51139-d697-427a-a742-8cb41591ea01'; c uuid:='b4f51139-
  perform public.mb_comercio(repeat('d',64),c,'cantidad','{"producto_id":-902001,"cantidad":1}');
  o:=public.mb_comercio(repeat('d',64),c,'checkout',jsonb_build_object('idempotencia',gen_random_uuid(),'pago','transferencia','envio','retiro'));
  select id into payment from public.pago where pedido_id=(o->>'id')::uuid;
- perform public.mb_confirmar_pago(payment,'TEST-inventory-paid',100,'UYU');
+ perform public.mb_confirmar_pago(payment,'TEST-inventory-paid',100,'ARS');
  if private.inventario_reservado(-902001)<>1 then raise exception 'FAIL paid reservation'; end if;
  perform public.mb_actualizar_envio((o->>'id')::uuid,'preparando');
  if private.inventario_reservado(-902001)<>1 then raise exception 'FAIL preparing reservation'; end if;
