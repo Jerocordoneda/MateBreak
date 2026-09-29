@@ -2,7 +2,7 @@
 
 **Tienda minorista de mates y accesorios** con catálogo, carrito, checkout, inventario físico y operación interna. El proyecto combina una interfaz adaptable con reglas comerciales verificadas en el servidor y reservas transaccionales en PostgreSQL.
 
-> **Estado:** catálogo y stock validados; el checkout minorista está preparado. Los pagos reales y las tarifas de Correo Argentino permanecen deshabilitados hasta conectar y probar las credenciales oficiales.
+> **Estado:** catálogo y stock validados; el checkout minorista se puede recorrer localmente con proveedores de prueba. Los cobros reales y las tarifas oficiales permanecen deshabilitados hasta conectar y probar las credenciales.
 
 | Área | Qué hace | Código principal |
 | --- | --- | --- |
@@ -18,8 +18,9 @@ flowchart LR
   UI[Catálogo / carrito / checkout] --> API[Backend Node]
   API --> SQL[(Supabase PostgreSQL)]
   SQL --> STOCK[Reservas y auditoría de stock]
-  API -. credenciales pendientes .-> MP[Mercado Pago]
-  API -. datos logísticos pendientes .-> CA[MiCorreo]
+  API --> PROV[Selector de proveedores]
+  PROV --> MOCK[Mocks de desarrollo]
+  PROV -. credenciales pendientes .-> MP[Mercado Pago / MiCorreo]
 ```
 
 ## Ejecutar localmente
@@ -28,10 +29,14 @@ Requiere **Node.js 22+** y un proyecto Supabase configurado. Copiá `.env.exampl
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
 La app se abre en `http://localhost:3000/`. Rutas principales: `/tienda` para el catálogo, `/carrito` para la selección, `/checkout` para finalizar y `/mi-cuenta` para pedidos y operación. Usá el servidor Node; Live Server no expone la API ni la sesión.
+
+Con `SHIPPING_MODE=mock`, `PAYMENTS_MODE=mock` y `MOCK_PAYMENT_RESULT=approved` (valores por defecto en desarrollo), agregá un mate o set al carrito, elegí Correo Argentino a domicilio, completá dirección y CP, y confirmá el pago de prueba. El resultado muestra un identificador `TEST-…` y **no cobra ni reserva stock**. Se permite continuar como invitado en este modo. Las cotizaciones y pedidos de prueba se pierden al reiniciar el servidor; el carrito y el catálogo siguen usando Supabase.
+
+Para probar rechazo o pendiente, cambiá `MOCK_PAYMENT_RESULT` a `rejected` o `pending` y reiniciá el servidor. `SHIPPING_MODE=real` usa MiCorreo; `PAYMENTS_MODE=real` usa Checkout Pro. En producción los mocks están prohibidos, y el inicio falla si se selecciona un proveedor real sin sus credenciales. La [guía de pagos y envíos](docs/checkout-pagos.md) detalla la activación pendiente.
 
 ```bash
 npm test
@@ -44,7 +49,7 @@ Las migraciones están en [`supabase/migrations/`](supabase/migrations/) y las p
 - `src/pages/`, `src/js/`, `src/css/`: vistas, comportamiento y estilos de la interfaz.
 - `server/checkout/`: validación comercial, compra directa, cotizaciones y creación de pedidos.
 - `server/payments/`: transferencia, Checkout Pro y notificaciones verificadas.
-- `server/shipping/`: política de embalaje y contrato oficial de Correo Argentino.
+- `server/shipping/`: política de embalaje, proveedor simulado y contrato oficial de Correo Argentino.
 - `supabase/migrations/`: esquema, funciones SQL, locks, RLS y auditoría.
 - `tests/` y `supabase/tests/`: regresiones Node y SQL.
 - `docs/`: decisiones operativas e historial técnico.

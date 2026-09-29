@@ -10,5 +10,6 @@
 .checkout-line img{width:52px;height:60px;object-fit:cover;border-radius:5px}.checkout-line-description{flex:1;min-width:0}.checkout-line-description span,.checkout-line-description small{display:block}.checkout-line-description small{color:var(--muted);overflow-wrap:anywhere}
 .checkout-error{padding:14px 18px;border:1px solid #a9675a;background:#3b2523;border-radius:8px;color:#f6d3cd}.checkout-card[hidden],.checkout-error[hidden]{display:none}.checkout-page .muted{color:#aeb2a6;font-size:12px;line-height:1.6}
 #transfer-message{white-space:pre-wrap;line-height:1.7}
+.test-mode{display:inline-block!important;margin-top:14px;padding:6px 10px;border:1px solid #665c3f;border-radius:5px;color:#f0d9a8!important;background:#332d20;font-size:11px}.test-mode[hidden]{display:none!important}
 @media(max-width:860px){.checkout-layout{grid-template-columns:1fr}.checkout-order{position:static;order:-1}.checkout-page{padding:18px 20px 70px}}
 @media(max-width:560px){.field-grid{grid-template-columns:1fr}.checkout-steps li{font-size:11px;padding:11px 8px}.checkout-card{padding:20px}.checkout-heading{margin-top:30px}.checkout-choice{flex-wrap:wrap}.checkout-choice small{margin-left:31px}}

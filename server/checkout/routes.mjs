@@ -8,7 +8,7 @@ import { planPackages, quotePackages } from '../shipping/packaging.mjs';
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoPago }) {
+export function checkoutRoutes(app, { admin, config, hashToken, correo, payment, mockCheckout }) {
   const directCookie = config.origin.startsWith('https:') ? '__Host-mb_direct' : 'mb_direct';
   const directToken = req => parseCookieHeader(req.headers.cookie || '').find(cookie => cookie.name === directCookie)?.value;
   const tokenFor = req => req.query.directa === '1' || req.body?.directa === true ? directToken(req) : req.cartToken;
@@ -59,17 +59,18 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
     const { data: payments, error: paymentError } = await admin.from('metodo_pago').select('codigo,nombre,activo').in('codigo', ['transferencia','mercadopago']);
     const { data: deliveries, error: deliveryError } = await admin.from('metodo_envio').select('codigo,nombre,activo').in('codigo', ['retiro','correo_domicilio','correo_sucursal']);
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
-    const packages = correo.ready && deliveries.some(delivery => delivery.activo && delivery.codigo === 'correo_domicilio')
+    const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
       ? await packagesFor(selection) : null;
-    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal),
-      payments: payments.map(p => ({ ...p, activo: p.activo && (p.codigo !== 'mercadopago' || mercadoPago.ready) })),
-      deliveries: deliveries.map(d => ({ ...d, activo: d.activo && d.codigo !== 'correo_sucursal' &&
+    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(mockCheckout),
+      payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
+        : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
+      deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo))) && d.codigo !== 'correo_sucursal' &&
         (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
       user: req.user ? { email: req.user.email } : null });
   });
 
   app.post('/api/checkout/cotizar-envio', async (req, res) => {
-    const userId = requireUser(req), recipient = validateRecipient(req.body?.destinatario);
+    const userId = mockCheckout ? req.user?.id ?? null : requireUser(req), recipient = validateRecipient(req.body?.destinatario);
     if (!correo.ready) throw fail(503, 'Correo Argentino todavía no está configurado');
     const mode = req.body?.modalidad;
     if (!['correo_domicilio','correo_sucursal'].includes(mode)) throw fail(400, 'Modalidad inválida');
@@ -94,15 +95,21 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
     for (const rate of rates) {
       const validTo = new Date(Math.min(Date.parse(rate.validTo) || 0, Date.now() + 15 * 60_000));
       if (validTo <= new Date()) continue;
-      const { data, error } = await admin.from('checkout_cotizacion_envio').insert({
-        carrito_id: selection.id, usuario_id: userId, destinatario: recipient, modalidad: mode,
-        punto: pickupPoint, proveedor: 'correo_argentino', servicio: rate.service,
-        costo_transportista: rate.carrierCost, valido_hasta: validTo.toISOString(),
-      }).select('id').single();
-      if (error) throw fail(503, 'No se pudo guardar la cotización');
+      let quoteId;
+      if (mockCheckout) quoteId = mockCheckout.saveQuote({ owner: hashToken(tokenFor(req)), cart: selection,
+        recipient, mode, rate, quote });
+      else {
+        const { data, error } = await admin.from('checkout_cotizacion_envio').insert({
+          carrito_id: selection.id, usuario_id: userId, destinatario: recipient, modalidad: mode,
+          punto: pickupPoint, proveedor: 'correo_argentino', servicio: rate.service,
+          costo_transportista: rate.carrierCost, valido_hasta: validTo.toISOString(),
+        }).select('id').single();
+        if (error) throw fail(503, 'No se pudo guardar la cotización');
+        quoteId = data.id;
+      }
       const totals = calculateTotals({ merchandiseSubtotal: quote.subtotal, carrierCost: rate.carrierCost, method: 'mercadopago' });
-      options.push({ id: data.id, name: rate.name, service: rate.service, packageCount: rate.packageCount,
-        customerShippingCost: totals.customerShippingCost, total: totals.total, currency: 'ARS' });
+      options.push({ id: quoteId, name: rate.name, service: rate.service, packageCount: rate.packageCount,
+        customerShippingCost: totals.customerShippingCost, total: totals.total, currency: 'ARS', mock: Boolean(correo.mock) });
     }
     if (!options.length) throw fail(503, 'Las tarifas de Correo Argentino vencieron');
     res.json(options);
@@ -116,15 +123,22 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
   });
 
   app.post('/api/checkout/pedidos', async (req, res) => {
-    const userId = requireUser(req), recipient = validateRecipient(req.body?.destinatario);
+    const userId = mockCheckout ? req.user?.id ?? null : requireUser(req), recipient = validateRecipient(req.body?.destinatario);
     const { idempotencia, pago, envio, cotizacion_id, directa = false } = req.body || {};
     if (!uuid(idempotencia) || !['transferencia','mercadopago'].includes(pago) ||
       !['retiro','correo_domicilio','correo_sucursal'].includes(envio) ||
       (envio !== 'retiro' && !uuid(cotizacion_id))) throw fail(400, 'Datos de compra inválidos');
-    if (pago === 'mercadopago' && !mercadoPago.ready) throw fail(503, 'Mercado Pago todavía no está habilitado');
+    if (pago === 'mercadopago' && !payment.ready) throw fail(503, 'Mercado Pago todavía no está habilitado');
     if (envio !== 'retiro' && !correo.ready) throw fail(503, 'Correo Argentino todavía no está habilitado');
     const token = tokenFor(req);
     if (!/^[a-f0-9]{64}$/.test(token || '')) throw fail(400, 'La sesión de compra venció');
+    if (mockCheckout) {
+      if (pago !== 'mercadopago' || envio === 'correo_sucursal') throw fail(400, 'Método de prueba no disponible');
+      const selection = await cart(req), quote = await baseQuote(selection.id);
+      const order = await mockCheckout.createOrder({ owner: hashToken(token), cart: selection, recipient,
+        mode: envio, quoteId: cotizacion_id, quote, idempotencia });
+      return res.status(201).json({ order: mockCheckout.getOrder(order.id, [hashToken(token)]), mock: true });
+    }
     const order = await rpc('mb_checkout_minorista', { p_token_hash: hashToken(token), p_usuario_id: userId,
       p_datos: { idempotencia, pago, envio, cotizacion_id, destinatario: recipient } });
     if (pago === 'transferencia') return res.status(201).json({ order, instructions: transferInstructions() });
@@ -140,9 +154,9 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
       const { data: orderItems, error: itemsError } = await admin.from('pedido_item')
         .select('producto_id,variante_id,nombre,cantidad').eq('pedido_id', order.id);
       if (itemsError || !orderItems?.length) throw Error('Pedido sin líneas verificables');
-      const preference = await mercadoPago.createPreference({ id: order.id, total: Number(order.total), email: recipient.email,
+      const preference = await payment.startPayment({ id: order.id, total: Number(order.total), email: recipient.email,
         items: orderItems, expiresAt: order.reserva_hasta });
-      const { error: savedError } = await admin.from('mercadopago_intento').update({ estado: 'listo', preferencia_id: preference.id,
+      const { error: savedError } = await admin.from('mercadopago_intento').update({ estado: 'listo', preferencia_id: preference.paymentId,
         redireccion: preference.redirectUrl }).eq('pedido_id', order.id).eq('estado', 'creando');
       if (savedError) throw Error('No se pudo guardar la preferencia');
       return res.status(201).json({ order, redirectUrl: preference.redirectUrl });
@@ -156,6 +170,13 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
   });
 
   app.get('/api/checkout/pedidos/:id', async (req, res) => {
+    if (mockCheckout) {
+      if (!uuid(req.params.id)) throw fail(400, 'Pedido inválido');
+      const tokens = [req.hasCart ? req.cartToken : null, directToken(req)].filter(token => /^[a-f0-9]{64}$/.test(token || ''));
+      const order = mockCheckout.getOrder(req.params.id, tokens.map(hashToken));
+      if (!order) throw fail(404, 'Pedido de prueba no encontrado');
+      return res.json(order);
+    }
     const userId = requireUser(req);
     if (!uuid(req.params.id)) throw fail(400, 'Pedido inválido');
     const { data, error } = await admin.from('pedido').select('id,estado,total,moneda,subtotal_mercaderia,descuento_productos,costo_envio,reserva_hasta,creado_en,pago(metodo,estado)').eq('id', req.params.id).eq('usuario_id', userId).maybeSingle();

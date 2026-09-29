@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "dev": "node --env-file-if-exists=.env server/index.mjs",
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "test": "node --test tests/*.test.mjs",
     "catalog:extract": "node scripts/import-matebreak-products.mjs --extract",

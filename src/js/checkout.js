@@ -67,13 +67,14 @@ function renderChoices() {
     input.onchange = () => { delivery = option.codigo; shippingQuote = null; renderOrder(); };
     label.append(input, node('span', option.nombre + (input.disabled ? ' · Próximamente' : ''))); deliveries.append(label);
   }
-  $('#shipping-unavailable').hidden = context.deliveries.every(option => option.activo);
+  $('#shipping-unavailable').hidden = context.modo_prueba || context.deliveries.every(option => option.activo);
   const payments = $('#payment-options'); payments.replaceChildren();
   for (const option of context.payments) {
     const label = node('label', undefined, 'checkout-choice'), input = node('input');
     input.type = 'radio'; input.name = 'payment'; input.value = option.codigo; input.disabled = !option.activo;
     input.onchange = () => { payment = option.codigo; renderOrder(); $('#place-order').disabled = !payment; };
-    label.append(input, node('span', option.codigo === 'transferencia' ? 'Transferencia bancaria · 10% de descuento' : 'Mercado Pago · tarjetas y medios habilitados'));
+    label.append(input, node('span', option.codigo === 'transferencia' ? 'Transferencia bancaria · 10% de descuento'
+      : context.modo_prueba ? 'Pago de prueba · Mercado Pago simulado' : 'Mercado Pago · tarjetas y medios habilitados'));
     if (input.disabled) label.append(node('small', 'Pendiente de habilitación'));
     payments.append(label);
   }
@@ -102,7 +103,7 @@ function showStep(step) {
 async function prepareDelivery(event) {
   event.preventDefault(); error('');
   try {
-    if (!context.user) { $('#login-panel').hidden = false; $('#login-panel input').focus(); return; }
+    if (!context.user && !context.modo_prueba) { $('#login-panel').hidden = false; $('#login-panel input').focus(); return; }
     recipient = selectedRecipient();
     const chosen = context.deliveries.find(option => option.codigo === delivery && option.activo);
     if (!chosen) throw Error('Elegí una modalidad de entrega disponible');
@@ -134,11 +135,13 @@ async function placeOrder() {
 async function init() {
   try {
     context = await api('/checkout/contexto' + suffix);
+    $('#test-mode').hidden = !context.modo_prueba;
+    if (context.modo_prueba) $('#payment-help').textContent = 'Este pago es simulado. No se solicita tarjeta ni se realiza un cobro.';
     if (!context.cart.items?.length) { error('Tu selección está vacía. Volvé al catálogo para elegir un producto.'); return; }
     if (context.cart.requiere_confirmacion_catalogo) { error('Un producto ya no está disponible para comprar. Revisá tu carrito.'); return; }
     try { catalogImages = new Map((await getProducts()).map(product => [String(product.id_producto), product.imagen_principal])); }
     catch { /* Images are decorative; the confirmed order is still available. */ }
-    $('#login-panel').hidden = !!context.user;
+    $('#login-panel').hidden = !!context.user || context.modo_prueba;
     if (context.user) {
       $('#recipient-form [name=email]').value = context.user.email || '';
       try {

@@ -8,8 +8,8 @@ import { inventoryRoutes } from './inventory.mjs';
 import { accountRole, accountRoutes } from './account.mjs';
 import { catalogRoutes } from './catalog.mjs';
 import { checkoutRoutes } from './checkout/routes.mjs';
-import { createCorreoArgentino } from './shipping/correo-argentino.mjs';
-import { createMercadoPago } from './payments/mercadopago.mjs';
+import { createMockCheckoutStore } from './checkout/mock-store.mjs';
+import { createProviders } from './providers.mjs';
 import { paymentRoutes } from './payments/routes.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -25,8 +25,8 @@ export function createApp(config, overrides = {}) {
   const cookieName = secure ? '__Host-mb_cart' : 'mb_cart';
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
   const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
-  const correo = overrides.correo ?? createCorreoArgentino(config.correo);
-  const mercadoPago = overrides.mercadoPago ?? createMercadoPago(config.mercadoPago);
+  const providers = createProviders(config, overrides);
+  const mockCheckout = providers.mock ? createMockCheckoutStore(providers.payment) : null;
   const authFactory = overrides.authFactory ?? ((req, res) => createServerClient(config.url, config.publishable, {
     cookieOptions: { httpOnly: true, secure, sameSite: 'lax', path: '/' },
     cookies: {
@@ -116,8 +116,8 @@ export function createApp(config, overrides = {}) {
     res.redirect(error ? '/mi-cuenta?auth=error' : '/mi-cuenta');
   });
   catalogRoutes(app, { admin });
-  checkoutRoutes(app, { admin, config, hashToken, correo, mercadoPago });
-  paymentRoutes(app, { admin, mercadoPago });
+  checkoutRoutes(app, { admin, config, hashToken, correo: providers.shipping, payment: providers.payment, mockCheckout });
+  paymentRoutes(app, { admin, mercadoPago: providers.webhook });
   app.get('/api/metodos', async (req, res) => {
     const [pagos, envios] = await Promise.all([
       checked(admin.from('metodo_pago').select('codigo,nombre,instrucciones').eq('activo', true)),

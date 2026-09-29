@@ -15,7 +15,7 @@
   <main id="checkout-main" class="checkout-page">
     <a data-page-brand class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio">MateBreak<sup>®</sup></a>
     <nav class="commerce-sections" aria-label="Mi compra"><a href="/tienda">Catálogo</a><a href="/carrito">Carrito</a><span aria-current="step">Checkout</span></nav>
-    <header class="checkout-heading"><p class="eyebrow">TU PRÓXIMA PAUSA</p><h1>Finalizar compra<span class="accent">.</span></h1><p>Revisá tus datos antes de confirmar el pedido.</p></header>
+    <header class="checkout-heading"><p class="eyebrow">TU PRÓXIMA PAUSA</p><h1>Finalizar compra<span class="accent">.</span></h1><p>Revisá tus datos antes de confirmar el pedido.</p><p id="test-mode" class="test-mode" hidden>Modo de prueba · no se cobra ni se reserva stock</p></header>
     <ol class="checkout-steps"><li>Carrito <span aria-hidden="true">✓</span></li><li id="step-delivery" aria-current="step">Entrega</li><li id="step-payment">Pago</li></ol>
     <p id="checkout-error" class="checkout-error" role="alert" hidden></p>
     <div class="checkout-layout">
@@ -44,7 +44,7 @@
         <section id="payment-panel" class="checkout-card" hidden><div class="card-heading"><span class="step-number">02</span><div><p class="eyebrow">PAGO</p><h2>Revisá y elegí cómo pagar</h2></div></div>
           <div id="editable-summary" class="editable-summary"></div>
           <h3>Medio de pago</h3><div id="payment-options" class="choice-list"></div>
-          <p class="muted">Con Mercado Pago podés usar tarjetas, dinero en cuenta y las cuotas o medios que habilite tu cuenta.</p>
+          <p id="payment-help" class="muted">Con Mercado Pago podés usar tarjetas, dinero en cuenta y las cuotas o medios que habilite tu cuenta.</p>
           <button id="place-order" class="button-primary" disabled>Confirmar pedido →</button>
           <p class="muted">El total y la disponibilidad se vuelven a verificar en el servidor.</p>
         </section>

@@ -1,16 +1,21 @@
 import { createApp } from './app.mjs';
+import { resolveProviderModes } from './providers.mjs';
 const production = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('PORT debe ser un puerto válido entre 1 y 65535.');
+const { shippingMode, paymentsMode } = resolveProviderModes(process.env);
 const config = {
   url: process.env.SUPABASE_URL,
   publishable: process.env.SUPABASE_PUBLISHABLE_KEY || process.env.SUPABASE_ANON_KEY,
   secret: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
   origin: process.env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
   production,
+  shippingMode,
+  paymentsMode,
+  mockPaymentResult: process.env.MOCK_PAYMENT_RESULT || 'approved',
+  mockOriginPostalCode: process.env.MOCK_ORIGIN_POSTAL_CODE || '7000',
   mercadoPago: {
-    enabled: process.env.MERCADOPAGO_ENABLED === 'true',
-    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
+    accessToken: process.env.MP_ACCESS_TOKEN || process.env.MERCADOPAGO_ACCESS_TOKEN,
     webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET,
     origin: process.env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
   },
@@ -25,7 +30,7 @@ const config = {
 };
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
 const { app, admin } = createApp(config);
-app.listen(port, () => console.log(`MateBreak: ${config.origin}/ · Mi cuenta: ${config.origin}/mi-cuenta`));
+app.listen(port, () => console.log(`MateBreak: ${config.origin}/ · Shipping ${shippingMode} · Payments ${paymentsMode}`));
 let expiring = false;
 const expire = async () => {
   if (expiring) return;
@@ -36,5 +41,7 @@ const expire = async () => {
   } catch { console.error('Fallo de conexión al liberar reservas'); }
   finally { expiring = false; }
 };
-await expire();
-setInterval(expire, 60000).unref();
+if (paymentsMode === 'real') {
+  await expire();
+  setInterval(expire, 60000).unref();
+}
