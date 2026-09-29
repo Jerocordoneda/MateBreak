@@ -6,24 +6,27 @@ La fuente es el catálogo ya importado en Supabase; no se volvió a scrapear. El
 
 | Medida | Antes | Ahora |
 | --- | ---: | ---: |
-| Variantes con mapping aprobado | 47/217 | 115/217 |
-| Variantes comprables con stock o a pedido | 47/217 | 65/217 |
-| Productos con una variante comprable | 28/106 | 46/106 |
+| Variantes con mapping aprobado | 47/217 | 131/217 |
+| Variantes comprables con stock o a pedido | 47/217 | 131/217 |
+| Productos con una variante comprable | 28/106 | 63/106 |
 | Combos completos | 0/56 | 13/56 |
 
-Se aprobaron 68 mappings nuevos: 49 mates con bombilla opcional, dos imperiales de calabaza con acabado negro, una bombilla suelta, una matera negra, dos termos con color explícito y 13 sets parrilleros. Los 13 sets reservan el cuchillo y registran como obligación la tabla 20×30 cuando no hay unidades físicas disponibles. No se crea stock ficticio. Los mappings aprobados que hoy no son comprables dependen principalmente de recibir y contar bombillas físicas. `MB-BOM-PICO-LORO` fue creado con disponible 0; se carga exclusivamente mediante una recepción real.
+Se aprobaron 84 mappings nuevos desde los 47 iniciales: 49 mates con bombilla opcional, dos imperiales de calabaza con acabado negro, una bombilla suelta, una matera negra, dos termos con color explícito, 13 sets parrilleros y 16 termos de publicación individual cuya galería determina el color. Los 13 sets reservan el cuchillo y registran como obligación la tabla 20×30 cuando no hay unidades físicas disponibles. No se crea stock ficticio. `MB-BOM-PICO-LORO` se creó con disponible 0; posteriormente el equipo ingresó 2000 unidades mediante el ajuste común de inventario, sin costo de recepción registrado. Por eso las cifras de comprabilidad aumentaron también por una operación externa al mapping.
 
-El [CSV de variantes](reconciliacion-variantes.csv) registra las 102 pendientes con evidencia y grupo. Se regenera con `npm run catalog:reconcile`; la herramienta sólo lee y reporta, nunca aprueba mappings.
+El [CSV de variantes](reconciliacion-variantes.csv) registra las 86 pendientes con evidencia y grupo. Se regenera con `npm run catalog:reconcile`; la herramienta sólo lee y reporta, nunca aprueba mappings.
 
 ## Decisiones agrupadas pendientes
 
 | Familia | Variantes | Motivo | Decisión necesaria |
 | --- | ---: | --- | --- |
-| Termos personalizados individuales sin color | 16 | Hay dos SKU físicos independientes, negro y plateado. La ficha no distingue cuál se entrega. | Incorporar selección de color a esas fichas. |
-| Sets materos y premium | 62 | El termo incluido tampoco distingue color. Además, la composición importada incluye una caja de regalo premium sin SKU. | Definir selección de color del termo y crear el SKU físico de la caja, con abastecimiento real. |
+| Sets materos y premium | 62 | Las galerías importadas muestran termo plateado en 60 variantes y negro en las dos del set Mundial 2026. La composición incluye una caja de regalo premium sin SKU. | Crear el SKU físico de la caja, con abastecimiento real. |
 | Sets deluxe | 24 | Mate, tabla y cuchillo son identificables; la caja de regalo premium incluida no tiene SKU. | Crear el SKU físico de la caja y definir cómo se abastece. |
 
-No se aprobó una composición parcial. La bombilla de los sets materos y premium ya tiene un único SKU compartido, pero su cantidad inicial sigue pendiente de recepción física. La caja requiere definir si se controla por stock o puede prepararse a pedido; no se presupone ninguna de las dos opciones. Los sets parrilleros no incluyen caja según su composición importada.
+No se aprobó una composición parcial. La bombilla de los sets materos y premium ya tiene un único SKU compartido. La caja requiere definir si se controla por stock o puede prepararse a pedido; no se presupone ninguna de las dos opciones. Los sets parrilleros no incluyen caja según su composición importada. Ninguna publicación minorista requiere un selector de color: el producto publicado determina el termo físico.
+
+## Evidencia de termos
+
+Se revisaron 80 variantes con termo: 18 individuales (dos ya mapeadas) y 62 variantes de 31 sets. Títulos y descripciones no contradicen las galerías: 15 publicaciones individuales pendientes muestran cuerpo plateado y `TERMO PREMIUM MUNDIAL` cuerpo negro. Las galerías adicionales de cada termo individual mantienen el mismo acabado. En los sets, 30 productos muestran termo plateado y `SET MATERO MUNDIAL 2026` muestra negro; se compararon las dos imágenes de variante por producto. `SET PREMIUM DE BELGRANO` muestra solo el mate en su segunda imagen, pero la primera muestra el termo plateado y la descripción confirma que lo incluye. Los 16 termos individuales quedaron aprobados por `20260929122500_reconcile_thermo_publications.sql`, con evidencia de imagen de origen en cada componente. Los sets conservan la identidad del termo en el reporte pero siguen sin mapping aprobado porque falta la caja de regalo.
 
 ## Operación física
 
@@ -31,4 +34,4 @@ Cada recepción guarda cantidad, costo unitario ARS, fecha, actor, motivo y prov
 
 Los componentes que requieren grabado crean trabajos por línea de pedido. Después del pago pueden pasar por `pendiente_preparar`, `enviado_grabar`, `grabado_recibido` y `listo_despachar`; envío y entrega completan el flujo. Las bombillas no generan trabajo de grabado. La lista de administración agrupa piezas pendientes por SKU físico. El mismo identificador físico puede usarse más adelante desde un canal mayorista sin separar existencias; no se implementó ese canal.
 
-`supabase/tests/physical-operations.sql` comprueba todo lo anterior en una transacción con rollback, junto con variantes de distintos diseños que consumen un único SKU, bombilla opcional, termos negro/plateado separados y asignaciones parciales de dos recepciones al mismo pedido. También pasaron los ocho tests SQL anteriores y `npm test` (35/35).
+`supabase/tests/physical-operations.sql` comprueba el flujo en una transacción con rollback, junto con variantes de distintos diseños que consumen un único SKU, bombilla opcional, termos negro/plateado separados y asignaciones parciales de dos recepciones al mismo pedido. `supabase/tests/thermo-publications.sql` prueba que una compra de dos publicaciones nuevas reserva ambos colores por separado, crea sus trabajos de grabado y deja cerrados los sets cuya caja carece de SKU.

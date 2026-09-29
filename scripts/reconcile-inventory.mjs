@@ -22,6 +22,22 @@ const has=sku=>stock.has(sku);
 const mateFor=options=>options['MODELO DE MATE']==='IMPERIAL DE CALABAZA'?'MB-IMP-CAL':
   options['MODELO DE MATE']==='IMPERIAL DE ALGARROBO'?'MB-IMP-ALG':'';
 const excerpt=s=>String(s||'').replace(/\s+/g,' ').slice(0,220);
+// These specific current publications were visually reviewed against their
+// imported galleries. Never infer the colour for a newly added set by prefix.
+const reviewedSilverSets=new Set([
+  'SET MATERO DE BELGRANO','SET MATERO DE BOCA','SET MATERO DE CENTRAL',
+  'SET MATERO DE COLON','SET MATERO DE ESTUDIANTES','SET MATERO DE INDEPENDIENTE',
+  'SET MATERO DE LANÚS','SET MATERO DE NEWELL´S - ROSARIO','SET MATERO DE PLATENSE',
+  'SET MATERO DE RACING','SET MATERO DE RIVER','SET MATERO DE SAN LORENZO',
+  'SET MATERO DE TALLERES','SET MATERO DE TIGRE','SET MATERO DE VELEZ',
+  'SET MATERO DEL CAMPEÓN','SET MATERO PERSONALIZADO - TU PROPIO DISEÑO',
+  'SET MATERO PREMIUM ARGENTINO','SET PREMIUM DE BELGRANO','SET PREMIUM DE CENTRAL',
+  'SET PREMIUM DE ESTUDIANTES','SET PREMIUM DE INDEPENDIENTE',
+  'SET PREMIUM DE LA ACADEMIA','SET PREMIUM DE LANÚS','SET PREMIUM DE SAN LORENZO',
+  'SET PREMIUM DE TALLERES','SET PREMIUM DE VELEZ','SET PREMIUM DEL MILLONARIO',
+  'SET PREMIUM DEL XENEIZE','SET PREMIUM PERSONALIZADO - TU PROPIO DISEÑO',
+]);
+const reviewedBlackSets=new Set(['SET MATERO MUNDIAL 2026']);
 function classify(product,variant){
   const name=product.nombre,options=variant.opciones||{},matero=mateFor(options);
   const evidence=product.componentes.map(component=>component.evidencia).join(' | ')||product.descripcion;
@@ -30,18 +46,20 @@ function classify(product,variant){
       clase:'C',sku:`${matero} + MB-TABLA + MB-CUC-INOX`,grupo:'caja_regalo_deluxe',
       motivo:'Mate, tabla 20×30 y cuchillo identificados; la caja de regalo premium incluida no tiene SKU físico ni abastecimiento confirmado.',
       faltantes:'Caja de regalo premium MateBreak: crear SKU y definir si se controla por stock o a pedido',evidencia:evidence};
+    const thermo=reviewedSilverSets.has(name)?'MB-TER-PLA':reviewedBlackSets.has(name)?'MB-TER-NEG':null;
     return {
-      clase:'C',sku:`${matero} + MB-BOM-PICO-LORO + MB-TER-NEG?/MB-TER-PLA?${name.startsWith('SET PREMIUM')?' + MB-TABLA + MB-CUC-INOX':''}`,
-      grupo:'combo_termo_caja',motivo:'El termo incluido no identifica color; la caja de regalo premium incluida tampoco tiene SKU físico.',
-      faltantes:'Seleccionar color de termo negro/plateado en la variante; crear SKU de caja de regalo premium y definir abastecimiento',evidencia:evidence};
+      clase:'C',sku:`${matero} + MB-BOM-PICO-LORO + ${thermo||'termo por revisar'}${name.startsWith('SET PREMIUM')?' + MB-TABLA + MB-CUC-INOX':''}`,
+      grupo:thermo?'caja_regalo_set':'combo_termo_caja',
+      motivo:thermo?'El termo físico se identifica en la galería importada y el texto no lo contradice; la caja de regalo incluida carece de SKU.':'La publicación nueva requiere revisar el color del termo y la caja de regalo carece de SKU.',
+      faltantes:thermo?'Caja de regalo premium MateBreak: crear SKU y definir abastecimiento':'Revisar color del termo publicado; crear SKU de caja de regalo y definir abastecimiento',evidencia:evidence};
   }
   if(name==='MATERA NEGRA ECOCUERO')return {
     clase:'B',sku:'MB-MATERA?',grupo:'matera',motivo:'El SKU Matera no especifica color negro ni ecocuero.',
     faltantes:'Confirmar que MB-MATERA es la matera negra de ecocuero',evidencia:evidence};
   if(name.startsWith('TERMO'))return {
     clase:'B',sku:name.includes('PLATEADO')?'MB-TER-PLA?':name.includes('NEGRO')?'MB-TER-NEG?':'MB-TER-NEG? / MB-TER-PLA?',
-    grupo:'termos_sin_color',motivo:'El termo personalizado de 1 L no ofrece elección de color aunque existen SKU físicos negro y plateado.',
-    faltantes:'Agregar selección explícita de color negro/plateado',evidencia:evidence};
+    grupo:'termos_por_revisar',motivo:'Esta publicación requiere revisar título, descripción y galería antes de fijar el SKU físico; el cliente no elige color.',
+    faltantes:'Identificar el color que la publicación ya determina',evidencia:evidence};
   if(name==='IMPERIAL NEGRO DE ALPACA'||name==='MI MATE IMPERIAL - CREÁ TU DISEÑO ACÁ')return {
     clase:'B',sku:'MB-IMP-CAL?',grupo:'imperial_alpaca',motivo:'La ficha indica calabaza y detalles de alpaca/cuero negro; el SKU imperial de calabaza no identifica esos acabados.',
     faltantes:'Confirmar que MB-IMP-CAL es también esta base con alpaca/cuero negro',evidencia:evidence};
