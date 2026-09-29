@@ -54,4 +54,4 @@ Las migraciones están en [`supabase/migrations/`](supabase/migrations/) y las p
 - `tests/` y `supabase/tests/`: regresiones Node y SQL.
 - `docs/`: decisiones operativas e historial técnico.
 
-La [guía de pagos y envíos](docs/checkout-pagos.md) detalla qué está implementado, qué permanece deshabilitado y qué datos hacen falta para habilitarlo. La [auditoría previa a pagos](docs/auditoria-prepagos.md) y la [guía de comercio](docs/comercio.md) documentan las garantías existentes.
+La [guía de pagos y envíos](docs/checkout-pagos.md) detalla qué está implementado y qué falta para habilitarlo. El [ciclo de vida del pedido real](docs/ciclo-pedido-real.md) documenta estados, reservas, idempotencia y las pruebas SQL aisladas; su migración correctiva todavía no se desplegó. La [auditoría previa a pagos](docs/auditoria-prepagos.md) y la [guía de comercio](docs/comercio.md) completan las garantías existentes.

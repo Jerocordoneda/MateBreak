@@ -142,6 +142,8 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     const order = await rpc('mb_checkout_minorista', { p_token_hash: hashToken(token), p_usuario_id: userId,
       p_datos: { idempotencia, pago, envio, cotizacion_id, destinatario: recipient } });
     if (pago === 'transferencia') return res.status(201).json({ order, instructions: transferInstructions() });
+    if (order.estado !== 'pendiente_pago') return res.status(200).json({ order });
+    if (Date.parse(order.reserva_hasta) <= Date.now()) throw fail(409, 'La reserva venció; consultá el estado del pedido');
     const claim = await admin.from('mercadopago_intento').insert({ pedido_id: order.id, estado: 'creando' });
     if (claim.error) {
       if (claim.error.code !== '23505') throw fail(503, 'No se pudo preparar el pago');

@@ -79,7 +79,7 @@ begin
  update public.pedido set reserva_hasta=now()-interval '1 second' where id=order_id;
  perform public.mb_expirar_reservas();
  perform public.mb_expirar_reservas();
- if (select estado from public.pedido where id=order_id)<>'cancelado'
+ if (select estado from public.pedido where id=order_id)<>'expirado'
   or (select stock from public.producto_simple where id_producto=mate_id)<>2
   or (select stock from public.producto_simple where id_producto=box_id)<>2
   or (select count(*) from public.movimiento_stock where pedido_id=order_id and motivo='liberacion')<>2

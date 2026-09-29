@@ -95,7 +95,7 @@ test('Comprar ahora uses a separate HttpOnly cart credential and preserves ordin
 test('online payment preference receives only the persisted server-side order total', async t => {
   const orderId='11111111-1111-4111-8111-111111111111',cartToken='a'.repeat(64),seen=[];
   const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
-    admin:{rpc:async(name,args)=>{seen.push({name,args});return {data:{id:orderId,total:90_000,reserva_hasta:'2026-09-29T23:00:00Z'},error:null};},
+    admin:{rpc:async(name,args)=>{seen.push({name,args});return {data:{id:orderId,estado:'pendiente_pago',total:90_000,reserva_hasta:new Date(Date.now()+60*60_000).toISOString()},error:null};},
       from:table=>table==='pedido_item'?{select:()=>({eq:async()=>({data:[{producto_id:'123',variante_id:'456',nombre:'Mate',cantidad:1}],error:null})})}
         :{insert:async()=>({error:null}),update:()=>({eq:()=>({eq:async()=>({error:null})})})}},
     mercadoPago:{ready:true,createPreference:async data=>{seen.push({preference:data});return {id:'mp-pref',redirectUrl:'https://www.mercadopago.com.ar/checkout/test'};}},
@@ -112,6 +112,47 @@ test('online payment preference receives only the persisted server-side order to
   assert.equal(seen.find(entry=>entry.preference).preference.items[0].producto_id,'123');
   assert.equal(seen.find(entry=>entry.name==='mb_checkout_minorista').args.p_usuario_id,'verified-user');
   assert.equal(seen.find(entry=>entry.name==='mb_checkout_minorista').args.p_datos.total,undefined);
+});
+
+for (const estado of ['pagado','cancelado','expirado']) test(`retry of ${estado} order never starts another real payment`, async t => {
+  const orderId='11111111-1111-4111-8111-111111111111', seen=[];
+  const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
+    admin:{rpc:async name=>{seen.push(name);return {data:{id:orderId,estado,total:90_000},error:null};},
+      from:table=>{throw Error(`No DB payment attempt for ${table}`);}},
+    mercadoPago:{ready:true,createPreference:async()=>{throw Error('No second preference');}},
+    authFactory:()=>({auth:{getUser:async()=>({data:{user:{id:'verified-user',email:'ana@example.test'}}})}}),
+  });
+  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const response=await fetch(`http://127.0.0.1:${server.address().port}/api/checkout/pedidos`,{
+    method:'POST',headers:{...requestHeaders,cookie:`__Host-mb_cart=${'a'.repeat(64)}`},
+    body:JSON.stringify({idempotencia:'22222222-2222-4222-8222-222222222222',pago:'mercadopago',
+      envio:'retiro',destinatario:recipient}),
+  });
+  assert.equal(response.status,200,await response.clone().text());
+  const body=await response.json();
+  assert.equal(body.order.id,orderId);
+  assert.equal(body.redirectUrl,undefined);
+  assert.deepEqual(seen,['mb_checkout_minorista']);
+});
+
+test('expired pending reservation cannot start a real payment preference', async t => {
+  const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
+    admin:{rpc:async()=>({data:{id:'11111111-1111-4111-8111-111111111111',estado:'pendiente_pago',
+      reserva_hasta:new Date(Date.now()-1000).toISOString()},error:null}),
+    from:table=>{throw Error(`No DB payment attempt for ${table}`);}},
+    mercadoPago:{ready:true,createPreference:async()=>{throw Error('No expired preference');}},
+    authFactory:()=>({auth:{getUser:async()=>({data:{user:{id:'verified-user',email:'ana@example.test'}}})}}),
+  });
+  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));
+  t.after(()=>new Promise(resolve=>server.close(resolve)));
+  const response=await fetch(`http://127.0.0.1:${server.address().port}/api/checkout/pedidos`,{
+    method:'POST',headers:{...requestHeaders,cookie:`__Host-mb_cart=${'a'.repeat(64)}`},
+    body:JSON.stringify({idempotencia:'22222222-2222-4222-8222-222222222222',pago:'mercadopago',
+      envio:'retiro',destinatario:recipient}),
+  });
+  assert.equal(response.status,409);
+  assert.match((await response.json()).error,/reserva venció/i);
 });
 
 test('signed Mercado Pago webhook rechecks payment with provider and retries idempotently', async t => {
