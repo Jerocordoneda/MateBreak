@@ -20,11 +20,11 @@ begin
   join public.producto p on p.id_producto=cv.producto_id
   where p.nombre='TERMO PREMIUM MUNDIAL' and c.producto_simple_id=black_id and c.requiere_grabado)<>1
   then raise exception 'El color de las 16 publicaciones individuales no coincide'; end if;
- if exists(select 1 from public.catalogo_variante_mapeo m
+ if (select count(*) from public.catalogo_variante_mapeo m
   join public.catalogo_variante cv on cv.id=m.variante_id
   join public.producto p on p.id_producto=cv.producto_id
-  where m.aprobado and (p.nombre like 'SET MATERO%' or p.nombre like 'SET PREMIUM%'))
-  then raise exception 'Un set con caja sin SKU fue aprobado'; end if;
+  where m.aprobado and p.nombre='SET PREMIUM PERSONALIZADO - TU PROPIO DISEÑO')<>2
+  then raise exception 'Las dos variantes premium con vaina incluida deben estar mapeadas'; end if;
 
  select cv.id into silver_variant from public.catalogo_variante cv
   join public.producto p on p.id_producto=cv.producto_id where p.nombre='TERMO DE BELGRANO';

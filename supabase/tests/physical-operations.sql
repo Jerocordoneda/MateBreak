@@ -1,5 +1,6 @@
 -- SQL Editor: la transacción revierte SKU recibidos, pedidos y cambios de stock.
 begin;
+update public.producto_simple set stock=100 where id_producto=(select producto_id from private.inventario_ficha where sku='MB-CAJA-MATE');
 update public.metodo_pago set activo=true where codigo='transferencia';
 update public.metodo_envio set activo=true where codigo='retiro';
 do $$
@@ -46,7 +47,7 @@ begin
  token:=md5(random()::text)||md5(random()::text);
  perform public.mb_comercio(token,buyer,'variante',jsonb_build_object('variante_id',variant_id,'cantidad',1));
  ordered:=public.mb_comercio(token,buyer,'checkout',jsonb_build_object('idempotencia',gen_random_uuid(),'pago','transferencia','envio','retiro'));
- if (select count(*) from public.pedido_stock where pedido_id=(ordered->>'id')::uuid)<>2
+ if (select count(*) from public.pedido_stock where pedido_id=(ordered->>'id')::uuid)<>3
   or (select cantidad from public.pedido_stock where pedido_id=(ordered->>'id')::uuid and producto_simple_id=bomb_id)<>1
   or (select cantidad from public.pedido_stock where pedido_id=(ordered->>'id')::uuid and producto_simple_id=mate_id)<>1 then
   raise exception 'Bombilla opcional o base física mal reservada'; end if;

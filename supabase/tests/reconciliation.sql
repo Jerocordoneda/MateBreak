@@ -1,5 +1,6 @@
 -- Ejecutar en SQL Editor. Comprueba una variante reconciliada y revierte todo.
 begin;
+update public.producto_simple set stock=100 where id_producto=(select producto_id from private.inventario_ficha where sku='MB-CAJA-MATE');
 update public.metodo_pago set activo=true where codigo='transferencia';
 update public.metodo_envio set activo=true where codigo='retiro';
 do $$
@@ -22,7 +23,7 @@ begin
   raise exception 'Línea de variante incorrecta';
  end if;
  if (select count(*) from public.pedido_stock where pedido_id=(checkout->>'id')::uuid and producto_simple_id=physical_id and cantidad=2)<>1
-  or (select count(*) from public.pedido_stock where pedido_id=(checkout->>'id')::uuid)<>1 then raise exception 'SKU reservado incorrecto'; end if;
+  or (select count(*) from public.pedido_stock where pedido_id=(checkout->>'id')::uuid)<>2 then raise exception 'SKU o caja reservados incorrectamente'; end if;
  if (select stock from public.producto_simple where id_producto=physical_id)<>stock_before-2 then raise exception 'Stock no descontado'; end if;
 end $$;
 rollback;

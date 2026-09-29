@@ -22,36 +22,13 @@ const has=sku=>stock.has(sku);
 const mateFor=options=>options['MODELO DE MATE']==='IMPERIAL DE CALABAZA'?'MB-IMP-CAL':
   options['MODELO DE MATE']==='IMPERIAL DE ALGARROBO'?'MB-IMP-ALG':'';
 const excerpt=s=>String(s||'').replace(/\s+/g,' ').slice(0,220);
-// These specific current publications were visually reviewed against their
-// imported galleries. Never infer the colour for a newly added set by prefix.
-const reviewedSilverSets=new Set([
-  'SET MATERO DE BELGRANO','SET MATERO DE BOCA','SET MATERO DE CENTRAL',
-  'SET MATERO DE COLON','SET MATERO DE ESTUDIANTES','SET MATERO DE INDEPENDIENTE',
-  'SET MATERO DE LANÚS','SET MATERO DE NEWELL´S - ROSARIO','SET MATERO DE PLATENSE',
-  'SET MATERO DE RACING','SET MATERO DE RIVER','SET MATERO DE SAN LORENZO',
-  'SET MATERO DE TALLERES','SET MATERO DE TIGRE','SET MATERO DE VELEZ',
-  'SET MATERO DEL CAMPEÓN','SET MATERO PERSONALIZADO - TU PROPIO DISEÑO',
-  'SET MATERO PREMIUM ARGENTINO','SET PREMIUM DE BELGRANO','SET PREMIUM DE CENTRAL',
-  'SET PREMIUM DE ESTUDIANTES','SET PREMIUM DE INDEPENDIENTE',
-  'SET PREMIUM DE LA ACADEMIA','SET PREMIUM DE LANÚS','SET PREMIUM DE SAN LORENZO',
-  'SET PREMIUM DE TALLERES','SET PREMIUM DE VELEZ','SET PREMIUM DEL MILLONARIO',
-  'SET PREMIUM DEL XENEIZE','SET PREMIUM PERSONALIZADO - TU PROPIO DISEÑO',
-]);
-const reviewedBlackSets=new Set(['SET MATERO MUNDIAL 2026']);
 function classify(product,variant){
   const name=product.nombre,options=variant.opciones||{},matero=mateFor(options);
   const evidence=product.componentes.map(component=>component.evidencia).join(' | ')||product.descripcion;
   if(product.tipo==='combo'){
-    if(name.startsWith('SET DELUXE'))return {
-      clase:'C',sku:`${matero} + MB-TABLA + MB-CUC-INOX`,grupo:'caja_regalo_deluxe',
-      motivo:'Mate, tabla 20×30 y cuchillo identificados; la caja de regalo premium incluida no tiene SKU físico ni abastecimiento confirmado.',
-      faltantes:'Caja de regalo premium MateBreak: crear SKU y definir si se controla por stock o a pedido',evidencia:evidence};
-    const thermo=reviewedSilverSets.has(name)?'MB-TER-PLA':reviewedBlackSets.has(name)?'MB-TER-NEG':null;
-    return {
-      clase:'C',sku:`${matero} + MB-BOM-PICO-LORO + ${thermo||'termo por revisar'}${name.startsWith('SET PREMIUM')?' + MB-TABLA + MB-CUC-INOX':''}`,
-      grupo:thermo?'caja_regalo_set':'combo_termo_caja',
-      motivo:thermo?'El termo físico se identifica en la galería importada y el texto no lo contradice; la caja de regalo incluida carece de SKU.':'La publicación nueva requiere revisar el color del termo y la caja de regalo carece de SKU.',
-      faltantes:thermo?'Caja de regalo premium MateBreak: crear SKU y definir abastecimiento':'Revisar color del termo publicado; crear SKU de caja de regalo y definir abastecimiento',evidencia:evidence};
+    return {clase:'B',sku:matero||'—',grupo:'combo_nuevo',
+      motivo:'La composición de este combo aún no fue reconciliada por completo.',
+      faltantes:'Revisar todos los componentes físicos y el color del termo publicado, si corresponde',evidencia:evidence};
   }
   if(name==='MATERA NEGRA ECOCUERO')return {
     clase:'B',sku:'MB-MATERA?',grupo:'matera',motivo:'El SKU Matera no especifica color negro ni ecocuero.',
@@ -80,7 +57,10 @@ rows.sort((a,b)=>a.grupo_decision.localeCompare(b.grupo_decision,'es')||a.produc
 const counts=rows.reduce((acc,row)=>(acc[row.clase]=(acc[row.clase]||0)+1,acc),{});
 const groups=rows.reduce((acc,row)=>(acc[row.grupo_decision]=(acc[row.grupo_decision]||0)+1,acc),{});
 if(out){
-  const fields=Object.keys(rows[0]||{}),escape=value=>'"'+String(value??'').replaceAll('"','""')+'"';
-  await fs.writeFile(out,'\uFEFF'+fields.map(escape).join(',')+'\n'+rows.map(row=>fields.map(field=>escape(row[field])).join(',')).join('\n')+'\n','utf8');
+  const fields=['producto_id','producto','variante_id','variante','categorias','tipo','clase',
+    'sku_sugerido','grupo_decision','motivo','componentes_faltantes','evidencia'];
+  const escape=value=>'"'+String(value??'').replaceAll('"','""')+'"';
+  await fs.writeFile(out,'\uFEFF'+fields.map(escape).join(',')+'\n'+
+    (rows.length?rows.map(row=>fields.map(field=>escape(row[field])).join(',')).join('\n')+'\n':''),'utf8');
 }
 console.log(JSON.stringify({pendientes:rows.length,clases:counts,grupos:groups,archivo:out||null},null,2));

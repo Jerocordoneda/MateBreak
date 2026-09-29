@@ -1,10 +1,11 @@
 -- Ejecutar en SQL Editor. Toda venta y cambio de stock se revierte.
 begin;
+update public.producto_simple set stock=100 where id_producto=(select producto_id from private.inventario_ficha where sku='MB-CAJA-MATE');
 update public.metodo_pago set activo=true where codigo='transferencia';
 update public.metodo_envio set activo=true where codigo='retiro';
 do $$
 declare u uuid; c uuid; token text:=md5(random()::text)||md5(random()::text);
- first_variant bigint; second_variant bigint; unmapped bigint; combo_variant bigint; physical bigint; second_physical bigint;
+ first_variant bigint; second_variant bigint; physical bigint;
  initial_stock integer; amount numeric; expected numeric; order_one jsonb; order_again jsonb;
  key uuid:=gen_random_uuid(); quote jsonb; result jsonb;
 begin
@@ -20,7 +21,9 @@ begin
  where a.aprobado and b.aprobado and da.comprable and da.con_stock and db.comprable and db.con_stock
   and exists(select 1 from public.catalogo_promocion promo where promo.producto_id=va.producto_id and promo.texto='20% OFF Comprando 2 o más') limit 1;
  if first_variant is null then raise exception 'Faltan dos variantes aprobadas del mismo producto'; end if;
- select producto_simple_id into physical from public.catalogo_variante_componente where variante_id=first_variant;
+ select mc.producto_simple_id into physical from public.catalogo_variante_componente mc
+ join public.producto_simple s on s.id_producto=mc.producto_simple_id
+ where mc.variante_id=first_variant and s.categoria='Mates';
  select stock into initial_stock from public.producto_simple where id_producto=physical;
  insert into public.carrito(token_hash,usuario_id) values(token,u) returning id into c;
  result:=public.mb_comercio(token,u,'variante',jsonb_build_object('variante_id',first_variant,'cantidad',1,'precio',1,'personalizacion','Grabado de prueba'));
@@ -45,33 +48,18 @@ begin
  if (select count(*) from public.movimiento_stock where pedido_id=(order_one->>'id')::uuid and motivo='reserva')
     <>(select count(*) from public.pedido_stock where pedido_id=(order_one->>'id')::uuid) then raise exception 'Reservas duplicadas'; end if;
 
- -- Una variante sin relación aprobada puede guardarse, pero no confirmarse.
- select id into unmapped from public.catalogo_variante where id not in (select variante_id from public.catalogo_variante_mapeo) and vigente limit 1;
+ -- Revoke approval after cart insertion: checkout must reject it server-side.
  token:=md5(random()::text)||md5(random()::text);
  insert into public.carrito(token_hash,usuario_id) values(token,u);
- perform public.mb_comercio(token,u,'variante',jsonb_build_object('variante_id',unmapped,'cantidad',1));
+ perform public.mb_comercio(token,u,'variante',jsonb_build_object('variante_id',first_variant,'cantidad',1));
+ update public.catalogo_variante_mapeo set aprobado=false where variante_id=first_variant;
  begin
   perform public.mb_comercio(token,u,'checkout',jsonb_build_object('idempotencia',gen_random_uuid(),'pago','transferencia','envio','retiro'));
-  raise exception 'Variante sin mapeo comprada';
+  raise exception 'Variante sin aprobación comprada';
  exception when raise_exception then
   if sqlerrm<>'Variante sin relacion de inventario aprobada' then raise; end if;
  end;
-
- -- Un set de prueba sólo se aprueba dentro del rollback: comprueba la reserva de dos insumos.
- select cv.id into combo_variant from public.catalogo_variante cv join public.producto p on p.id_producto=cv.producto_id
- where p.tipo='combo' and cv.vigente and cv.disponible and cv.precio is not null limit 1;
- select f.producto_id into second_physical from private.inventario_ficha f join public.producto_simple s on s.id_producto=f.producto_id
- where f.sku='MB-CUC-INOX' and s.stock>0;
- if combo_variant is null or second_physical is null then raise exception 'Faltan insumos para el set de prueba'; end if;
- insert into public.catalogo_variante_mapeo(variante_id,aprobado,nota) values(combo_variant,true,'Sólo prueba con rollback');
- insert into public.catalogo_variante_componente(variante_id,producto_simple_id,cantidad,evidencia)
- values(combo_variant,physical,1,'Sólo prueba con rollback'),(combo_variant,second_physical,2,'Sólo prueba con rollback');
- token:=md5(random()::text)||md5(random()::text);
- insert into public.carrito(token_hash,usuario_id) values(token,u);
- perform public.mb_comercio(token,u,'variante',jsonb_build_object('variante_id',combo_variant,'cantidad',1));
- order_one:=public.mb_comercio(token,u,'checkout',jsonb_build_object('idempotencia',gen_random_uuid(),'pago','transferencia','envio','retiro'));
- if (select count(*) from public.pedido_stock where pedido_id=(order_one->>'id')::uuid)<>2 then raise exception 'Set sin dos reservas'; end if;
- if (select cantidad from public.pedido_stock where pedido_id=(order_one->>'id')::uuid and producto_simple_id=second_physical)<>2 then raise exception 'Cantidad de componente incorrecta'; end if;
+ update public.catalogo_variante_mapeo set aprobado=true where variante_id=first_variant;
 
  -- El stock agotado impide confirmar una variante previamente aprobada.
  update public.producto_simple set stock=0 where id_producto=physical;
