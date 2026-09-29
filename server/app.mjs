@@ -11,6 +11,7 @@ import { checkoutRoutes } from './checkout/routes.mjs';
 import { createMockCheckoutStore } from './checkout/mock-store.mjs';
 import { createProviders } from './providers.mjs';
 import { paymentRoutes } from './payments/routes.mjs';
+import { securityMiddleware, securityEvent } from './security.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -20,7 +21,12 @@ const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-
 export function createApp(config, overrides = {}) {
   const app = express();
   app.disable('x-powered-by');
-  const secure = config.origin.startsWith('https:');
+  app.disable('etag');
+  let parsedOrigin;
+  try { parsedOrigin = new URL(config.origin); } catch { throw Error('APP_ORIGIN inválido'); }
+  if (!['http:', 'https:'].includes(parsedOrigin.protocol) || parsedOrigin.origin !== config.origin ||
+      parsedOrigin.username || parsedOrigin.password) throw Error('APP_ORIGIN debe ser un origen HTTP(S) sin path ni credenciales');
+  const secure = parsedOrigin.protocol === 'https:';
   if (config.production && !secure) throw Error('APP_ORIGIN debe usar HTTPS en produccion');
   const cookieName = secure ? '__Host-mb_cart' : 'mb_cart';
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
@@ -37,23 +43,7 @@ export function createApp(config, overrides = {}) {
       },
     },
   }));
-  // Bounded in-process limiter. Deploy a shared limiter before running replicas.
-  const limits = new Map();
-  app.use('/api', (req, res, next) => {
-    res.set('Cache-Control', 'private, no-store');
-    res.set('X-Content-Type-Options', 'nosniff');
-    const now = Date.now();
-    for (const [key, entry] of limits) if (entry.until < now) limits.delete(key);
-    const key = `${req.socket.remoteAddress}:${req.path.startsWith('/auth') ? 'auth' : 'api'}`;
-    const bucket = limits.get(key) ?? { until: now + 60000, count: 0 };
-    bucket.count++; limits.set(key, bucket);
-    if (bucket.count > (req.path.startsWith('/auth') ? 20 : 180)) return res.status(429).json({ error: 'Demasiadas solicitudes. Intentá en un minuto.' });
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.path !== '/pagos/mercadopago/webhook') {
-      if (req.headers.origin !== config.origin || req.headers['sec-fetch-site'] === 'cross-site') return res.status(403).json({ error: 'Origen no permitido' });
-      if (!req.is('application/json')) return res.status(415).json({ error: 'Se requiere JSON' });
-    }
-    next();
-  });
+  app.use(securityMiddleware(config));
   app.use('/api', express.json({ limit: '16kb' }));
   app.use('/api', async (req, res, next) => {
     req.auth = authFactory(req, res);
@@ -89,7 +79,7 @@ export function createApp(config, overrides = {}) {
     res.json({ sesion_iniciada:!!data?.session, mensaje: 'Si el email puede registrarse, recibirás un enlace para confirmar tu cuenta. Si ya tenés una cuenta, ingresá con tu contraseña.' });
   });
   app.post('/api/auth/login', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password } = req.body ?? {};
     if (typeof email !== 'string' || typeof password !== 'string') throw fail(400, 'Faltan credenciales');
     const { data, error } = await req.auth.auth.signInWithPassword({ email, password });
     if (error) throw fail(401, 'Email o contraseña incorrectos');
@@ -141,7 +131,7 @@ export function createApp(config, overrides = {}) {
     res.json(cart);
   });
   app.put('/api/carrito/items/:id', async (req, res) => {
-    if (!/^[1-9][0-9]{0,18}$/.test(req.params.id) || !Number.isInteger(req.body.cantidad) || req.body.cantidad < 0 || req.body.cantidad > 99) throw fail(400, 'Producto o cantidad inválidos');
+    if (!/^[1-9][0-9]{0,18}$/.test(req.params.id) || !Number.isInteger(req.body?.cantidad) || req.body.cantidad < 0 || req.body.cantidad > 99) throw fail(400, 'Producto o cantidad inválidos');
     res.json(await rpc(req, 'cantidad', { producto_id: req.params.id, cantidad: req.body.cantidad }));
   });
   app.put('/api/carrito/variantes/:id', async (req, res) => {
@@ -156,12 +146,13 @@ export function createApp(config, overrides = {}) {
     res.json(profile??{nombre:typeof req.user.user_metadata?.nombre==='string'?req.user.user_metadata.nombre.slice(0,150):'',telefono:''});
   });
   app.put('/api/perfil', async (req, res) => {
-    const id = requireUser(req); const { nombre, telefono } = req.body;
-    if (typeof nombre !== 'string' || typeof telefono !== 'string') throw fail(400, 'Perfil inválido');
-    res.json(await checked(req.auth.from('perfil').upsert({ id, nombre, telefono }).select('nombre,telefono').single()));
+    const id = requireUser(req); const { nombre, telefono } = req.body ?? {};
+    if (typeof nombre !== 'string' || nombre.trim().length < 2 || nombre.length > 150 ||
+        typeof telefono !== 'string' || telefono.length > 40) throw fail(400, 'Perfil inválido');
+    res.json(await checked(req.auth.from('perfil').upsert({ id, nombre: nombre.trim(), telefono: telefono.trim() }).select('nombre,telefono').single()));
   });
   app.get('/api/direcciones', async (req, res) => res.json(await checked(req.auth.from('direccion').select('*').eq('usuario_id', requireUser(req)).order('creado_en'))));
-  const address = body => Object.fromEntries(['destinatario','telefono','calle','ciudad','departamento','codigo_postal','pais','indicaciones'].filter(k => typeof body[k] === 'string').map(k => [k, body[k]]));
+  const address = body => Object.fromEntries(['destinatario','telefono','calle','ciudad','departamento','codigo_postal','pais','indicaciones'].filter(k => typeof body?.[k] === 'string').map(k => [k, body[k]]));
   app.post('/api/direcciones', async (req, res) => res.status(201).json(await checked(req.auth.from('direccion').insert({ ...address(req.body), usuario_id: requireUser(req) }).select().single())));
   app.put('/api/direcciones/:id', async (req, res) => {
     if (!uuid(req.params.id)) throw fail(400, 'Dirección inválida');
@@ -191,6 +182,7 @@ export function createApp(config, overrides = {}) {
   app.get('/mi-cuenta', (req, res) => res.sendFile(path.join(root, 'src/pages/cuenta.html')));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
+    if (!error.status || error.status >= 500) securityEvent('SERVER_ERROR', req, { status: error.status ?? 500 });
     res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor' });
   });
   return { app, admin };

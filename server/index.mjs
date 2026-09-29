@@ -29,8 +29,12 @@ const config = {
   parcelProfiles: process.env.CORREO_VERIFIED_PARCELS_JSON ? JSON.parse(process.env.CORREO_VERIFIED_PARCELS_JSON) : {},
 };
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
+if (production && new URL(config.url).protocol !== 'https:') throw Error('SUPABASE_URL debe usar HTTPS en producción');
 const { app, admin } = createApp(config);
-app.listen(port, () => console.log(`MateBreak: ${config.origin}/ · Shipping ${shippingMode} · Payments ${paymentsMode}`));
+const server = app.listen(port, () => console.log(`MateBreak: ${config.origin}/ · Shipping ${shippingMode} · Payments ${paymentsMode}`));
+server.headersTimeout = 10_000;
+server.requestTimeout = 30_000;
+server.timeout = 60_000;
 let expiring = false;
 const expire = async () => {
   if (expiring) return;

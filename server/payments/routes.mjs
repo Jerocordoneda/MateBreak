@@ -1,3 +1,5 @@
+import { securityEvent } from '../security.mjs';
+
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
@@ -6,8 +8,10 @@ export function paymentRoutes(app, { admin, mercadoPago }) {
     if (!mercadoPago.ready) throw fail(503, 'Mercado Pago no está habilitado');
     const paymentId = req.query['data.id'];
     if (req.query.type !== 'payment' || !/^\d{1,30}$/.test(String(paymentId || ''))) return res.sendStatus(200);
-    if (!mercadoPago.verifyWebhook({ signature: req.headers['x-signature'], requestId: req.headers['x-request-id'], dataId: paymentId }))
+    if (!mercadoPago.verifyWebhook({ signature: req.headers['x-signature'], requestId: req.headers['x-request-id'], dataId: paymentId })) {
+      securityEvent('INVALID_WEBHOOK_SIGNATURE', req, { status: 401 });
       throw fail(401, 'Firma de Mercado Pago inválida');
+    }
 
     // A signed notification is still only a hint: payment state comes from
     // Mercado Pago's authenticated API, never the URL or browser return.
@@ -35,6 +39,7 @@ export function paymentRoutes(app, { admin, mercadoPago }) {
         outcome = result.error ? 'revision_manual' : 'aplicado';
       } else outcome = 'ignorado';
     }
+    if (outcome === 'revision_manual') securityEvent('PAYMENT_REVIEW', req, { status: 409 });
     const { error: auditError } = await admin.from('pago_webhook_auditoria').upsert({
       pago_externo_id: String(payment.id), estado_externo: String(payment.status), pedido_id: order.id, resultado: outcome,
     }, { onConflict: 'pago_externo_id,estado_externo' });
