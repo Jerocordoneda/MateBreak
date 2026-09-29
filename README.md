@@ -10,7 +10,7 @@
 | Compra | Carrito, compra directa separada, Entrega → Pago y resumen editable | [`server/checkout/`](server/checkout/), [`src/js/checkout.js`](src/js/checkout.js) |
 | Inventario | Composición física, cajas, stock, reservas y expiración | [`supabase/migrations/`](supabase/migrations/), [`server/inventory.mjs`](server/inventory.mjs) |
 | Pagos | Transferencia manual y adaptador seguro para Mercado Pago Checkout Pro | [`server/payments/`](server/payments/) |
-| Envío | Adaptador de la API oficial MiCorreo; cotizaciones guardadas con el pedido | [`server/shipping/correo-argentino.mjs`](server/shipping/correo-argentino.mjs) |
+| Envío | Política de cajas MateBreak y adaptador MiCorreo; cotizaciones guardadas con el pedido | [`server/shipping/`](server/shipping/) |
 | Administración | Roles, ventas, preparación, inventario y revisión de transferencias | [`server/account.mjs`](server/account.mjs), [`src/js/account-admin.js`](src/js/account-admin.js) |
 
 ```mermaid
@@ -44,7 +44,7 @@ Las migraciones están en [`supabase/migrations/`](supabase/migrations/) y las p
 - `src/pages/`, `src/js/`, `src/css/`: vistas, comportamiento y estilos de la interfaz.
 - `server/checkout/`: validación comercial, compra directa, cotizaciones y creación de pedidos.
 - `server/payments/`: transferencia, Checkout Pro y notificaciones verificadas.
-- `server/shipping/`: contrato oficial de Correo Argentino.
+- `server/shipping/`: política de embalaje y contrato oficial de Correo Argentino.
 - `supabase/migrations/`: esquema, funciones SQL, locks, RLS y auditoría.
 - `tests/` y `supabase/tests/`: regresiones Node y SQL.
 - `docs/`: decisiones operativas e historial técnico.

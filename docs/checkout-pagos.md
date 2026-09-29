@@ -36,6 +36,12 @@ Los tres métodos de pago y todos los métodos de envío siguen **inactivos** en
 | `CORREO_ORIGIN_POSTAL_CODE` | CP real desde el que sale cada paquete. |
 | `CORREO_VERIFIED_PARCELS_JSON` | Dimensiones y peso medidos por publicación. |
 
-Además faltan los perfiles de embalaje reales y una regla de consolidación para carritos con varios artículos. Hasta conocerlos, el backend sólo ofrece cotización dinámica para **un artículo con cantidad 1 y perfil medido**; el resto queda sin tarifa, en lugar de inventarla. Falta probar en la cuenta comercial los servicios de sucursal, modalidades disponibles, vencimientos de medios offline y la disponibilidad real de cuotas. Nada de esto impide documentar y probar el proveedor con mocks.
+## Política de embalaje
+
+`server/shipping/packaging.mjs` expresa las reglas operativas actuales en centímetros y gramos. Un mate solo usa **17 × 17 × 17 cm / 550 g**. Dos mates usan dos cajas chicas unidas, aproximadas como **34 × 17 × 17 cm / 1100 g**. Cada par adicional se trata igual y el mate impar queda en una caja chica. Uno o dos sets usan una caja grande de **30 × 30 × 20 cm**, con **1300 g por set**; tres sets se dividen en dos bultos. En pedidos mixtos se agrupan primero los sets y luego se añaden los mates sueltos en sus propias cajas, de forma conservadora.
+
+La clasificación se obtiene de `producto.tipo` y las categorías guardadas en Supabase. Para termos o accesorios vendidos solos, el perfil medido por publicación en `CORREO_VERIFIED_PARCELS_JSON` sigue siendo una alternativa. Los pedidos con artículos no cubiertos o más de 20 bultos quedan sin cotización automática. MiCorreo `/rates` recibe un bulto por solicitud; para varios bultos se cotiza cada uno y se suman únicamente tarifas reales del mismo servicio. Estas dimensiones y pesos son estimaciones de depósito para cotizar, pendientes de validar con la cuenta comercial.
+
+Siguen faltando credenciales de Correo Argentino y probar en su cuenta los servicios de sucursal, modalidades disponibles y tarifas para varios bultos. También quedan pendientes los vencimientos de medios offline de Mercado Pago y la disponibilidad real de cuotas. Nada de esto impide documentar y probar los proveedores con mocks.
 
 Fuentes oficiales: [preferencias de Checkout Pro](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-preferences/create-payment-preference), [notificaciones firmadas](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-orders/notifications?scope=prod), [API MiCorreo](https://www.correoargentino.com.ar/MiCorreo/public/img/pag/apiMiCorreo.pdf).

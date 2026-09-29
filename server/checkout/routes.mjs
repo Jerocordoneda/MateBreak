@@ -3,6 +3,7 @@ import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import { calculateTotals, shippingProgress, validateRecipient } from './policy.mjs';
 import { transferInstructions } from '../payments/transferencia.mjs';
 import { accountRole } from '../account.mjs';
+import { planPackages, quotePackages } from '../shipping/packaging.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -27,6 +28,17 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
     if (error) throw fail(503, 'No se pudo recalcular el pedido');
     return data;
   };
+  const packagesFor = async selection => {
+    if (!selection.items?.length) return null;
+    const ids = [...new Set(selection.items.map(item => String(item.producto_id)))];
+    const { data, error } = await admin.from('producto')
+      .select('id_producto,tipo,catalogo_producto_categoria(catalogo_categoria(slug))').in('id_producto', ids);
+    if (error) throw fail(503, 'No se pudo determinar el embalaje');
+    return planPackages(selection.items, data.map(product => ({
+      id: product.id_producto, tipo: product.tipo,
+      categorias: product.catalogo_producto_categoria.map(link => link.catalogo_categoria.slug),
+    })), config.parcelProfiles);
+  };
 
   app.post('/api/compra-directa', async (req, res) => {
     const { variante_id, cantidad, personalizacion = '' } = req.body || {};
@@ -47,12 +59,12 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
     const { data: payments, error: paymentError } = await admin.from('metodo_pago').select('codigo,nombre,activo').in('codigo', ['transferencia','mercadopago']);
     const { data: deliveries, error: deliveryError } = await admin.from('metodo_envio').select('codigo,nombre,activo').in('codigo', ['retiro','correo_domicilio','correo_sucursal']);
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
-    const oneMeasuredParcel = selection.items?.length === 1 && selection.items[0].cantidad === 1 &&
-      Boolean(config.parcelProfiles?.[selection.items[0].producto_id]);
+    const packages = correo.ready && deliveries.some(delivery => delivery.activo && delivery.codigo === 'correo_domicilio')
+      ? await packagesFor(selection) : null;
     res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal),
       payments: payments.map(p => ({ ...p, activo: p.activo && (p.codigo !== 'mercadopago' || mercadoPago.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: d.activo && d.codigo !== 'correo_sucursal' &&
-        (d.codigo === 'retiro' || (correo.ready && oneMeasuredParcel)) })),
+        (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
       user: req.user ? { email: req.user.email } : null });
   });
 
@@ -72,12 +84,10 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
     }
     const selection = await cart(req);
     if (!selection.items?.length) throw fail(400, 'La selección está vacía');
-    // Package dimensions must come from a verified server-side profile.
-    const dimensions = selection.items?.length === 1 && selection.items[0].cantidad === 1
-      ? config.parcelProfiles?.[selection.items[0].producto_id] : null;
-    if (!dimensions) throw fail(503, 'Faltan dimensiones verificadas del paquete');
-    const rates = await correo.quote({ destinationPostalCode: recipient.codigo_postal,
-      deliveryType: mode === 'correo_domicilio' ? 'D' : 'S', dimensions });
+    const packages = await packagesFor(selection);
+    if (!packages) throw fail(503, 'No hay una regla de embalaje para toda la selección');
+    const rates = await quotePackages(correo, { destinationPostalCode: recipient.codigo_postal,
+      deliveryType: mode === 'correo_domicilio' ? 'D' : 'S', packages });
     if (!rates.length) throw fail(503, 'Correo Argentino no devolvió una tarifa válida');
     const quote = await baseQuote(selection.id);
     const options = [];
@@ -91,7 +101,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, mercadoP
       }).select('id').single();
       if (error) throw fail(503, 'No se pudo guardar la cotización');
       const totals = calculateTotals({ merchandiseSubtotal: quote.subtotal, carrierCost: rate.carrierCost, method: 'mercadopago' });
-      options.push({ id: data.id, name: rate.name, service: rate.service,
+      options.push({ id: data.id, name: rate.name, service: rate.service, packageCount: rate.packageCount,
         customerShippingCost: totals.customerShippingCost, total: totals.total, currency: 'ARS' });
     }
     if (!options.length) throw fail(503, 'Las tarifas de Correo Argentino vencieron');
