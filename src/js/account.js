@@ -49,7 +49,7 @@ form('#signin',async(data,event)=>{
  const {confirmacion,...fields}=data;const result=await api('/auth/'+action,'POST',fields);$('#signin [name=password]').value='';$('#signin [name=confirmacion]').value='';
  if(action==='registro'&&!result.sesion_iniciada){$('#signin').hidden=true;$('#register-success').hidden=false;$('#register-success-copy').textContent=result.mensaje;message('Revisá tu email para continuar.');return;}
  if(!await load())return;message('Ya ingresaste a tu cuenta.');
- if(currentUser?.rol==='cliente'&&new URLSearchParams(location.search).get('volver')==='carrito')location.assign('/tienda#carrito');
+ if(currentUser?.rol==='cliente'&&new URLSearchParams(location.search).get('volver')==='carrito')location.assign('/carrito');
 });
 $('#signout').onclick=async()=>{const b=$('#signout');b.disabled=true;try{await api('/auth/logout','POST',{});for(const id of ['emails','addresses','sales-list','sale-lines','customer-orders','team-list'])$('#'+id).replaceChildren();$('#profile').reset();$('#address-form').reset();$('#sale-form').reset();authMode('login');await load();window.dispatchEvent(new CustomEvent('mb:cart',{detail:0}));message('Cerraste tu sesión.');}catch(e){message(e.message,true);}finally{b.disabled=false;}};
 form('#profile',async data=>{await api('/perfil','PUT',data);message('Tus datos están guardados.');});

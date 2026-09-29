@@ -8,6 +8,20 @@ const config = {
   secret: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
   origin: process.env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
   production,
+  mercadoPago: {
+    enabled: process.env.MERCADOPAGO_ENABLED === 'true',
+    accessToken: process.env.MERCADOPAGO_ACCESS_TOKEN,
+    webhookSecret: process.env.MERCADOPAGO_WEBHOOK_SECRET,
+    origin: process.env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
+  },
+  correo: {
+    environment: process.env.CORREO_ENVIRONMENT || 'test',
+    username: process.env.CORREO_MICORREO_USER,
+    password: process.env.CORREO_MICORREO_PASSWORD,
+    customerId: process.env.CORREO_MICORREO_CUSTOMER_ID,
+    originPostalCode: process.env.CORREO_ORIGIN_POSTAL_CODE,
+  },
+  parcelProfiles: process.env.CORREO_VERIFIED_PARCELS_JSON ? JSON.parse(process.env.CORREO_VERIFIED_PARCELS_JSON) : {},
 };
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
 const { app, admin } = createApp(config);

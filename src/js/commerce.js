@@ -1,14 +1,10 @@
-import {mountCatalog} from './catalog-ui.js';
 import {money as formatMoney} from '../services/products.js';
 const $ = selector => document.querySelector(selector);
 const money = value => formatMoney(value,cart.moneda||'ARS');
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
 let cart = { items: [], total: 0 }, addresses = [], methods = { pagos: [], envios: [] };
-let signedIn = false, loaded = false, cartBusy = false, submittingOrder = false, toastTimer;
-let quote = null, quoteSequence = 0;
-let checkoutKey;
-try { checkoutKey = sessionStorage.getItem('mb_checkout_key'); } catch { /* Private browsing may disable storage. */ }
-const statuses = { pendiente_pago: 'Pendiente de pago', pagado: 'Pago confirmado', en_preparacion: 'En preparación', enviado: 'En camino', entregado: 'Entregado', cancelado: 'Cancelado', pendiente: 'Pendiente', aprobado: 'Aprobado', rechazado: 'Rechazado', reembolsado: 'Reembolsado', preparando: 'En preparación' };
+let signedIn = false, loaded = false, cartBusy = false, toastTimer;
+const statuses = { pendiente_pago: 'Pendiente de pago', pagado: 'Pago confirmado', en_preparacion: 'En preparación', enviado: 'En camino', entregado: 'Entregado', cancelado: 'Cancelado', expirado: 'Reserva vencida', pendiente: 'Pendiente', aprobado: 'Aprobado', rechazado: 'Rechazado', reembolsado: 'Reembolsado', preparando: 'En preparación' };
 
 function icon(type = 'bag') {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -26,7 +22,8 @@ function message(text, error = false) {
 }
 function showPage(focus = false) {
   if (location.hash === '#cuenta') { location.replace('/mi-cuenta'); return; }
-  const pages = ['carrito', 'catalogo', 'cuenta', 'pedidos'];
+  if (location.hash === '#catalogo') { location.replace('/tienda'); return; }
+  const pages = ['carrito', 'cuenta', 'pedidos'];
   if (location.hash === '#contenido') return;
   const name = pages.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'carrito';
   for (const page of pages) $('#' + page).hidden = page !== name;
@@ -39,7 +36,7 @@ function showPage(focus = false) {
 window.addEventListener('hashchange', () => showPage(true));
 showPage();
 // These hashes are page tabs, not scroll anchors. Keep the brand visible on arrival.
-window.addEventListener('load',()=>{if(['#carrito','#catalogo','#pedidos'].includes(location.hash))window.scrollTo({top:0,behavior:'instant'});},{once:true});
+window.addEventListener('load',()=>{if(['#carrito','#pedidos'].includes(location.hash))window.scrollTo({top:0,behavior:'instant'});},{once:true});
 
 async function api(url, method = 'GET', data) {
   const response = await fetch('/api' + url, { method, credentials: 'same-origin', headers: data === undefined ? {} : { 'Content-Type': 'application/json' }, body: data === undefined ? undefined : JSON.stringify(data) });
@@ -62,41 +59,19 @@ function updateSummary() {
   window.dispatchEvent(new CustomEvent('mb:cart',{detail:count}));
   const badge=$('#cart-count');if(badge)badge.textContent=count;
   $('#selection-count').textContent = `${count} ${count === 1 ? 'producto' : 'productos'}`; $('#summary-count').textContent = `(${count})`;
-  const shipment = methods.envios.find(e => e.codigo === $('#checkout [name=envio]').value);
-  const payment = methods.pagos.find(p => p.codigo === $('#checkout [name=pago]').value);
-  const shownQuote=quote?.key===`${cart.id}|${payment?.codigo}|${shipment?.codigo}`?quote.data:null;
-  const needsAddress = Boolean(shipment?.requiere_direccion);
-  $('#address-choice').hidden = !needsAddress; $('#checkout [name=direccion_id]').required = needsAddress;
-  $('#subtotal').textContent = money(shownQuote?.subtotal??cart.total);
-  const shippingCost=shownQuote?.costo_envio??shipment?.costo;
-  $('#shipping-cost').textContent = !count ? '—' : shipment ? (Number(shippingCost) === 0 ? 'Sin costo' : money(shippingCost)) : 'A seleccionar';
-  $('#total').textContent = money(shownQuote?.total??(Number(cart.total) + (count && shipment ? Number(shipment.costo) : 0)));
-  $('#instrucciones').textContent = payment?.instrucciones || ''; $('#instrucciones').hidden = !payment?.instrucciones;
-  const available = methods.envios.length > 0 && methods.pagos.length > 0;
+  $('#subtotal').textContent = money(cart.total);
+  $('#total').textContent = money(cart.total);
+  const remaining=Math.max(0,80000-Number(cart.total||0));
+  $('#shipping-progress').value=Math.min(80000,Number(cart.total||0));
+  $('#shipping-message').textContent=remaining>0?`Te faltan ${money(remaining)} para tener envío gratis`:'¡Tenés envío gratis!';
   const invalidItems = cart.items.some(i => i.activo === false);
-  $('#checkout-button').disabled = !loaded || !count || !available || invalidItems || cartBusy || submittingOrder || cart.requiere_confirmacion_catalogo;
-  $('#checkout-button span:first-child').textContent = submittingOrder ? 'Creando pedido…' : signedIn ? 'Confirmar pedido' : 'Ingresar para continuar';
-  // Guests use the button as navigation and do not need checkout fields yet.
-  $('#checkout').noValidate = !signedIn;
-  $('#checkout-login').hidden = signedIn || !count;
-  $('#checkout-notice').textContent = !loaded ? 'Cargando tu selección…' : !count ? 'Agregá un producto para empezar.' : invalidItems ? 'Quitá los productos no disponibles para continuar.' : !available ? 'Por el momento no se pueden confirmar pedidos online.' : !signedIn ? 'Tu selección se conserva al ingresar a tu cuenta.' : 'El pedido se creará pendiente de confirmación de pago.';
+  $('#checkout-button').disabled = !loaded || !count || invalidItems || cartBusy || cart.requiere_confirmacion_catalogo;
+  $('#checkout-notice').textContent = !loaded ? 'Cargando tu selección…' : !count ? 'Agregá un producto para empezar.' : invalidItems ? 'Quitá los productos no disponibles para continuar.' : 'El precio y la disponibilidad se confirman en el checkout.';
   if(cart.requiere_confirmacion_catalogo)$('#checkout-notice').textContent='Tu selección está guardada. Una variante requiere confirmar su relación con el inventario o su stock.';
-  $('.summary-total .currency').textContent='PESOS ARGENTINOS';
-}
-async function refreshQuote(){
-  const sequence=++quoteSequence,pago=$('#checkout [name=pago]').value,envio=$('#checkout [name=envio]').value;
-  quote=null;updateSummary();
-  if(!cart.items.length||!pago||!envio)return;
-  try{
-    const data=await api(`/carrito/cotizacion?pago=${encodeURIComponent(pago)}&envio=${encodeURIComponent(envio)}`);
-    if(sequence!==quoteSequence)return;
-    quote={key:`${cart.id}|${pago}|${envio}`,data};updateSummary();
-  }catch(error){if(sequence===quoteSequence)message(error.message,true);}
 }
 function renderCart() {
-  quote=null;quoteSequence++;
   $('#items').replaceChildren(); $('#items').setAttribute('aria-busy', String(cartBusy));
-  if (!cart.items.length) $('#items').append(emptyState('A tu carrito le falta un buen mate.', 'Elegí ese compañero de todos los días. Nosotros te guardamos el lugar.', 'Explorar el catálogo', '#catalogo'));
+  if (!cart.items.length) $('#items').append(emptyState('A tu carrito le falta un buen mate.', 'Elegí ese compañero de todos los días. Nosotros te guardamos el lugar.', 'Explorar el catálogo', '/tienda'));
   for (const item of [...cart.items].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))) {
     const row = el('article', undefined, 'cart-item' + (item.activo === false ? ' unavailable' : ''));
     const symbol = el('div', undefined, 'product-symbol'); symbol.append(icon('mate'));
@@ -117,10 +92,10 @@ function renderCart() {
     bottom.append(stepper, remove); detail.append(bottom);
     row.append(symbol, detail, el('strong', money(item.subtotal), 'item-total')); $('#items').append(row);
   }
-  updateSummary();refreshQuote();
+  updateSummary();
 }
 async function changeQuantity(productId, quantity) {
-  if (cartBusy || submittingOrder) return;
+  if (cartBusy) return;
   const focused = document.activeElement;
   const focusClass = focused?.className;
   cartBusy = true; $('#items').setAttribute('aria-busy', 'true'); updateSummary();
@@ -129,7 +104,6 @@ async function changeQuantity(productId, quantity) {
   try { cart = await api(productId.startsWith('v-')?`/carrito/variantes/${productId.slice(2)}`:`/carrito/items/${productId}`, 'PUT', { cantidad: quantity }); succeeded = true; }
   finally {
     cartBusy = false; renderCart();
-    document.querySelectorAll('#productos [data-cart-action]').forEach(b => { b.disabled = false; });
     // Restore keyboard focus after replacing rows, without scrolling the page.
     const controls = [...document.querySelectorAll('[data-product]')];
     const replacement = controls.find(b => b.dataset.product === productId && b.className === focusClass && !b.disabled)
@@ -139,39 +113,25 @@ async function changeQuantity(productId, quantity) {
   }
   if (succeeded) message(quantity === 0 ? 'Producto quitado del carrito.' : 'Tu carrito está actualizado.');
 }
-function renderMethods() {
-  for (const [field, entries] of [['pago', methods.pagos], ['envio', methods.envios]]) {
-    const select = $(`#checkout [name=${field}]`), previous = select.value;
-    select.replaceChildren(new Option(entries.length ? 'Seleccioná una opción' : 'No disponible por el momento', ''));
-    for (const item of entries) select.add(new Option(item.nombre + (field === 'envio' ? ` · ${Number(item.costo) === 0 ? 'Sin costo' : money(item.costo)}` : ''), item.codigo));
-    select.disabled = !entries.length;
-    if (entries.some(e => e.codigo === previous)) select.value = previous;
-  }
-  updateSummary();refreshQuote();
-}
 async function renderPrivate() {
   const { usuario } = await api('/sesion'); signedIn = !!usuario;
   $('#usuario').textContent = usuario ? usuario.email : 'Ingresá para guardar tus direcciones y seguir tus pedidos.';
   $('#privado').hidden = !usuario; $('#logout').hidden = !usuario; $('#login').hidden = !!usuario;
   updateSummary();
   if (!usuario) {
-    addresses = []; $('#checkout [name=direccion_id]').replaceChildren(new Option('Ingresá para ver tus direcciones', ''));
+    addresses = [];
     $('#lista-pedidos').replaceChildren(emptyState('Cada pausa tiene su historia.', 'Ingresá a tu cuenta para ver el estado y el detalle de tus pedidos.', 'Ingresar a mi cuenta', '#cuenta')); return;
   }
   const [profile, dirs, orders] = await Promise.all([api('/perfil'), api('/direcciones'), api('/pedidos')]); addresses = dirs;
   for (const name of ['nombre', 'telefono']) $(`#perfil [name=${name}]`).value = profile?.[name] || '';
   $('#direcciones').replaceChildren();
   if (!dirs.length) $('#direcciones').append(el('p', 'Todavía no guardaste una dirección. Agregala en el formulario de abajo.', 'muted'));
-  const select = $('#checkout [name=direccion_id]'), selectedAddress = select.value;
-  select.replaceChildren(new Option(dirs.length ? 'Seleccioná una dirección' : 'Agregá una dirección en Mi cuenta', ''));
   for (const dir of addresses) {
-    select.add(new Option(`${dir.calle}, ${dir.ciudad}`, dir.id));
     const row = el('article', undefined, 'address-row'); row.append(el('strong', dir.destinatario), el('p', `${dir.calle}, ${dir.ciudad} · ${dir.departamento}`));
     row.append(action('Editar', () => { for (const field of $('#direccion').elements) if (field.name) field.value = dir[field.name] ?? ''; $('#address-details').open = true; $('#direccion input[name=destinatario]').focus(); }), action('Eliminar', async () => { await api(`/direcciones/${dir.id}`, 'DELETE', {}); await renderPrivate(); message('Dirección eliminada.'); })); $('#direcciones').append(row);
   }
-  if (dirs.some(d => d.id === selectedAddress)) select.value = selectedAddress;
   $('#lista-pedidos').replaceChildren();
-  if (!orders.length) $('#lista-pedidos').append(emptyState('Tu primera pausa te espera.', 'Cuando hagas una compra, vas a poder seguirla desde acá.', 'Explorar el catálogo', '#catalogo'));
+  if (!orders.length) $('#lista-pedidos').append(emptyState('Tu primera pausa te espera.', 'Cuando hagas una compra, vas a poder seguirla desde acá.', 'Explorar el catálogo', '/tienda'));
   for (const order of orders) {
     const row = el('article', undefined, 'order-card'), heading = el('div', undefined, 'order-heading');
     heading.append(el('h3', `Pedido ${order.id.slice(0, 8).toUpperCase()}`), el('span', statuses[order.estado] || order.estado, 'order-status'));
@@ -203,26 +163,13 @@ $('#logout').onclick = async () => { $('#logout').disabled = true; try { await a
 form('#perfil', async data => { await api('/perfil', 'PUT', data); message('Tus datos están guardados.'); });
 form('#direccion', async data => {
   const { id, ...fields } = data; const saved = await api('/direcciones' + (id ? '/' + id : ''), id ? 'PUT' : 'POST', fields);
-  $('#direccion').reset(); await renderPrivate(); $('#checkout [name=direccion_id]').value = saved.id; updateSummary(); message('Dirección guardada. Ya podés seleccionarla para tu pedido.');
+  $('#direccion').reset(); await renderPrivate(); updateSummary(); message('Dirección guardada. Ya podés seleccionarla para tu pedido.');
 });
-$('#checkout [name=envio]').onchange = refreshQuote;
-$('#checkout [name=pago]').onchange = refreshQuote;
-form('#checkout', async data => {
-  if (!signedIn) { location.hash = '#cuenta'; return; }
-  if (cartBusy || submittingOrder || !cart.items.length) return;
-  submittingOrder = true; updateSummary();
-  try {
-    checkoutKey ||= crypto.randomUUID(); try { sessionStorage.setItem('mb_checkout_key', checkoutKey); } catch { /* Keep the in-memory key for retries. */ }
-    const order = await api('/pedidos', 'POST', { ...data, direccion_id: data.direccion_id || null, idempotencia: checkoutKey });
-    checkoutKey = null; try { sessionStorage.removeItem('mb_checkout_key'); } catch { /* No persistent storage. */ }
-    message(`Pedido ${order.id.slice(0, 8).toUpperCase()} creado. ${statuses[order.estado] || order.estado}.`);
-    cart = await api('/carrito'); renderCart(); await renderPrivate(); location.hash = '#pedidos';
-  } finally { submittingOrder = false; updateSummary(); }
-});
+$('#checkout-button').onclick=()=>{if(!$('#checkout-button').disabled)location.assign('/checkout');};
 async function init() {
   try {
     const [initialCart, available] = await Promise.all([api('/carrito'), api('/metodos')]);
-    cart = initialCart; methods = available; loaded = true; renderCart(); renderMethods();
+    cart = initialCart; methods = available; loaded = true; renderCart();
     await renderPrivate();
   } catch (error) {
     $('#items').setAttribute('aria-busy', 'false');
@@ -233,5 +180,4 @@ async function init() {
   }
 }
 init();
-mountCatalog($('#productos'),{category:new URLSearchParams(location.search).get('categoria')||'',search:new URLSearchParams(location.search).get('q')||''});
 import './header-account.js';

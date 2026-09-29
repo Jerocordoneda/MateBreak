@@ -73,7 +73,28 @@ async function loadDashboard(){
   finally{button.disabled=false;}
 }
 
+async function loadTransfers(){
+  const target=$('#pending-transfers');target.replaceChildren();
+  const orders=await api('/admin/transferencias');
+  if(!orders.length){target.append(empty('No hay transferencias pendientes.'));return;}
+  for(const order of orders){
+    const row=element('article',undefined,'dashboard-list-row'),details=element('div');
+    details.append(element('strong',`Pedido ${order.id.slice(0,8).toUpperCase()} · ${money.format(order.importe)}`),
+      element('small',`Pendiente de transferencia · vence ${dateTime(order.reserva_hasta)}`));
+    const form=element('form',undefined,'transfer-confirm-form'),reference=element('input'),button=element('button','Marcar como pagado','button-secondary');
+    reference.name='referencia';reference.placeholder='Referencia bancaria verificada';reference.required=true;reference.maxLength=150;
+    form.append(reference,button);
+    form.onsubmit=async event=>{
+      event.preventDefault();button.disabled=true;
+      try{await api(`/admin/transferencias/${order.id}/confirmar`,'POST',{referencia:reference.value.trim()});message('Pago confirmado y auditado.');await loadTransfers();}
+      catch(cause){message(cause.message,true);button.disabled=false;}
+    };
+    row.append(details,form);target.append(row);
+  }
+}
+
 export async function mountAdmin(currentUser){
+  $('#refresh-transfers').onclick=async()=>{try{await loadTransfers();}catch(e){message(e.message,true);}};
   $('#refresh-dashboard').onclick=async()=>{try{await loadDashboard();message('Dashboard actualizado.');}catch(e){message(e.message,true);}};
   $('#dashboard-period').onchange=async()=>{try{await loadDashboard();}catch(e){message(e.message,true);}};
   const dashboard=loadDashboard();
@@ -82,5 +103,5 @@ export async function mountAdmin(currentUser){
     const total=key=>stock.reduce((sum,item)=>sum+Number(item[key]||0),0);
     $('#inventory-summary').textContent=`${number.format(total('disponible'))} unidades disponibles · ${number.format(total('reservado'))} reservadas · abrir control de stock y movimientos.`;
   });
-  await Promise.all([dashboard,team,inventory]);
+  await Promise.all([dashboard,team,inventory,loadTransfers().catch(e=>$('#pending-transfers').replaceChildren(empty(e.message)))]);
 }

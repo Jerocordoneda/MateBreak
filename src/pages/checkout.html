@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Finalizar compra · MateBreak</title>
+  <link rel="stylesheet" href="/src/css/commerce.css">
+  <link rel="stylesheet" href="/src/css/site-brand.css">
+  <link rel="stylesheet" href="/src/css/checkout.css">
+  <script type="module" src="/src/js/checkout.js"></script>
+  <script type="module" src="/src/js/header-account.js"></script>
+</head>
+<body data-brand-shell="commerce">
+  <a class="skip-link" href="#checkout-main">Saltar al checkout</a>
+  <main id="checkout-main" class="checkout-page">
+    <a data-page-brand class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio">MateBreak<sup>®</sup></a>
+    <nav class="commerce-sections" aria-label="Mi compra"><a href="/tienda">Catálogo</a><a href="/carrito">Carrito</a><span aria-current="step">Checkout</span></nav>
+    <header class="checkout-heading"><p class="eyebrow">TU PRÓXIMA PAUSA</p><h1>Finalizar compra<span class="accent">.</span></h1><p>Revisá tus datos antes de confirmar el pedido.</p></header>
+    <ol class="checkout-steps"><li>Carrito <span aria-hidden="true">✓</span></li><li id="step-delivery" aria-current="step">Entrega</li><li id="step-payment">Pago</li></ol>
+    <p id="checkout-error" class="checkout-error" role="alert" hidden></p>
+    <div class="checkout-layout">
+      <div class="checkout-flow">
+        <section id="login-panel" class="checkout-card" hidden><h2>Ingresá para continuar</h2><p>Tu selección se conserva al iniciar sesión.</p><form id="checkout-login"><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label><button class="button-primary">Ingresar</button></form><a href="/mi-cuenta">Crear una cuenta</a></section>
+        <section id="delivery-panel" class="checkout-card"><div class="card-heading"><span class="step-number">01</span><div><p class="eyebrow">ENTREGA</p><h2>Datos del destinatario</h2></div></div>
+          <form id="recipient-form">
+            <div class="field-grid">
+              <label>Nombre<input name="nombre" autocomplete="given-name" required minlength="2" maxlength="100"></label>
+              <label>Apellido<input name="apellido" autocomplete="family-name" required minlength="2" maxlength="100"></label>
+              <label>Email<input name="email" type="email" autocomplete="email" required maxlength="254"></label>
+              <label>Teléfono<input name="telefono" type="tel" autocomplete="tel" required minlength="7" maxlength="30"></label>
+              <label>Código postal<input name="codigo_postal" autocomplete="postal-code" required minlength="4" maxlength="12"></label>
+              <label>Provincia<input name="provincia" autocomplete="address-level1" required minlength="2" maxlength="100"></label>
+              <label>Localidad o ciudad<input name="ciudad" autocomplete="address-level2" required minlength="2" maxlength="100"></label>
+              <label>Calle<input name="calle" autocomplete="address-line1" required minlength="2" maxlength="150"></label>
+              <label>Número<input name="numero" required maxlength="20"></label>
+              <label>Piso <span class="optional">opcional</span><input name="piso" maxlength="20"></label>
+              <label>Departamento <span class="optional">opcional</span><input name="departamento" maxlength="30"></label>
+              <label class="field-wide">Referencia <span class="optional">opcional</span><input name="referencia" maxlength="300"></label>
+            </div>
+            <div class="delivery-choice"><h3>¿Cómo querés recibirlo?</h3><div id="delivery-options" class="choice-list"></div><p id="shipping-unavailable" class="muted" hidden>Correo Argentino quedará habilitado cuando MateBreak conecte sus credenciales y dimensiones verificadas. No mostramos tarifas estimadas.</p></div>
+            <button id="continue-payment" class="button-primary">Continuar a pago →</button>
+          </form>
+        </section>
+        <section id="payment-panel" class="checkout-card" hidden><div class="card-heading"><span class="step-number">02</span><div><p class="eyebrow">PAGO</p><h2>Revisá y elegí cómo pagar</h2></div></div>
+          <div id="editable-summary" class="editable-summary"></div>
+          <h3>Medio de pago</h3><div id="payment-options" class="choice-list"></div>
+          <p class="muted">Con Mercado Pago podés usar tarjetas, dinero en cuenta y las cuotas o medios que habilite tu cuenta.</p>
+          <button id="place-order" class="button-primary" disabled>Confirmar pedido →</button>
+          <p class="muted">El total y la disponibilidad se vuelven a verificar en el servidor.</p>
+        </section>
+      </div>
+      <aside class="checkout-card checkout-order"><h2>Tu pedido</h2><div id="order-items"></div><div class="shipping-progress"><p id="shipping-message"></p><progress id="shipping-progress" max="80000" value="0" aria-label="Progreso hacia el envío gratis"></progress></div><div class="price-row"><span>Productos</span><strong id="merchandise-subtotal">—</strong></div><div class="price-row"><span>Descuento</span><strong id="discount">—</strong></div><div class="price-row"><span>Envío</span><strong id="shipping-cost">A seleccionar</strong></div><div class="summary-total"><span>Total</span><strong id="order-total">—</strong></div></aside>
+    </div>
+  </main>
+  <footer class="site-footer"><a href="/">MateBreak®</a><span>Una buena pausa cambia el día.</span></footer>
+</body>
+</html>

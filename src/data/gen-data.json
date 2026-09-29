@@ -5,9 +5,9 @@
     "btn": "Personalizá el Tuyo"
   },
   "benefits": [
-    { "icon": "local_shipping", "title": "ENVÍOS GRATIS A TODO EL PAÍS", "sub": "De puerta a puerta" },
-    { "icon": "credit_card", "title": "TARJETA DE CRÉDITO", "sub": "3 cuotas sin interés" },
-    { "icon": "sell", "title": "15% DE DESCUENTO", "sub": "Con transferencia o efectivo" }
+    { "icon": "local_shipping", "title": "ENVÍO GRATIS DESDE $80.000", "sub": "Según modalidad disponible" },
+    { "icon": "credit_card", "title": "MERCADO PAGO", "sub": "Cuotas según disponibilidad" },
+    { "icon": "sell", "title": "10% DE DESCUENTO", "sub": "Con transferencia bancaria" }
   ],
   "pages": [
     {

@@ -7,7 +7,7 @@ const userIcon = () => svg('M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1
 const cartLinks = [...document.querySelectorAll('[data-cart-link]')];
 for (const icon of document.querySelectorAll('header a .material-symbols-outlined')) if (icon.textContent.trim() === 'shopping_cart') cartLinks.push(icon.closest('a'));
 for (const link of new Set(cartLinks)) {
-  link.href = '/tienda#carrito'; link.classList.add('mb-cart-link'); link.dataset.cartLink = '';
+  link.href = '/carrito'; link.classList.add('mb-cart-link'); link.dataset.cartLink = '';
   const count = document.createElement('span'); if (link.querySelector('#cart-count')) count.id = 'cart-count'; count.className = 'mb-cart-count'; count.dataset.cartBadge = ''; count.textContent = '0'; count.setAttribute('aria-hidden','true');
   link.replaceChildren(cartIcon(),count); link.setAttribute('aria-label','Mi carrito, 0 unidades');
   let account = link.parentElement.querySelector('[data-account-link]');

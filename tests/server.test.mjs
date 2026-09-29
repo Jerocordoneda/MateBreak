@@ -24,24 +24,8 @@ test('parallel session reads cannot overwrite the cart cookie', async t => {
  const { request } = await fixture(t); const res = await request('/api/sesion');
  assert.equal(res.status,200); assert.equal(res.headers.get('set-cookie'),null);
 });
-test('checkout requires verified login; body cannot impersonate a customer', async t => {
- const { request, calls } = await fixture(t); const res = await request('/api/pedidos', { method: 'POST', headers: { origin: 'https://matebreak.test', 'content-type': 'application/json' }, body: JSON.stringify({ usuario_id: 'forged' }) }); assert.equal(res.status, 401); assert.equal(calls.length, 0);
-});
-test('checkout passes only validated choices and verified identity to SQL', async t => {
- const {request,calls}=await fixture(t,{id:'verified-customer'});
- const idempotencia='11e98619-7262-4920-86b6-ef59bd0eb0f1';
- const body={idempotencia,pago:'transferencia',envio:'retiro',precio:-1,total:0,
-  usuario_id:'forged',rol:'administrador',variante_id:'999',sku:'MB-TER-NEG',
-  componentes:[{sku:'MB-TER-NEG',cantidad:999}]};
- const res=await request('/api/pedidos',{method:'POST',headers:{origin:'https://matebreak.test',
-  'content-type':'application/json'},body:JSON.stringify(body)});
- assert.equal(res.status,201);
- const call=calls.at(-1);
- assert.equal(call.name,'mb_comercio');
- assert.match(call.args.p_token_hash,/^[a-f0-9]{64}$/);
- assert.equal(call.args.p_usuario_id,'verified-customer');
- assert.equal(call.args.p_accion,'checkout');
- assert.deepEqual(call.args.p_datos,{idempotencia,direccion_id:undefined,pago:'transferencia',envio:'retiro'});
+test('legacy order endpoint cannot bypass the new checkout', async t => {
+ const { request, calls } = await fixture(t); const res = await request('/api/pedidos', { method: 'POST', headers: { origin: 'https://matebreak.test', 'content-type': 'application/json' }, body: JSON.stringify({ usuario_id: 'forged' }) }); assert.equal(res.status, 410); assert.equal(calls.length, 0);
 });
 test('cart ignores browser prices and owner; accepts only quantity and product id', async t => {
  const { request, calls } = await fixture(t, { id: 'real-user' }); const res = await request('/api/carrito/items/9', { method: 'PUT', headers: { origin: 'https://matebreak.test', 'content-type': 'application/json' }, body: JSON.stringify({ cantidad: 2, precio: 0, usuario_id: 'forged' }) }); assert.equal(res.status, 200); assert.deepEqual(calls[0].args.p_datos, { producto_id: '9', cantidad: 2 }); assert.equal(calls[0].args.p_usuario_id, 'real-user');

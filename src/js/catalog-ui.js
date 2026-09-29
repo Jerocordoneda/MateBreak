@@ -1,4 +1,4 @@
-import {getProducts,money,bestInstallment} from '../services/products.js';
+import {getProducts,money} from '../services/products.js';
 export function node(tag,text,cls){const el=document.createElement(tag);if(text!=null)el.textContent=text;if(cls)el.className=cls;return el;}
 export function productCard(p) {
   const card=node('article',null,'catalog-card'),link=node('a',null,'catalog-image');link.href='/productos/'+encodeURIComponent(p.slug);
@@ -9,9 +9,9 @@ export function productCard(p) {
   if(p.precio_original>p.precio)text.append(node('del',money(p.precio_original,p.moneda),'catalog-old'));
   text.append(node('strong',money(p.precio,p.moneda),'catalog-price'));
   if(p.descuento>0)text.append(node('span',`${Math.round(p.descuento)}% OFF`,'catalog-discount'));
-  if(p.precio_transferencia!=null)text.append(node('p',money(p.precio_transferencia,p.moneda)+' con transferencia','catalog-transfer'));
-  const installment=bestInstallment(p.cuotas);if(installment)text.append(node('p',`${installment.count} cuotas sin interés de ${money(installment.installment_value,p.moneda)}`,'catalog-installments'));
-  if(p.envio_gratis)text.append(node('p','Envío gratis','catalog-shipping'));
+  text.append(node('p','10% de descuento por transferencia en checkout','catalog-transfer'));
+  text.append(node('p','Cuotas según disponibilidad de Mercado Pago','catalog-installments'));
+  text.append(node('p','Envío gratis desde $80.000','catalog-shipping'));
   if(p.disponible===false)text.append(node('p','Sin stock','stock-warning'));
   const more=node('a','Elegir opciones →','button-secondary');more.href=link.href;text.append(more);card.append(text);return card;
 }

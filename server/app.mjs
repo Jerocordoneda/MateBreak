@@ -7,6 +7,10 @@ import { fileURLToPath } from 'node:url';
 import { inventoryRoutes } from './inventory.mjs';
 import { accountRole, accountRoutes } from './account.mjs';
 import { catalogRoutes } from './catalog.mjs';
+import { checkoutRoutes } from './checkout/routes.mjs';
+import { createCorreoArgentino } from './shipping/correo-argentino.mjs';
+import { createMercadoPago } from './payments/mercadopago.mjs';
+import { paymentRoutes } from './payments/routes.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -21,6 +25,8 @@ export function createApp(config, overrides = {}) {
   const cookieName = secure ? '__Host-mb_cart' : 'mb_cart';
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
   const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
+  const correo = overrides.correo ?? createCorreoArgentino(config.correo);
+  const mercadoPago = overrides.mercadoPago ?? createMercadoPago(config.mercadoPago);
   const authFactory = overrides.authFactory ?? ((req, res) => createServerClient(config.url, config.publishable, {
     cookieOptions: { httpOnly: true, secure, sameSite: 'lax', path: '/' },
     cookies: {
@@ -42,7 +48,7 @@ export function createApp(config, overrides = {}) {
     const bucket = limits.get(key) ?? { until: now + 60000, count: 0 };
     bucket.count++; limits.set(key, bucket);
     if (bucket.count > (req.path.startsWith('/auth') ? 20 : 180)) return res.status(429).json({ error: 'Demasiadas solicitudes. Intentá en un minuto.' });
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.path !== '/pagos/mercadopago/webhook') {
       if (req.headers.origin !== config.origin || req.headers['sec-fetch-site'] === 'cross-site') return res.status(403).json({ error: 'Origen no permitido' });
       if (!req.is('application/json')) return res.status(415).json({ error: 'Se requiere JSON' });
     }
@@ -110,6 +116,8 @@ export function createApp(config, overrides = {}) {
     res.redirect(error ? '/mi-cuenta?auth=error' : '/mi-cuenta');
   });
   catalogRoutes(app, { admin });
+  checkoutRoutes(app, { admin, config, hashToken, correo, mercadoPago });
+  paymentRoutes(app, { admin, mercadoPago });
   app.get('/api/metodos', async (req, res) => {
     const [pagos, envios] = await Promise.all([
       checked(admin.from('metodo_pago').select('codigo,nombre,instrucciones').eq('activo', true)),
@@ -131,27 +139,6 @@ export function createApp(config, overrides = {}) {
     }
     if (cart.estado === 'convertido') { rotateCart(req, res); cart = await rpc(req, 'carrito'); }
     res.json(cart);
-  });
-  app.get('/api/carrito/cotizacion', async (req, res) => {
-    const pago=typeof req.query.pago==='string'?req.query.pago:'';
-    const envio=typeof req.query.envio==='string'?req.query.envio:'';
-    if(!pago||!envio||pago==='mercadopago')throw fail(400,'Métodos inválidos');
-    const [payment,shipping]=await Promise.all([
-      checked(admin.from('metodo_pago').select('codigo').eq('codigo',pago).eq('activo',true).maybeSingle()),
-      checked(admin.from('metodo_envio').select('codigo,costo').eq('codigo',envio).eq('activo',true).maybeSingle()),
-    ]);
-    if(!payment||!shipping)throw fail(400,'Métodos no disponibles');
-    const cart=await rpc(req,'carrito');
-    const {data:quote,error}=await admin.rpc('mb_cotizar_catalogo',{p_carrito_id:cart.id,p_pago:pago});
-    if(error)throw fail(503,'No se pudo cotizar el carrito');
-    const variantIds=quote.items.filter(item=>item.variante_id).map(item=>item.producto_id);
-    let free=false;
-    if(variantIds.length===quote.items.length&&variantIds.length){
-      const products=await checked(admin.from('catalogo_producto').select('producto_id,envio_gratis').in('producto_id',variantIds));
-      free=products.length===new Set(variantIds.map(String)).size&&products.every(product=>product.envio_gratis);
-    }
-    const costo_envio=free?0:Number(shipping.costo);
-    res.json({subtotal:Number(quote.subtotal),costo_envio,total:Number(quote.subtotal)+costo_envio,moneda:'ARS'});
   });
   app.put('/api/carrito/items/:id', async (req, res) => {
     if (!/^[1-9][0-9]{0,18}$/.test(req.params.id) || !Number.isInteger(req.body.cantidad) || req.body.cantidad < 0 || req.body.cantidad > 99) throw fail(400, 'Producto o cantidad inválidos');
@@ -185,12 +172,7 @@ export function createApp(config, overrides = {}) {
     await checked(req.auth.from('direccion').delete().eq('id', req.params.id).eq('usuario_id', requireUser(req))); res.json({ ok: true });
   });
   app.get('/api/pedidos', async (req, res) => { requireUser(req); res.json(await rpc(req, 'pedidos')); });
-  app.post('/api/pedidos', async (req, res) => {
-    requireUser(req);
-    if (!uuid(req.body.idempotencia) || (req.body.direccion_id && !uuid(req.body.direccion_id))) throw fail(400, 'Identificador inválido');
-    const { idempotencia, direccion_id, pago, envio } = req.body;
-    res.status(201).json(await rpc(req, 'checkout', { idempotencia, direccion_id, pago, envio }));
-  });
+  app.post('/api/pedidos', (req, res) => res.status(410).json({ error: 'Usá el checkout actual para confirmar tu pedido' }));
   app.post('/api/pedidos/:id/cancelar', async (req, res) => {
     requireUser(req); if (!uuid(req.params.id)) throw fail(400, 'Pedido inválido');
     res.json(await rpc(req, 'cancelar', { id: req.params.id }));
@@ -201,7 +183,10 @@ export function createApp(config, overrides = {}) {
   // Explicit static allowlist: never expose the repository, .env or node_modules.
   app.use('/src', express.static(path.join(root, 'src'), { dotfiles: 'deny' }));
   app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(root, 'index.html')));
-  app.get('/tienda', (req, res) => res.sendFile(path.join(root, 'src/pages/tienda.html')));
+  app.get('/tienda', (req, res) => res.sendFile(path.join(root, 'src/pages/catalogo.html')));
+  app.get('/carrito', (req, res) => res.sendFile(path.join(root, 'src/pages/tienda.html')));
+  app.get('/checkout', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout.html')));
+  app.get('/checkout/resultado', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout-resultado.html')));
   app.get('/productos/:slug', (req,res)=>res.sendFile(path.join(root,'src/pages/producto.html')));
   app.get('/mi-cuenta', (req, res) => res.sendFile(path.join(root, 'src/pages/cuenta.html')));
   app.use((error, req, res, next) => {
