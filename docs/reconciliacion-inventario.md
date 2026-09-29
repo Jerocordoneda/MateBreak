@@ -7,12 +7,12 @@ El inventario representa piezas físicas sin grabar. Los diseños publicados com
 | Medida | Resultado |
 | --- | ---: |
 | Variantes con mapping completo aprobado | 217/217 |
-| Variantes comprables con las existencias actuales | 33/217 |
-| Productos con una variante comprable | 33/106 |
+| Variantes comprables al verificar el stock de 1.000 cajas | 217/217 |
+| Productos con una variante comprable | 106/106 |
 | Combos con composición completa | 56/56 |
 | Variantes pendientes de decisión | 0 |
 
-`MB-CAJA-MATE` se creó con **0 unidades** y abastecimiento por stock. Administración debe registrar la cantidad física real mediante **Inventario → Recibir** o conteo; hasta entonces, ninguna variante que incluya mate puede pasar checkout. Esto es la consecuencia deliberada de que cada mate requiere una caja. Los 13 sets parrilleros, que no contienen mate, no consumen cajas y siguen comprables; las tablas continúan como insumo a pedido.
+`MB-CAJA-MATE` se creó con **0 unidades** y abastecimiento por stock; posteriormente el equipo registró **1.000 unidades**. Al verificarse el 28/09/2026, las 217 variantes tenían stock o abastecimiento a pedido suficiente. La comprabilidad se recalcula con cada cambio de existencias. Los 13 sets parrilleros, que no contienen mate, no consumen cajas; las tablas continúan como insumo a pedido.
 
 Se aprobaron 86 mappings de variantes de combos en esta iteración: 24 deluxe, 38 materos y 24 premium. Todas sus piezas se relacionaron con SKU físicos existentes. Los termos son plateados salvo las dos variantes de `SET MATERO MUNDIAL 2026`, cuyo termo negro se ve en la galería importada; títulos y descripciones no lo contradicen. Ninguna variante permite al cliente elegir color. Sumados a los mappings anteriores, quedan 217 aprobados.
 
