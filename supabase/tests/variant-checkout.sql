@@ -15,7 +15,10 @@ begin
  join public.catalogo_variante va on va.id=a.variante_id
  join public.catalogo_variante_mapeo b on b.variante_id>a.variante_id
  join public.catalogo_variante vb on vb.id=b.variante_id and vb.producto_id=va.producto_id
- where a.aprobado and b.aprobado and exists(select 1 from public.catalogo_promocion promo where promo.producto_id=va.producto_id and promo.texto='20% OFF Comprando 2 o más') limit 1;
+ join public.mb_catalogo_disponibilidad() da on da.variante_id=a.variante_id
+ join public.mb_catalogo_disponibilidad() db on db.variante_id=b.variante_id
+ where a.aprobado and b.aprobado and da.comprable and da.con_stock and db.comprable and db.con_stock
+  and exists(select 1 from public.catalogo_promocion promo where promo.producto_id=va.producto_id and promo.texto='20% OFF Comprando 2 o más') limit 1;
  if first_variant is null then raise exception 'Faltan dos variantes aprobadas del mismo producto'; end if;
  select producto_simple_id into physical from public.catalogo_variante_componente where variante_id=first_variant;
  select stock into initial_stock from public.producto_simple where id_producto=physical;

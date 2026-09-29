@@ -1,7 +1,7 @@
 const $ = selector => document.querySelector(selector);
 const fmt = value => new Intl.NumberFormat('es-AR').format(value);
 const node = (tag, text, className) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (className) el.className = className; return el; };
-let products = [], selected, pending, busy = false, historySequence = 0;
+let products = [], selected, pending, pendingReceive, busy = false, historySequence = 0;
 const types = { inicial: 'Carga inicial', ingreso: 'Ingreso', egreso: 'Egreso', conteo: 'Conteo físico', reserva: 'Reserva', liberacion: 'Liberación' };
 async function api(route, options = {}) {
   const response = await fetch('/api' + route, { credentials: 'same-origin', ...options, headers: { ...options.headers, ...(options.body ? { 'Content-Type': 'application/json' } : {}) } });
@@ -38,9 +38,10 @@ function render() {
     state.append(badges); row.append(state);
     const actions = node('td'), group = node('div',undefined,'row-actions');
     const adjust = node('button','Ajustar'); adjust.addEventListener('click',() => openAdjust(p)); adjust.setAttribute('aria-label','Ajustar ' + p.nombre);
+    const receive=node('button','Recibir','secondary');receive.addEventListener('click',()=>openReceive(p));receive.setAttribute('aria-label','Registrar recepción de '+p.nombre);
     const history = node('button','↗','quiet icon-button'); history.title = 'Ver movimientos'; history.setAttribute('aria-label','Movimientos de ' + p.nombre); history.addEventListener('click',() => loadHistory(p).catch(e => message(e.message,true)));
     const settings = node('button','⋯','quiet icon-button'); settings.title = 'Configurar ficha'; settings.setAttribute('aria-label','Configurar ' + p.nombre); settings.addEventListener('click',() => openSettings(p));
-    group.append(adjust,history,settings); actions.append(group); row.append(actions); return row;
+    group.append(adjust,receive,history,settings); actions.append(group); row.append(actions); return row;
   }));
   if (!list.length) { const row = node('tr'), cell = node('td','No hay artículos para este filtro.','empty'); cell.colSpan = 6; row.append(cell); $('#inventory').append(row); }
 }
@@ -63,8 +64,38 @@ async function loadHistory(product) {
 }
 async function refresh() {
   $('#refresh').disabled = true;
-  try { products = await api('/admin/inventario'); render(); await loadHistory(); }
+  try { products = await api('/admin/inventario'); render(); await Promise.all([loadHistory(),loadReceipts(),loadPreparation()]); }
   finally { $('#refresh').disabled = false; }
+}
+const money=value=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(Number(value));
+async function loadReceipts(){
+  const receipts=await api('/admin/inventario/recepciones');
+  $('#receipts-list').replaceChildren(...receipts.map(receipt=>{
+    const row=node('article',undefined,'movement'),quantity=node('span','+'+fmt(receipt.cantidad),'delta');
+    const details=node('div');details.append(node('strong',receipt.nombre+' · '+receipt.sku),
+      node('p',`${money(receipt.costo_unitario)} por unidad · ${receipt.proveedor||'Proveedor no indicado'} · ${receipt.motivo}`),
+      node('small','Registró: '+receipt.actor_nombre));
+    const date=node('time',receipt.fecha);row.append(quantity,details,date);return row;
+  }));
+  if(!receipts.length)$('#receipts-list').append(node('p','Todavía no se registraron recepciones con costo.','empty'));
+}
+const nextPreparation={pendiente_preparar:['enviado_grabar','Marcar enviado a grabar'],enviado_grabar:['grabado_recibido','Marcar grabado recibido'],grabado_recibido:['listo_despachar','Marcar listo para despacho']};
+async function loadPreparation(){
+  const data=await api('/admin/preparacion');
+  $('#preparation-summary').replaceChildren(...data.resumen.map(item=>node('span',`${item.nombre}: ${fmt(item.cantidad)}`,'badge')));
+  $('#preparation-list').replaceChildren(...data.items.map(item=>{
+    const row=node('article',undefined,'movement'),quantity=node('span',fmt(item.cantidad),'delta');
+    const details=node('div');details.append(node('strong',item.base_fisica+' · '+item.sku),
+      node('p',`${item.producto_vendido} · Pedido ${item.pedido_id.slice(0,8).toUpperCase()} · ${item.estado.replaceAll('_',' ')}`));
+    if(item.personalizacion)details.append(node('p',item.personalizacion));
+    if(item.pendiente_abastecimiento)details.append(node('small',`Faltan recibir ${fmt(item.pendiente_abastecimiento)} unidades físicas.`));
+    const next=nextPreparation[item.estado];
+    if(next){const button=node('button',next[1],'secondary');button.disabled=!!item.pendiente_abastecimiento;
+      button.onclick=async()=>{button.disabled=true;try{await api('/admin/preparacion/'+item.id+'/estado',{method:'POST',body:JSON.stringify({estado:next[0],nota:''})});await loadPreparation();message('Estado de grabado actualizado.');}
+      catch(error){message(error.message,true);button.disabled=false;}};details.append(button);}
+    const date=node('time',new Date(item.creado_en).toLocaleDateString('es-AR'));row.append(quantity,details,date);return row;
+  }));
+  if(!data.items.length)$('#preparation-list').append(node('p','No hay piezas pagadas pendientes de grabado.','empty'));
 }
 function preview() {
   const type = $('#adjust-type').value, input = $('#adjust-quantity'), quantity = input.value === '' ? null : Number(input.value);
@@ -80,6 +111,13 @@ function openAdjust(product) {
   $('#adjust-title').textContent = product.nombre;
   $('#adjust-current').textContent = `Físico: ${fmt(product.fisico)} · Reservado: ${fmt(product.reservado)} · Disponible: ${fmt(product.disponible)}`;
   preview(); $('#adjust-dialog').showModal(); $('#adjust-quantity').focus();
+}
+function openReceive(product){
+  selected=product;pendingReceive=null;$('#receive-form').reset();$('#receive-error').hidden=true;
+  $('#receive-title').textContent='Recibir · '+product.nombre;
+  $('#receive-current').textContent=`SKU ${product.sku} · Disponible: ${fmt(product.disponible)} · Reservado: ${fmt(product.reservado)}`;
+  const now=new Date();$('#receive-form [name=fecha]').value=new Date(now.getTime()-now.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  $('#receive-dialog').showModal();$('#receive-form [name=cantidad]').focus();
 }
 function openSettings(product) {
   selected = product; const form = $('#settings-form'); $('#settings-error').hidden = true;
@@ -118,11 +156,28 @@ $('#settings-form').addEventListener('submit',async event => {
   finally { lockForm(form,false); }
   if (saved) await refresh().catch(e => message('La ficha se guardó, pero no pudimos actualizar la vista. ' + e.message,true));
 });
+$('#receive-form').addEventListener('submit',async event=>{
+  event.preventDefault();if(busy)return;
+  const form=event.currentTarget,data=new FormData(form);
+  const body={cantidad:Number(data.get('cantidad')),costo_unitario:data.get('costo_unitario'),fecha:data.get('fecha'),
+    proveedor:data.get('proveedor'),motivo:data.get('motivo').trim(),disponible_esperado:selected.disponible,reservado_esperado:selected.reservado};
+  const signature=JSON.stringify({id:selected.id,...body});
+  if(!pendingReceive||pendingReceive.signature!==signature)pendingReceive={signature,id:crypto.randomUUID()};
+  body.idempotencia=pendingReceive.id;lockForm(form,true);$('#receive-error').hidden=true;
+  let saved=false;
+  try{await api('/admin/inventario/'+selected.id+'/recepciones',{method:'POST',body:JSON.stringify(body)});
+    saved=true;$('#receive-dialog').close();message('Recepción registrada con costo, fecha y responsable.');}
+  catch(error){$('#receive-error').textContent=error.message;$('#receive-error').hidden=false;message(error.message,true);}
+  finally{lockForm(form,false);}
+  if(saved)await refresh().catch(error=>message('La recepción se guardó, pero no pudimos actualizar la vista. '+error.message,true));
+});
 for (const el of document.querySelectorAll('[data-close]')) el.addEventListener('click',() => { if (!busy) el.closest('dialog').close(); });
 for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('cancel',event => { if (busy) event.preventDefault(); });
 $('#adjust-type').addEventListener('change',preview); $('#adjust-quantity').addEventListener('input',preview);
 $('#search').addEventListener('input',render); $('#filter').addEventListener('change',render);
 $('#refresh').addEventListener('click',() => refresh().then(() => message('Inventario actualizado.')).catch(e => message(e.message,true)));
+$('#refresh-receipts').addEventListener('click',()=>loadReceipts().catch(e=>message(e.message,true)));
+$('#refresh-preparation').addEventListener('click',()=>loadPreparation().catch(e=>message(e.message,true)));
 $('#all-history').addEventListener('click',() => loadHistory().catch(e => message(e.message,true)));
 $('#logout').addEventListener('click',async () => { try { await api('/auth/logout',{method:'POST',body:'{}'}); location.replace('/tienda#cuenta'); } catch(e) { message(e.message,true); } });
 refresh().catch(e => message(e.message,true));

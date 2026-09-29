@@ -83,7 +83,7 @@ Se habilitó la cuenta existente y confirmada que indicó el usuario: `jerocordo
 
 Se cargaron 11 productos base, con 5.354 unidades aproximadas: imperial calabaza 1.200, imperial algarrobo 1.200, camionero algarrobo 700, mate acero 700, termo negro 800, termo plateado 24, cuchillo inoxidable 500, matera 60, Quencher 70, yerbera 100, tabla 0 (fabricación a pedido). Todos quedan inactivos y con precio NULL; no se pueden publicar sin definir precio. Los materiales desconocidos se dejaron como “Por confirmar”.
 
-Cada SKU corresponde a una pieza física, no a un diseño grabado. La futura personalización debe guardarse en el pedido y compartir el producto base. Aún no se agregó un selector de diseños ni un flujo de órdenes al grabador.
+Cada SKU corresponde a una pieza física, no a un diseño grabado. La personalización se guarda en el pedido y comparte el producto base. Las piezas personalizadas de pedidos pagados aparecen ahora en la lista interna de preparación/grabado; el selector de diseños existente se conserva.
 
 ### Significado de las cantidades
 
@@ -94,7 +94,7 @@ Cada SKU corresponde a una pieza física, no a un diseño grabado. La futura per
 - Egreso: retira unidades libres por rotura, pérdida u otro motivo. Nunca consume reservas.
 - Conteo: reemplaza el total físico por el contado y calcula disponible = contado − reservado. Rechaza contar menos que lo reservado y quita la etiqueta “Aproximado”.
 
-Un producto “a pedido” no genera stock ni habilita ventas sin existencias. Registrar la recepción del carpintero como ingreso. El mínimo genera una alerta si el disponible queda por debajo; el stock cero también alerta, salvo fabricación a pedido.
+Un producto “a pedido” permite vender sin existencias, pero registra una necesidad física pendiente y no genera stock ficticio. La recepción controlada incorpora las unidades y las asigna a pedidos pagados. No se puede despachar mientras falten piezas. El mínimo genera una alerta si el disponible queda por debajo; el stock cero también alerta, salvo fabricación a pedido.
 
 ### Protección y trazabilidad
 
@@ -152,7 +152,7 @@ El vendedor informa el precio unitario efectivamente vendido en ARS. La base cal
 
 ## Variantes del catálogo
 
-`20260928210316_ars_variant_checkout.sql` fija ARS sin convertir importes y relaciona cada variante aprobada con uno o más SKU de `producto_simple` mediante `catalogo_variante_mapeo` y `catalogo_variante_componente`. La migración `20260928232227_reconcile_camionero_algarrobo.sql` aprobó seis camioneros de algarrobo sin bombilla cuya descripción confirma el SKU base. Hay 47 variantes comprables y 170 pendientes; ningún set importado tiene todavía composición física completa aprobada. El análisis exhaustivo se conserva en `docs/reconciliacion-inventario.md` y `docs/reconciliacion-variantes.csv`.
+`20260928210316_ars_variant_checkout.sql` fija ARS sin convertir importes y relaciona cada variante aprobada con uno o más SKU de `producto_simple` mediante `catalogo_variante_mapeo` y `catalogo_variante_componente`. La migración `20260928232227_reconcile_camionero_algarrobo.sql` aprobó seis camioneros de algarrobo sin bombilla. Las migraciones `20260929000621` a `20260929001306` agregaron 68 mappings, el SKU único de bombilla con stock cero, pedidos de fabricación, recepciones con costo y preparación para grabado. Hay 115/217 variantes con mapping aprobado, 65/217 comprables, 46/106 productos comprables y 13/56 combos completos. Las 102 variantes restantes y sus decisiones agrupadas se documentan en `docs/reconciliacion-inventario.md` y `docs/reconciliacion-variantes.csv`.
 
 La ficha indica si la variante puede comprarse y si tiene stock. El carrito conserva variantes y personalización; el checkout calcula en SQL el precio de la variante, el importe por transferencia y la promoción documentada del 20% al comprar dos o más mates personalizados de esa categoría. Cada variante genera su propia línea de pedido. La reserva suma todos los insumos físicos de las líneas, toma el bloqueo global de inventario y vence a las 24 horas. La clave de idempotencia evita duplicar pedido o reserva. El navegador puede consultar una cotización, pero el checkout recalcula todo dentro de la transacción.
 

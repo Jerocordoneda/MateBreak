@@ -24,35 +24,24 @@ const mateFor=options=>options['MODELO DE MATE']==='IMPERIAL DE CALABAZA'?'MB-IM
 const excerpt=s=>String(s||'').replace(/\s+/g,' ').slice(0,220);
 function classify(product,variant){
   const name=product.nombre,options=variant.opciones||{},matero=mateFor(options);
-  const bombilla=Object.entries(options).some(([key,value])=>/BOMBILLA/i.test(key)&&value==='SI');
   const evidence=product.componentes.map(component=>component.evidencia).join(' | ')||product.descripcion;
-  if(name==='BOMBILLA DE ACERO PICO DE LORO')return {
-    clase:'C',sku:'—',grupo:'bombilla',motivo:'No existe ningún SKU de bombilla en el inventario.',faltantes:'Bombilla de acero pico de loro',evidencia:evidence};
   if(product.tipo==='combo'){
-    if(name.startsWith('SET PARRILLERO'))return {
-      clase:'B',sku:'MB-TABLA? + MB-CUC-INOX?',grupo:'tabla_cuchillo',
-      motivo:'La descripción indica tabla 20×30 y cuchillo premium; los SKU existentes no detallan tamaño ni modelo. MB-TABLA está a pedido y sin stock.',
-      faltantes:'Confirmar equivalencia de tabla y cuchillo; definir abastecimiento de tabla',evidencia:evidence};
     if(name.startsWith('SET DELUXE'))return {
-      clase:'B',sku:`${matero} + MB-TABLA? + MB-CUC-INOX?`,grupo:'tabla_cuchillo',
-      motivo:'Modelo de mate inequívoco; tabla 20×30 y cuchillo premium no tienen especificación suficiente en los SKU existentes. MB-TABLA está a pedido y sin stock.',
-      faltantes:'Confirmar equivalencia de tabla y cuchillo; definir abastecimiento de tabla',evidencia:evidence};
+      clase:'C',sku:`${matero} + MB-TABLA + MB-CUC-INOX`,grupo:'caja_regalo_deluxe',
+      motivo:'Mate, tabla 20×30 y cuchillo identificados; la caja de regalo premium incluida no tiene SKU físico ni abastecimiento confirmado.',
+      faltantes:'Caja de regalo premium MateBreak: crear SKU y definir si se controla por stock o a pedido',evidencia:evidence};
     return {
-      clase:'C',sku:`${matero} + MB-TER-NEG?/MB-TER-PLA? + bombilla sin SKU${name.startsWith('SET PREMIUM')?' + MB-TABLA? + MB-CUC-INOX?':''}`,
-      grupo:'combos_bombilla',motivo:'El set incluye bombilla y termo media manija; falta SKU de bombilla y el termo exacto no está identificado. No se aprueba una composición parcial.',
-      faltantes:'Bombilla física; confirmar termo base'+(name.startsWith('SET PREMIUM')?'; confirmar tabla 20×30 y cuchillo premium':''),evidencia:evidence};
+      clase:'C',sku:`${matero} + MB-BOM-PICO-LORO + MB-TER-NEG?/MB-TER-PLA?${name.startsWith('SET PREMIUM')?' + MB-TABLA + MB-CUC-INOX':''}`,
+      grupo:'combo_termo_caja',motivo:'El termo incluido no identifica color; la caja de regalo premium incluida tampoco tiene SKU físico.',
+      faltantes:'Seleccionar color de termo negro/plateado en la variante; crear SKU de caja de regalo premium y definir abastecimiento',evidencia:evidence};
   }
-  if(bombilla)return {
-    clase:'C',sku:`${matero||(/CAMIONERO/i.test(name)?'MB-CAM-ALG':/ALGARROBO/i.test(name)?'MB-IMP-ALG':'MB-IMP-CAL?')} + bombilla sin SKU`,
-    grupo:'bombilla_opcional',motivo:'La opción SI agrega una bombilla física sin SKU. El mate base se identifica sólo cuando el modelo está explícito.',
-    faltantes:'Bombilla física de acero / pico de loro',evidencia:evidence};
   if(name==='MATERA NEGRA ECOCUERO')return {
     clase:'B',sku:'MB-MATERA?',grupo:'matera',motivo:'El SKU Matera no especifica color negro ni ecocuero.',
     faltantes:'Confirmar que MB-MATERA es la matera negra de ecocuero',evidencia:evidence};
   if(name.startsWith('TERMO'))return {
     clase:'B',sku:name.includes('PLATEADO')?'MB-TER-PLA?':name.includes('NEGRO')?'MB-TER-NEG?':'MB-TER-NEG? / MB-TER-PLA?',
-    grupo:'termos',motivo:'Los SKU físicos sólo indican color; no acreditan 1 L, media manija, pico cebador ni base de grabado.',
-    faltantes:'Confirmar modelo/color del termo físico para esta familia',evidencia:evidence};
+    grupo:'termos_sin_color',motivo:'El termo personalizado de 1 L no ofrece elección de color aunque existen SKU físicos negro y plateado.',
+    faltantes:'Agregar selección explícita de color negro/plateado',evidencia:evidence};
   if(name==='IMPERIAL NEGRO DE ALPACA'||name==='MI MATE IMPERIAL - CREÁ TU DISEÑO ACÁ')return {
     clase:'B',sku:'MB-IMP-CAL?',grupo:'imperial_alpaca',motivo:'La ficha indica calabaza y detalles de alpaca/cuero negro; el SKU imperial de calabaza no identifica esos acabados.',
     faltantes:'Confirmar que MB-IMP-CAL es también esta base con alpaca/cuero negro',evidencia:evidence};

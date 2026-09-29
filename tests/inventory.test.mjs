@@ -48,3 +48,19 @@ test('inventory rejects cross-site changes before authorization or data access',
  const {request,calls} = await fixture(t,{id:'team'},true), options = write(adjustment); options.headers.origin = 'https://other.test';
  assert.equal((await request('/api/admin/inventario/1/ajustes',options)).status,403); assert.equal(calls.length,0);
 });
+
+test('receipts and preparation use verified team identity and validated fields',async t => {
+ const {request,calls}=await fixture(t,{id:'real-team'},true);
+ const body={cantidad:5,costo_unitario:'5200.00',fecha:'2026-09-28',proveedor:'Proveedor',motivo:'Mercadería controlada',idempotencia:'11e98619-7262-4920-86b6-ef59bd0eb0f1',disponible_esperado:0,reservado_esperado:0,actor_id:'forged',stock:999};
+ assert.equal((await request('/api/admin/inventario/7/recepciones',write(body))).status,200);
+ assert.deepEqual(calls.at(-1),{name:'mb_registrar_recepcion',args:{p_actor_id:'real-team',p_datos:{producto_id:'7',cantidad:5,costo_unitario:'5200.00',fecha:'2026-09-28',proveedor:'Proveedor',motivo:'Mercadería controlada',idempotencia:body.idempotencia,disponible_esperado:0,reservado_esperado:0}}});
+ for(const invalid of [{cantidad:0},{costo_unitario:'abc'},{fecha:'today'},{proveedor:3},{motivo:''},{idempotencia:'bad'}]) assert.equal((await request('/api/admin/inventario/7/recepciones',write({...body,...invalid}))).status,400);
+ assert.equal((await request('/api/admin/inventario/recepciones')).status,200);
+ assert.equal(calls.at(-1).args.p_actor_id,'real-team');
+ assert.equal((await request('/api/admin/preparacion')).status,200);
+ assert.equal(calls.at(-1).args.p_actor_id,'real-team');
+ const job='11e98619-7262-4920-86b6-ef59bd0eb0f1';
+ assert.equal((await request(`/api/admin/preparacion/${job}/estado`,write({estado:'enviado_grabar',nota:'Enviado',actor_id:'forged'}))).status,200);
+ assert.deepEqual(calls.at(-1),{name:'mb_preparacion',args:{p_actor_id:'real-team',p_accion:'avanzar',p_datos:{id:job,estado:'enviado_grabar',nota:'Enviado'}}});
+ assert.equal((await request(`/api/admin/preparacion/${job}/estado`,write({estado:'despachado',nota:''}))).status,400);
+});
