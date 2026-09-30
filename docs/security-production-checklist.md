@@ -1,6 +1,6 @@
 # Preparación de seguridad para producción
 
-Estado 2026-09-29: **no habilitar pagos reales ni desplegar aún**. La revisión local no reemplaza pruebas contra un entorno de staging aislado con la configuración real. Cada casilla requiere evidencia fechada y responsable.
+Estado 2026-09-29: **no habilitar pagos reales ni desplegar aún**. La [configuración de Supabase local](local-development.md) quedó preparada, pero Docker Desktop aún no está disponible; el reset desde cero y los tests Auth/RLS siguen pendientes. La revisión local no reemplaza pruebas contra un entorno de staging aislado con la configuración real. Cada casilla requiere evidencia fechada y responsable.
 
 ## Antes del despliegue
 
@@ -18,13 +18,13 @@ Estado 2026-09-29: **no habilitar pagos reales ni desplegar aún**. La revisión
 - [ ] Validar que el proceso de expiración de reservas corre una sola vez o es idempotente entre réplicas; probar recuperación ante caída entre reserva, creación de preferencia y webhook.
 - [ ] Documentar runbook de incidentes y simulacro: revocar/rotar secret de Supabase, MP token y secreto webhook, MiCorreo, sesiones de admin; detener checkout y reconciliar pagos/reservas pendientes. Verificar backups/restauración antes de reabrir ventas.
 
-## Evidencia de esta iteración
+## Evidencia disponible
 
-- Node: 77/77 (incluye headers, abuso por IP, origen de producción, cuerpos/IDs inválidos y firma de webhook).
-- PostgreSQL local aislado: privilegios 1/1; stock concurrente 20/20; lifecycle minorista 9/9; concurrencia minorista 2/2.
-- SQL histórico 18/18: **no ejecutado en esta iteración**. Requiere stack Supabase local completo; Docker no está disponible en esta máquina. El baseline `c2248fc` ya lo tenía validado, pero no se presenta como nueva prueba.
-- `npm audit --json`: 0 vulnerabilidades reportadas en dependencias instaladas al momento de la revisión. El resultado cambia con nuevas alertas.
-- Supabase real: únicamente consultas de catálogo SQL, migraciones y Advisor; ninguna DDL/DML ni test ofensivo.
+- Node: 78/78 en la preparación local (77/77 en la auditoría `43aa55b`).
+- PostgreSQL local aislado en la auditoría anterior: privilegios 1/1; stock concurrente 20/20; lifecycle minorista 9/9; concurrencia minorista 2/2. **No repetidos en esta preparación**.
+- SQL histórico 18/18: **no ejecutado en esta preparación**. Requiere stack Supabase local completo; Docker no está disponible en esta máquina. El baseline `c2248fc` lo tenía validado, pero no se presenta como nueva prueba.
+- `npm audit --json`: 0 vulnerabilidades reportadas también en esta preparación. El resultado cambia con nuevas alertas.
+- Supabase real: solo consultas de metadatos en la auditoría anterior; ninguna DDL/DML ni test ofensivo. En esta preparación no se accedió al proyecto real.
 
 ## Respuesta a incidentes
 

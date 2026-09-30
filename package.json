@@ -3,6 +3,10 @@
     "dev": "node --env-file-if-exists=.env server/index.mjs",
     "start": "node --env-file-if-exists=.env server/index.mjs",
     "test": "node --test tests/*.test.mjs",
+    "supabase:start": "node scripts/local-supabase.mjs start",
+    "supabase:stop": "node scripts/local-supabase.mjs stop",
+    "supabase:status": "node scripts/local-supabase.mjs status",
+    "supabase:reset:local": "node scripts/local-supabase.mjs reset",
     "catalog:extract": "node scripts/import-matebreak-products.mjs --extract",
     "catalog:import": "node --env-file-if-exists=.env scripts/import-matebreak-products.mjs --apply",
     "catalog:reconcile": "node --env-file-if-exists=.env scripts/reconcile-inventory.mjs --out=docs/reconciliacion-variantes.csv"
@@ -16,5 +20,8 @@
     "cheerio": "1.1.2",
     "express": "5.2.1",
     "mathjs": "^15.2.0"
+  },
+  "devDependencies": {
+    "supabase": "2.118.0"
   }
 }

@@ -29,6 +29,14 @@ const config = {
   parcelProfiles: process.env.CORREO_VERIFIED_PARCELS_JSON ? JSON.parse(process.env.CORREO_VERIFIED_PARCELS_JSON) : {},
 };
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
+if (process.env.MATEBREAK_LOCAL_ONLY === '1') {
+  const endpoint = new URL(config.url), appOrigin = new URL(config.origin);
+  if (!['localhost','127.0.0.1','[::1]'].includes(endpoint.hostname) || endpoint.port !== '54321' ||
+      !['localhost','127.0.0.1','[::1]'].includes(appOrigin.hostname) || config.production ||
+      shippingMode !== 'mock' || paymentsMode !== 'mock') {
+    throw Error('MATEBREAK_LOCAL_ONLY requiere Supabase localhost:54321, APP_ORIGIN local y proveedores mock.');
+  }
+}
 if (production && new URL(config.url).protocol !== 'https:') throw Error('SUPABASE_URL debe usar HTTPS en producción');
 const { app, admin } = createApp(config);
 const server = app.listen(port, () => console.log(`MateBreak: ${config.origin}/ · Shipping ${shippingMode} · Payments ${paymentsMode}`));

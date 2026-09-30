@@ -25,7 +25,7 @@ flowchart LR
 
 ## Ejecutar localmente
 
-Requiere **Node.js 22+** y un proyecto Supabase configurado. Copiá `.env.example` a `.env`, completá las variables de Supabase y ejecutá:
+Requiere **Node.js 22+** y un proyecto Supabase configurado. Para levantar una copia descartable con Docker Desktop, seguí la [guía de desarrollo local en Windows](docs/local-development.md). Docker aloja solo Supabase; el frontend y el backend Node siguen ejecutándose normalmente. `.env.example` apunta a localhost y debe completarse con claves generadas por **Supabase local**.
 
 ```bash
 npm install
