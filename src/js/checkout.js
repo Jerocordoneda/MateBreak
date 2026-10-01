@@ -7,20 +7,24 @@ const suffix = direct ? '?directa=1' : '';
 let context, recipient, delivery = 'retiro', shippingQuote = null, payment = '', busy = false;
 let catalogImages = new Map();
 let agencies = [];
+let agencyRequest = 0;
 function renderPickup() {
   $('#pickup-selection').hidden = delivery !== 'correo_sucursal' || !context.pickupEnabled;
 }
 async function loadPickupAgencies() {
+  const request = ++agencyRequest;
   shippingQuote = null; agencies = []; $('#pickup-address').textContent = '';
   const select = $('#pickup-agency'); select.replaceChildren(); select.disabled = true;
   const province = $('#pickup-province').value;
   if (!province) return;
   try {
-    agencies = await api('/checkout/sucursales?provincia=' + encodeURIComponent(province));
+    const loaded = await api('/checkout/sucursales?provincia=' + encodeURIComponent(province));
+    if (request !== agencyRequest) return;
+    agencies = loaded;
     const placeholder = node('option', 'Elegí una sucursal'); placeholder.value = ''; select.append(placeholder);
     for (const agency of agencies) { const option = node('option', agency.name); option.value = agency.code; select.append(option); }
     select.disabled = !agencies.length;
-  } catch (cause) { error(cause.message); }
+  } catch (cause) { if (request === agencyRequest) error(cause.message); }
 }
 
 async function api(path, options = {}) {
@@ -113,6 +117,10 @@ function showStep(step) {
       summaryRow('Dirección', `${recipient.calle} ${recipient.numero}, ${recipient.codigo_postal} · ${recipient.ciudad}, ${recipient.provincia}`),
       summaryRow('Entrega', context.deliveries.find(option => option.codigo === delivery)?.nombre || delivery),
     );
+    if (delivery === 'correo_sucursal') {
+      const agency = agencies.find(a => a.code === $('#pickup-agency').value);
+      summary.append(summaryRow('Sucursal de prueba', `${agency?.name || ''} · ${agency?.address?.postalCode || ''}`));
+    }
   }
   error(''); window.scrollTo({ top: 0, behavior: 'smooth' });
 }

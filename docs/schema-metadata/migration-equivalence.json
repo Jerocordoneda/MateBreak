@@ -223,5 +223,14 @@
     "localTokenMd5": "517ca8b85b51a84057771aee90a52310",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261001112820_logistics_admin_recovery.sql",
+    "version": "20261001112820",
+    "name": "logistics_admin_recovery",
+    "remoteVersion": null,
+    "localTokenMd5": "1fd4d710009b9af89517c28c17ada59c",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]

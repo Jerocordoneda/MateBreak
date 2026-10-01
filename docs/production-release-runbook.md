@@ -1,15 +1,16 @@
 # Liberación manual de MateBreak: procedimiento previo a main
 
-**No ejecutar comandos remotos de este documento en esta iteración.** El usuario
-confirmó que GitHub Integration → Deploy to production está **activado**, rama
-productiva `main`, working directory `.`, Automatic branching deshabilitado.
-El ensayo está limitado al stack local descartable; no autoriza operar producción.
+**No ejecutar comandos remotos de este documento en esta iteración.** El 01/10/2026
+el usuario confirmó que desactivó manualmente GitHub Integration → Deploy to production.
+Rama productiva `main`, working directory `.`, Automatic branching deshabilitado.
+No se pudo verificar automáticamente el interruptor: el navegador disponible pide login
+y los conectores no exponen esa opción. Se requiere reconfirmación del responsable
+antes de publicar la rama/PR. Ningún permiso de merge o de producción está incluido.
 
-**STOP previo a publicar o mergear:** el responsable debe deshabilitar explícitamente
-Deploy to production y comprobar que quedó guardado. No tocar history para resolver
-el check de GitHub antes de cerrar esa automatización: al alinear history se podría
-desbloquear el próximo despliegue automático. No usar un fallo de migraciones como
-protección. No hacer push/PR/merge desde esta tarea mientras siga el bloqueo.
+**STOP previo al merge y cualquier operación productiva:** comprobar nuevamente
+Deploy to production OFF, sin automatismos nuevos ni operaciones concurrentes.
+No usar un fallo de migraciones como protección. La autorización de push/PR no
+autoriza repair/db push remoto ni habilitar despliegues.
 
 ## Ensayo local reproducible
 
@@ -43,11 +44,11 @@ Un event trigger temporal observa DDL;
 su instalación usa exclusivamente el operador existente del contenedor local, sin
 elevar postgres. Las migraciones se ejecutan como postgres, no como supabase_admin.
 
-Después comprueba que dry-run contiene únicamente las tres pendientes, inyecta un
+Después comprueba que dry-run contiene únicamente las cuatro pendientes, inyecta un
 fallo en la revocación de secuencias del hardening, comprueba que lifecycle queda
-aplicado, hardening no queda registrado y logística no se ejecuta. Retira únicamente
-el fallo sintético, verifica las dos pendientes y continúa hacia adelante. Ejecuta
-18 tests SQL históricos y los tests logísticos con rollback. Reconstruye las 25
+aplicado, hardening no queda registrado y ninguna de las dos logísticas se ejecuta. Retira únicamente
+el fallo sintético, verifica las tres pendientes y continúa hacia adelante. Ejecuta
+18 tests SQL históricos y los tests logísticos con rollback. Reconstruye las 26
 migraciones desde cero y compara tablas, columnas/tipos, constraints, índices,
 funciones, triggers, RLS/policies/grants, secuencias y defaults.
 
@@ -68,7 +69,8 @@ de que un comando terminó o de un resultado antiguo.
 comprobado; sin despliegues concurrentes; ningún job real de MiCorreo activo;
 staging autorizado independiente, sin filas productivas, con el ensayo PASS;
 backup/PITR vigente y restauración probada; mantenimiento/checkout cerrado durante
-los cambios coordinados de backend y SQL. La RC funcional restante sigue pendiente.
+los cambios coordinados de backend y SQL. Validar la RC y el empaquetado por fases
+en staging autorizado independiente antes de permitir cualquier cambio productivo.
 
 Comandos de lectura del checkout aprobado:
 
@@ -259,9 +261,42 @@ las fases anteriores. Tras commit apagar job/checkout afectado y hacer forward f
 conservar pedidos, pagos, snapshots, referencias y auditoría. No borrar bultos/history
 para fingir reversión ni reenviar importaciones ambiguas.
 
+## Fase 4b — administración logística y recuperación ambigua
+
+**Precondiciones:** history 25; backend compatible, checkout cerrado y job real apagado.
+Probar únicamente con fixtures de staging: permisos de administrador verificados en
+DB, estado/claim/intento esperados, idempotencia, auditoría inmutable y límite de 3 intentos.
+
+```powershell
+Copy-Item -LiteralPath 'supabase\migrations\20261001112820_logistics_admin_recovery.sql' -Destination $releaseMigrations
+node node_modules/supabase/dist/supabase.js db push --workdir $releaseRoot --project-ref nwpdfqwqxrkokluqqqfs --skip-vault --dry-run
+if ($LASTEXITCODE -ne 0) { throw 'STOP: dry-run falló.' }
+# Esperado: SOLO logistics admin recovery.
+node node_modules/supabase/dist/supabase.js db push --workdir $releaseRoot --project-ref nwpdfqwqxrkokluqqqfs --skip-vault
+if ($LASTEXITCODE -ne 0) { throw 'STOP: conciliación falló; conservar estado y diagnosticar.' }
+```
+
+**Verificación:** history 26; public.mb_logistics_admin y auxiliares backend-only,
+RLS/ACL de private.envio_accion_admin; finalizaciones simultáneas actualizan correctamente
+el agregado por pedido. La UI privada `/interno/logistica` exige rol de DB y no hace
+llamadas a Correo. Las acciones no cambian pedido/pago/stock ni snapshots:
+
+- `verified_import`: existencia verificada por portal/soporte, referencia del caso y
+  createdAt oficial con zona. No fabricar esa fecha ni considerarla tracking/etiqueta.
+- `safe_retry`: ausencia comprobada por portal/soporte, confirmación explícita y referencia
+  del caso. Conserva extOrderId e intentos; rechaza el límite agotado.
+- `keep_review`: incertidumbre sin evidencia inventada. Un claim activo no se interviene;
+  uno abandonado >2 minutos puede cerrarse en revisión, nunca reenviarse automáticamente.
+
+Un timeout puede dejar el worker todavía en vuelo: esperar y consultar oficialmente
+antes de autorizar retry. Revisar el historial y buscar por extOrderId, no por intuición.
+**STOP:** existencia/ausencia dudosa, claim activo, conflicto de concurrencia, auditoría
+alterable o cambios financieros. **Recovery:** mantener revisión/job apagado; forward fix
+revisado. No borrar auditorías o inventar rollback/ausencia en el proveedor.
+
 ## Fase 5 — verificación post-migration y decisión de abrir checkout
 
-**Precondiciones:** history exacto 25 y cada fase verificada. Mantener modo real
+**Precondiciones:** history exacto 26 y cada fase verificada. Mantener modo real
 inactivo hasta que las fases 7/8 tengan autorización y evidencia.
 
 Comandos futuros de lectura:
@@ -315,10 +350,11 @@ no cancelar/reembolsar operaciones reales automáticamente.
 **Precondiciones:** Correo entrega user/password específicos API; no usar login normal
 de MiCorreo; customerId/origen confirmados; packaging físicamente medido con tolerancias;
 servicio/import compatible y declaredValue aprobados; recovery administrativo de
-ambigüedades y observabilidad listos. Ese panel/acciones siguen pendientes de la RC.
+ambigüedades y observabilidad probados en staging. El panel y acciones existen en la RC;
+su integración con procedimientos reales de portal/soporte requiere validación operativa.
 **Configuración:** CORREO_MICORREO_USER/PASSWORD/CUSTOMER_ID, CORREO_ORIGIN_POSTAL_CODE
-en backend; variable de ambiente actual CORREO_ENVIRONMENT. La propuesta de nombre
-CORREO_MICORREO_ENVIRONMENT aún no está implementada: no asumir que surte efecto.
+en backend; CORREO_MICORREO_ENVIRONMENT=test/production está implementada,
+con alias legacy CORREO_ENVIRONMENT; configuraciones contradictorias detienen el inicio.
 SHIPPING_MODE=real solo con autorización explícita y cotizaciones oficiales de /rates.
 **Verificación:** /token, rates, import por bulto y referencias estables en ambiente
 oficial de prueba. Agencies y users/validate según alcance; nunca loguear tokens/body.
@@ -334,6 +370,6 @@ no hay un flag de entorno ya operativo que habilite el job en esta rama.
 
 Deploy to production OFF verificado; rehearsal PASS; RC funcional restante completa;
 tests exigidos verdes; runbook por fases ensayado en staging autorizado; responsable
-del rollout y backups aprobados. Solo entonces preparar PR, todavía sin merge
-automático. **Este procedimiento no migra producción automáticamente.** Esta
+del rollout y backups aprobados. El PR puede prepararse antes con deploy OFF
+reconfirmado, pero estos pendientes bloquean el merge. **Este procedimiento no migra producción automáticamente.** Esta
 afirmación depende de deshabilitar la integración externa, no solo de revisar Actions.

@@ -24,7 +24,7 @@ export async function runShipmentJob({admin,provider,allowReal=false}) {
   const errorType=allowed.has(e.type)?e.type:'ambiguous';
   // Only explicit 429 rejection is automatically retried (same extOrderId).
   // Other failures need operator review; no raw provider body ever persists.
-  result={state:errorType==='rate_limit'?'error':'revision',errorType,
+  result={state:errorType==='rate_limit'&&e.status===429?'error':'revision',errorType,
    status:Number.isInteger(e.status)?e.status:null,
    requestId:/^[0-9a-f-]{36}$/.test(e.requestId||'')?e.requestId:null};
  }

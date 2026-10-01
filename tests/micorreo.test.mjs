@@ -139,6 +139,12 @@ test('job persists createdAt and stops when queue empty',async()=>{
  assert.deepEqual(await runShipmentJob(f),{processed:false});
  assert.equal(f.saved[0].p_result.createdAt,future);
 });
+test('rate_limit without an explicit 429 remains in manual review',async()=>{
+ for(const status of [undefined,503]){
+  const f=jobFixture(()=>{throw Object.assign(Error('ambiguous'),{type:'rate_limit',status});});
+  assert.equal((await runShipmentJob(f)).state,'revision');
+ }
+});
 test('snapshot retains server parcels, variants and canonical province',()=>{
  const result=shippingSnapshot({cart:{items:[{variante_id:'2',producto_id:'1',cantidad:2,personalizacion:'fake'}]},recipient:{nombre:'Fake',apellido:'Buyer',provincia:'Córdoba',codigo_postal:'5000'},deliveryType:'S',pickupPoint:agency,rate:{parcels:[{dimensions:parcel,carrierCost:10}]},environment:'mock'});
  assert.equal(result.address.provinceCode,'X');assert.equal(result.cartItems[0].quantity,2);
@@ -146,16 +152,18 @@ test('snapshot retains server parcels, variants and canonical province',()=>{
 });
 
 // HTTP tests inject providers/DB; they never load .env or use a remote service.
-async function httpFixture(t,provider) {
+async function httpFixture(t,provider,{localPickup=false}={}) {
  const selection={id:'11111111-1111-4111-8111-111111111111',items:[{producto_id:'1',variante_id:'1',cantidad:1,personalizacion:null}]},seen={};
  const admin={
   rpc:async name=>({data:name==='mb_comercio'?selection:name==='mb_shipping_fingerprint'?'a'.repeat(64):{items:[],subtotal:10000,moneda:'ARS'},error:null}),
   from:table=>table==='producto'?{select:()=>({in:async()=>({data:[{id_producto:'1',tipo:'simple',catalogo_producto_categoria:[{catalogo_categoria:{slug:'mates'}}]}],error:null})})}:
    {insert:row=>{seen.snapshot=row.snapshot;return {select:()=>({single:async()=>({data:{id:'22222222-2222-4222-8222-222222222222'},error:null})})};}},
  };
- const {app}=createApp({url:'https://example.supabase.co',secret:'fake',publishable:'fake',origin:'https://matebreak.test',production:true},{admin,correo:provider,mercadoPago:{ready:false},authFactory:()=>({auth:{getUser:async()=>({data:{user:{id:'fake-user',email:'fake@example.test'}}})}})});
+ const origin=localPickup?'http://localhost:3000':'https://matebreak.test';
+ const config=localPickup?{url:'http://127.0.0.1:54321',shippingMode:'mock',paymentsMode:'mock',localPickupMock:true,localPersistMock:true}: {url:'https://example.supabase.co'};
+ const {app}=createApp({...config,secret:'fake',publishable:'fake',origin,production:!localPickup},{admin,correo:localPickup?{...provider,mock:true}:provider,mercadoPago:localPickup?{mock:true,ready:true}:{ready:false},authFactory:()=>({auth:{getUser:async()=>({data:{user:{id:'fake-user',email:'fake@example.test'}}})}})});
  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>new Promise(r=>server.close(r)));
- const call=body=>fetch('http://127.0.0.1:'+server.address().port+'/api/checkout/cotizar-envio',{method:'POST',headers:{origin:'https://matebreak.test','content-type':'application/json'},body:JSON.stringify(body)});
+ const call=body=>fetch('http://127.0.0.1:'+server.address().port+'/api/checkout/cotizar-envio',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)});
  return {call,seen};
 }
 const recipient={nombre:'Fake',apellido:'Buyer',email:'fake@example.test',telefono:'2494123456',codigo_postal:'1704',provincia:'Buenos Aires',ciudad:'Fake',calle:'Fake',numero:'123'};
@@ -165,11 +173,19 @@ test('sucursal HTTP revalidates agency and rates its CP instead of residential C
   destination=r.destinationPostalCode;assert.equal(r.deliveryType,'S');
   return [{provider:'correo_argentino',service:'CP',name:'Fake service',deliveryType:'S',carrierCost:10,validTo:future}];
  }};
- const {call,seen}=await httpFixture(t,provider);
+ const {call,seen}=await httpFixture(t,provider,{localPickup:true});
  const response=await call({destinatario:recipient,modalidad:'correo_sucursal',provincia_codigo:'B',punto_codigo:agency.code,weight:999,customerId:'forged'});
  assert.equal(response.status,200,await response.clone().text());assert.equal(destination,'1842');
  assert.equal(seen.snapshot.agency.address.postalCode,'1842');assert.equal(seen.snapshot.parcels[0].dimensions.weight,550);
  assert.equal((await call({destinatario:recipient,modalidad:'correo_sucursal',provincia_codigo:'B',punto_codigo:'BFAKE'})).status,400);
+});
+test('production cannot enable pickup or consult real agencies',async t=>{
+ let calls=0;
+ const {call}=await httpFixture(t,{ready:true,agencies:async()=>{calls++;return [agency];}});
+ assert.equal((await call({destinatario:recipient,modalidad:'correo_sucursal',provincia_codigo:'B',punto_codigo:agency.code})).status,403);
+ assert.equal(calls,0);
+ for(const config of [{production:true,url:'http://127.0.0.1:54321'}, {production:false,url:'https://example.supabase.co'}])
+  assert.throws(()=>createApp({...config,secret:'fake',publishable:'fake',origin:config.production?'https://localhost:3000':'http://localhost:3000',shippingMode:'mock',paymentsMode:'mock',localPickupMock:true}),/local|mock/i);
 });
 test('provider secrets never enter HTTP response or internal log',async t=>{
  const logs=[],original=console.warn;console.warn=value=>logs.push(value);t.after(()=>{console.warn=original;});

@@ -4,11 +4,12 @@ Referencias inmutables: main 15c9d64; reconstrucción validada 88eee2c0cb9b06ac0
 Inspección realizada el 30/09/2026 exclusivamente READ ONLY en nwpdfqwqxrkokluqqqfs.
 No se modificó history, datos ni schema remoto. Este documento **no autoriza ejecutar** los comandos futuros.
 
-Actualización de liberación: el usuario confirmó **Deploy to production ACTIVADO**
-en la integración GitHub de Supabase, rama `main`, working directory `.`, sin
-Automatic branching. **No publicar/mergear ni reparar history remoto antes de
-deshabilitar explícitamente y verificar ese automatismo.** Ver
-[bloqueo confirmado](release-candidate-blocker.md) y
+Actualización 01/10/2026: el usuario confirmó **Deploy to production OFF** tras
+desactivarlo manualmente; rama `main`, working directory `.`, sin Automatic branching.
+El interruptor no se pudo inspeccionar automáticamente (Dashboard pide login).
+Reconfirmar OFF antes de publicación y comprobarlo nuevamente antes del merge.
+**Publicar/crear PR no autoriza merge ni repair remoto.** Ver
+[control de despliegues](release-candidate-blocker.md) y
 [procedimiento manual por fases](production-release-runbook.md).
 El rehearsal se ejecuta únicamente con `--local`; su evidencia está en
 `schema-metadata/baseline-rehearsal-result.json`. No confundir ese destino con
@@ -57,6 +58,7 @@ Las consultas de definición usan pg_catalog. No hay pruebas destructivas remota
 | 20260929204150 fix_minorista_checkout_lifecycle | Sí | Ausente | No; cambio pendiente | Aplicar solo después de revisión y staging |
 | 20260929214717 harden_default_privileges | Sí | Ausente | No; cambio pendiente | Aplicar solo después de revisión y staging |
 | 20261001003824 micorreo_logistics_snapshots | Sí | Ausente | No; cambio pendiente | Aplicar solo después de revisión y staging |
+| 20261001112820 logistics_admin_recovery | Sí | Ausente | No; cambio pendiente | Aplicar solo después de snapshots, revisión y staging |
 
 Para catálogo, la afirmación es adopción del estado histórico preexistente, no igualdad de filas
 actuales con el archivo comercial. Por la restricción READ ONLY de metadatos no se leyeron esas filas.
@@ -65,7 +67,7 @@ La adopción de bootstrap representa la estructura; NO certifica grants/defaults
 
 ## Estrategia elegida
 
-Conservar los filenames locales canónicos y sus dependencias. En DB nueva, ejecutar las 25
+Conservar los filenames locales canónicos y sus dependencias. En DB nueva, ejecutar las 26
 migraciones ordenadas: bootstrap antes de commerce; catálogo después del importador y antes de
 los mappings; luego los cambios nuevos. No squashear DML histórico ni mover el catálogo a un
 seed final: rompería las assertions intermedias.
@@ -94,7 +96,7 @@ node node_modules/supabase/dist/supabase.js migration list --project-ref nwpdfqw
 node node_modules/supabase/dist/supabase.js db push --dry-run --skip-vault --project-ref nwpdfqwqxrkokluqqqfs
 ```
 
-Detenerse si el listado/dry-run no muestra **exactamente** las tres migraciones pendientes de abajo.
+Detenerse si el listado/dry-run no muestra **exactamente** las cuatro migraciones pendientes de abajo.
 Estos pasos NO son transaccionales en conjunto: no ejecutar otros despliegues entre ellos.
 La operación inicial applied evita dejar versiones históricas sin ninguna entrada. Si algún repair
 falla, detenerse y recuperar el history respaldado; no continuar con un push parcial o include-all.
@@ -112,8 +114,10 @@ No se ejecutó ni el dry-run remoto en esta iteración.
 | 1 | 20260929204150_fix_minorista_checkout_lifecycle | Commerce, variantes y checkout minorista ya representados; staging con reservas/pagos/reintentos | Cambia 4 funciones y valida transiciones de pedido; comprobar estados actuales y clientes | Antes de commit SQL, transacción revierte. Después, migración compensatoria revisada; no reintroducir las carreras antiguas ni revertir pedidos/pagos automáticamente |
 | 2 | 20260929214717_harden_default_privileges | Tablas/secuencias/funciones existentes; app usando BFF y service_role | Clientes que dependían de grants browser antiguos dejan de tener acceso; cambia defaults postgres | Conservar ACL previas; restaurar solo grants explícitos demostrados necesarios, con RLS. No reabrir PUBLIC EXECUTE o browser DML indiscriminadamente |
 | 3 | 20261001003824_micorreo_logistics_snapshots | Ambas anteriores y backend compatible con fingerprints; rollout conjunto; re-cotizar carritos | Cotizaciones previas sin snapshot se rechazan. Pedidos previos quedan no_preparado, sin importación retroactiva. Nuevas tablas/RPC y triggers | Apagar el job y métodos externos; conservar snapshots/auditorías/pedidos. Forward fix preferible. Restaurar función anterior solo mediante procedimiento revisado; no borrar bultos/importaciones o history para fingir reversión |
+| 4 | 20261001112820_logistics_admin_recovery | Snapshots aplicados; BFF compatible y job real apagado | Auditoría append-only/RLS, RPC backend con rol de DB, control de estado/claim/intentos; serialización del agregado | Conservar auditoría y revisión; apagar job, forward fix. No borrar history ni reenviar una importación de existencia dudosa |
 
-No hay otras migraciones posteriores en esta rama. La CLI creó el timestamp UTC 20261001003824
+No hay otras migraciones posteriores en esta rama. La CLI creó el timestamp UTC 20261001112820
+para recuperación administrativa el 01/10/2026. El timestamp 20261001003824 se creó
 durante el 30/09/2026 de Uruguay; no se inventó un timestamp a mano.
 
 ## Responsabilidad de plataforma

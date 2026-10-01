@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { createApp } from '../server/app.mjs';
 import { createMockShipping } from '../server/shipping/mock.mjs';
 import { runShipmentJob } from '../server/shipping/jobs.mjs';
+import {testCommerceRC} from './test-local-commerce-rc.mjs';
 import { root, localStatus, mustSql } from './local-test-runtime.mjs';
 import { resolve } from 'node:path';
 
@@ -14,11 +15,12 @@ const authOptions = { auth: { persistSession:false, autoRefreshToken:false } };
 const client = (key = status.ANON_KEY) => createClient(status.API_URL, key, authOptions);
 const admin = client(status.SERVICE_ROLE_KEY), anon = client();
 const ids = [], clients = [];
+const rcServers=[];
 const server = createServer();
 await new Promise(resolveReady => server.listen(0, '127.0.0.1', resolveReady));
 const origin = `http://127.0.0.1:${server.address().port}`;
 const { app } = createApp({ url:status.API_URL, secret:status.SERVICE_ROLE_KEY, publishable:status.ANON_KEY,
-  origin, production:false, shippingMode:'mock', paymentsMode:'mock', localPersistMock:true,
+  origin, production:false, shippingMode:'mock', paymentsMode:'mock', localPersistMock:true, localPickupMock:true,
   mockPaymentResult:'approved', correo:{}, mercadoPago:{} });
 server.on('request', app);
 const run = file => new Promise((done, reject) => {
@@ -86,7 +88,7 @@ try {
     mb_actualizar_envio:{p_pedido_id:fake,p_estado:'preparando',p_transportista:null,p_seguimiento:null},
     mb_shipping_fingerprint:{p_carrito_id:fake,p_snapshot:{}},
     mb_claim_shipment:{p_environment:'mock'},
-    mb_finish_shipment:{p_claim_id:fake,p_result:{}}};
+    mb_finish_shipment:{p_claim_id:fake,p_result:{}},mb_logistics_admin:{p_actor_id:ids[0],p_action:'list',p_data:{}}};
   for(const db of [anon,a.db,b.db]) for(const [name,args] of Object.entries(calls)) {
     const r=await db.rpc(name,args); assert.equal(r.error?.code,'42501',`${name} must be service-only`);
   }
@@ -98,7 +100,7 @@ try {
   assert.equal(Number(unsafe),0,'Unsafe SECURITY DEFINER exposure');
   const forged=await fetch(status.API_URL+'/rest/v1/perfil?select=id',{headers:{apikey:status.ANON_KEY,Authorization:'Bearer invalid.signature.token'}});
   assert.equal(forged.status,401);
-  console.log('PASS Auth/JWT, direct RLS A/B, anon, private schema, 10 service-only RPCs, SECURITY DEFINER');
+  console.log('PASS Auth/JWT, direct RLS A/B, anon, private schema, 11 service-only RPCs, SECURITY DEFINER');
   const publicCatalog=await browser()('/productos');assert.equal(publicCatalog.status,200);
   assert.equal(publicCatalog.data.length,106);
   const forbiddenKeys=new Set(['stock','stock_origen','reservado','usuario_id','token_hash']);
@@ -162,6 +164,20 @@ try {
   assert.equal((await checked(admin.from('pedido').select('estado,cotizacion_envio_id').eq('id',order.id).single())).cotizacion_envio_id,quote.data[0].id);
   assert.deepEqual(await runShipmentJob({admin,provider:logisticsProvider}),{processed:false});
   console.log('PASS local logistics job: concurrent claims import a paid parcel once, preserve quote relation and financial state (mock only).');
+  // Independent scenario servers preserve the real limiter without exhausting
+  // one IP's minute budget across unrelated automated commercial cases.
+  const newRequests=async()=>{
+    const rcServer=createServer();rcServers.push(rcServer);
+    await new Promise(r=>rcServer.listen(0,'127.0.0.1',r));
+    const rcOrigin=`http://127.0.0.1:${rcServer.address().port}`;
+    rcServer.on('request',createApp({url:status.API_URL,secret:status.SERVICE_ROLE_KEY,publishable:status.ANON_KEY,
+      origin:rcOrigin,production:false,shippingMode:'mock',paymentsMode:'mock',localPersistMock:true,localPickupMock:true,
+      mockPaymentResult:'approved',correo:{},mercadoPago:{}}).app);
+    const requests=clients.map(()=>browser(rcOrigin));
+    for(const [i,request]of requests.entries())assert.equal((await request('/auth/login','POST',{email:clients[i].email,password:clients[i].password})).status,200);
+    return {a:requests[0],b:requests[1]};
+  };
+  await testCommerceRC({admin,a,b,actorId:ids[0],variant,recipient,checked,newRequests});
   for(const paymentResult of ['rejected','pending']) {
     const modeServer=createServer();
     await new Promise(r=>modeServer.listen(0,'127.0.0.1',r));
@@ -187,6 +203,7 @@ try {
   }
 } finally {
   if(objectPath) await admin.storage.from('product-images').remove([objectPath]);
+  await Promise.all(rcServers.map(s=>new Promise(r=>s.close(r))));
   // An order fixture cannot be deleted independently due to audit FKs; test:local
   // performs a guarded local reset afterward, even on failure. No remote cleanup.
   await new Promise(resolveClose=>server.close(resolveClose));

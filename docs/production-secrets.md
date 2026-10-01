@@ -16,15 +16,18 @@ antes de activar servicios; no guardar secretos productivos en .env.example.
 | Mercado Pago | MP_PUBLIC_KEY | Pública si algún flujo futuro la requiere; Checkout Pro actual no la usa |
 | MiCorreo | CORREO_MICORREO_USER, CORREO_MICORREO_PASSWORD | Credenciales API oficiales backend; no login normal de MiCorreo |
 | MiCorreo | CORREO_MICORREO_CUSTOMER_ID | Identificador de cuenta backend, no secreto de autenticación; no exponer innecesariamente |
-| MiCorreo | CORREO_ENVIRONMENT, CORREO_ORIGIN_POSTAL_CODE | Config backend del ambiente/origen; test no es producción |
+| MiCorreo | CORREO_MICORREO_ENVIRONMENT, CORREO_ORIGIN_POSTAL_CODE | Config backend del ambiente/origen; test no es producción |
 | MiCorreo | CORREO_VERIFIED_PARCELS_JSON | Config backend con medidas verificadas, sin datos personales |
 | Hosting | Accesos deploy, TLS, observabilidad, gestor de secretos | Secretos del operador/hosting; rotación y auditoría propias |
 | App | APP_ORIGIN, NODE_ENV, PORT, SHIPPING_MODE, PAYMENTS_MODE | Config explícita por ambiente; mock local nunca cobrar real |
-| Local | MATEBREAK_LOCAL_ONLY, MATEBREAK_LOCAL_PERSIST_MOCK, MOCK_PAYMENT_RESULT, MOCK_ORIGIN_POSTAL_CODE | Solo stack sintético loopback, no producción |
+| Local | MATEBREAK_LOCAL_ONLY, MATEBREAK_LOCAL_PERSIST_MOCK, MATEBREAK_LOCAL_PICKUP_MOCK, MOCK_PAYMENT_RESULT, MOCK_ORIGIN_POSTAL_CODE | Solo stack sintético loopback, no producción |
 
-CORREO_MICORREO_ENVIRONMENT es el nombre propuesto por el usuario para la RC; no
-está aún implementado. No cambiar una variable en secret manager suponiendo que el
-backend ya la lee. Documentar/probar la transición antes de publicar configuración.
+CORREO_MICORREO_ENVIRONMENT se implementó en la RC; CORREO_ENVIRONMENT permanece
+como alias legacy. Si ambos se configuran con valores distintos el inicio se detiene.
+Default test; producción exige production explícito junto a SHIPPING_MODE=real y
+credenciales API oficiales. Cambiar el nombre no activa proveedores ni workers.
+El selector MATEBREAK_LOCAL_PICKUP_MOCK=1 exige LOCAL_ONLY y ambos modos mock con
+Supabase/origen loopback; está OFF por defecto y rechazado en producción.
 
 Checklist del responsable:
 

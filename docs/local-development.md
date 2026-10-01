@@ -17,9 +17,16 @@ Validado el 30/09/2026 desde `main` / `15c9d64`: dos resets desde cero y suite l
 
 ## Tests reproducibles
 
-`npm run test:local` (`test:full` es el mismo alias exclusivamente local) no carga `.env`, rechaza credenciales heredadas, descubre claves locales en memoria y verifica labels/destinos. Ejecuta Node 133/133 (incluye 53 MiCorreo), SQL histórico 18/18 y SQL logístico con rollback, privilegios 1/1, stock concurrente 20/20, lifecycle 9/9, concurrencia minorista 2/2, Auth/JWT/RLS A/B/anon, 10 RPC service-only, SECURITY DEFINER, Storage y checkout mock. Dos workers logísticos locales importan un bulto pagado exactamente una vez usando mock. Al final detiene su clúster PostgreSQL descartable sin puertos publicados, resetea Supabase local para quitar cuentas/pedidos ficticios y detiene ese stack preservando volúmenes.
+`npm run test:local` (`test:full` es el mismo alias exclusivamente local) no carga `.env`, rechaza credenciales heredadas, descubre claves locales en memoria y verifica labels/destinos. Validación 01/10/2026: Node 144/144, SQL histórico 18/18 y SQL logístico con rollback, privilegios 1/1, stock concurrente 20/20, lifecycle 9/9, concurrencia minorista 2/2, Auth/JWT/RLS A/B/anon, 11 RPC service-only, SECURITY DEFINER, Storage y checkout mock. Incluye cinco casos comerciales completos de embalaje, importaciones multi-bulto concurrentes, recuperación administrativa ambigua y sucursales ficticias. Al final detiene su clúster PostgreSQL descartable sin puertos publicados, resetea Supabase local para quitar cuentas/pedidos ficticios y detiene ese stack preservando volúmenes. Ver [resultado RC](release-candidate-validation.md).
 
 El mock por defecto sigue siendo efímero. Para reservas/pedidos reales locales, activá `MATEBREAK_LOCAL_PERSIST_MOCK=1` junto con `MATEBREAK_LOCAL_ONLY=1` y ambos proveedores mock. Exige login y localhost:54321; no puede arrancar en producción. Approved confirma, rejected cancela/libera y pending mantiene la reserva local. La suite prepara métodos/stock ficticios y los limpia mediante reset.
+
+El selector de agencias ficticias requiere además `MATEBREAK_LOCAL_PICKUP_MOCK=1`.
+Nunca activa sucursales reales. En modo persistido el método correo_sucursal también
+debe estar activo exclusivamente en la DB local descartable; la suite prepara ese
+fixture. Para probar sin cambiar métodos locales, usar el modo mock efímero.
+`/interno/logistica` requiere cuenta local de administrador autorizada desde DB;
+no basta user_metadata. La suite crea ese actor sintético y lo limpia al finalizar.
 
 `catalog:historical:check` verifica la generación determinista del snapshot. `inspect:local` captura metadatos; `inspect:remote` **solo imprime una consulta READ ONLY** para el conector, sin conectarse ni cargar claves. `schema:compare` compara los JSON capturados, ignorando formato/comentarios SQL y conservando literales.
 

@@ -5,6 +5,14 @@ import { createMockPayment } from './payments/mock.mjs';
 
 const modes = new Set(['mock', 'real']);
 
+export function resolveMiCorreoEnvironment(env) {
+  const current=env.CORREO_MICORREO_ENVIRONMENT,legacy=env.CORREO_ENVIRONMENT;
+  if(current&&legacy&&current!==legacy)throw Error('MiCorreo environment variables disagree.');
+  const environment=current||legacy||'test';
+  if(!['test','production'].includes(environment))throw Error('MiCorreo environment inválido');
+  return environment;
+}
+
 export function resolveProviderModes(env) {
   const production = env.NODE_ENV === 'production';
   const shippingMode = env.SHIPPING_MODE || 'mock';

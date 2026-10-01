@@ -4,7 +4,7 @@ update public.metodo_envio set activo=true where codigo in ('retiro','correo_dom
 do $$
 declare buyer uuid; operator_id uuid; variant bigint; t text; cart jsonb; snap jsonb; hash text; quote_id uuid;
  recipient jsonb:='{"nombre":"Fake","apellido":"Buyer","email":"fake@example.test","telefono":"2494123456","codigo_postal":"7000","provincia":"Buenos Aires","ciudad":"Tandil","calle":"Fake","numero":"123","piso":"","departamento":"","referencia":""}';
- data jsonb; order_data jsonb; c1 jsonb; c2 jsonb; stocks jsonb; other_variant bigint;
+ data jsonb; order_data jsonb; c1 jsonb; c2 jsonb; stocks jsonb; other_variant bigint; action jsonb; recovery jsonb;
 begin
  select id into buyer from auth.users order by created_at limit 1;
  select usuario_id into operator_id from private.equipo_inventario where activo limit 1;
@@ -68,5 +68,54 @@ begin
   update public.pedido set cotizacion_envio_id=null where id=(order_data->>'id')::uuid;raise exception 'ASSERT quote relation mutable';
  exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
  if (public.mb_checkout_minorista(t,buyer,data)->>'id')<>order_data->>'id' then raise exception 'Checkout retry changed order'; end if;
+ -- Administrative recovery cannot guess provider outcomes or duplicate imports.
+ action:=jsonb_build_object('orderId',order_data->>'id','parcelNumber',c2->'parcelNumber','actionId',gen_random_uuid(),
+  'expectedState','revision','expectedAttempts',1,'expectedClaimId',c2->>'claimId','verification','unresolved');
+ -- claim payload uses bulto (the immutable parcel ordinal), resolved from storage.
+ action:=jsonb_set(action,'{parcelNumber}',to_jsonb((select bulto from private.envio_bulto where claim_id=(c2->>'claimId')::uuid)));
+ begin
+  perform public.mb_logistics_admin('00000000-0000-4000-8000-00000000c002','list');raise exception 'ASSERT seller admin';
+ exception when insufficient_privilege then null;end;
+ perform public.mb_logistics_admin(operator_id,'keep_review',action);
+ perform public.mb_logistics_admin(operator_id,'keep_review',action);
+ if jsonb_array_length(public.mb_logistics_admin(operator_id,'history',action))<>1 then raise exception 'Duplicate action audit'; end if;
+ action:=action||jsonb_build_object('actionId',gen_random_uuid(),'verification','absent','source','portal','reference','LOCAL-ABSENT');
+ begin
+  perform public.mb_logistics_admin(operator_id,'safe_retry',action);raise exception 'ASSERT unverified retry';
+ exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
+ action:=action||'{"confirmed":true}'::jsonb;
+ perform public.mb_logistics_admin(operator_id,'safe_retry',action);
+ recovery:=public.mb_claim_shipment('mock');
+ if recovery->>'extOrderId'<>c2->>'extOrderId' then raise exception 'Retry reference changed'; end if;
+ action:=action||jsonb_build_object('actionId',gen_random_uuid(),'expectedState','procesando','expectedAttempts',2,'expectedClaimId',recovery->>'claimId','verification','unresolved','source',null,'reference',null);
+ begin
+  perform public.mb_logistics_admin(operator_id,'keep_review',action);raise exception 'ASSERT active claim intervention';
+ exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
+ update private.envio_bulto set iniciado_en=clock_timestamp()-interval '3 minutes' where claim_id=(recovery->>'claimId')::uuid;
+ perform public.mb_logistics_admin(operator_id,'keep_review',action);
+ begin
+  perform public.mb_finish_shipment((recovery->>'claimId')::uuid,'{"state":"importado","createdAt":"2026-10-01T12:00:00Z"}');raise exception 'ASSERT stale worker finish';
+ exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
+ action:=action||jsonb_build_object('actionId',gen_random_uuid(),'expectedState','revision','verification','absent','source','support','reference','LOCAL-ABSENT-2');
+ perform public.mb_logistics_admin(operator_id,'safe_retry',action);
+ recovery:=public.mb_claim_shipment('mock');
+ perform public.mb_finish_shipment((recovery->>'claimId')::uuid,'{"state":"revision","errorType":"ambiguous"}');
+ action:=action||jsonb_build_object('actionId',gen_random_uuid(),'expectedAttempts',3,'expectedClaimId',recovery->>'claimId');
+ begin
+  perform public.mb_logistics_admin(operator_id,'safe_retry',action);raise exception 'ASSERT exhausted retry';
+ exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
+ action:=action||'{"verification":"exists","createdAt":"infinity"}'::jsonb;
+ begin
+  perform public.mb_logistics_admin(operator_id,'verified_import',action);raise exception 'ASSERT infinite provider date';
+ exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
+ action:=action||'{"createdAt":"2026-10-01T12:00:00Z"}'::jsonb;
+ perform public.mb_logistics_admin(operator_id,'verified_import',action);
+ if (select estado_integracion from public.envio where pedido_id=(order_data->>'id')::uuid)<>'importado' then raise exception 'Manual aggregate incorrect'; end if;
+ if jsonb_array_length(public.mb_logistics_admin(operator_id,'history',action))<>5 then raise exception 'Audit action count'; end if;
+ begin
+  update private.envio_accion_admin set referencia='changed' where pedido_id=(order_data->>'id')::uuid;raise exception 'ASSERT mutable audit';
+ exception when raise_exception then if SQLERRM like 'ASSERT%' then raise; end if;end;
+ if stocks is distinct from (select jsonb_agg(jsonb_build_object('id',id_producto,'stock',stock) order by id_producto) from public.producto_simple) then raise exception 'Admin changed stock'; end if;
+ if (select estado from public.pedido where id=(order_data->>'id')::uuid)<>'pagado' then raise exception 'Admin changed financial status'; end if;
 end $$;
 rollback;

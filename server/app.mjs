@@ -11,6 +11,7 @@ import { checkoutRoutes } from './checkout/routes.mjs';
 import { createMockCheckoutStore } from './checkout/mock-store.mjs';
 import { createProviders } from './providers.mjs';
 import { paymentRoutes } from './payments/routes.mjs';
+import { logisticsAdminRoutes } from './shipping/admin.mjs';
 import { securityMiddleware, securityEvent } from './security.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -37,6 +38,12 @@ export function createApp(config, overrides = {}) {
       throw Error('Persisted mock checkout requires local Supabase and mock providers.');
   }
   const cookieName = secure ? '__Host-mb_cart' : 'mb_cart';
+  if (config.localPickupMock) {
+    const endpoint=new URL(config.url);
+    if(config.production||config.shippingMode!=='mock'||config.paymentsMode!=='mock'
+      ||endpoint.protocol!=='http:'||endpoint.port!=='54321'||!['localhost','127.0.0.1','[::1]'].includes(endpoint.hostname)
+      ||!['localhost','127.0.0.1','[::1]'].includes(parsedOrigin.hostname))throw Error('Mock pickup requires local Supabase, local origin and mock providers.');
+  }
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
   const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
   const providers = createProviders(config, overrides);
@@ -177,6 +184,7 @@ export function createApp(config, overrides = {}) {
     res.json(await rpc(req, 'cancelar', { id: req.params.id }));
   });
   inventoryRoutes(app, { admin, authFactory });
+  logisticsAdminRoutes(app, {admin,authFactory});
   accountRoutes(app, { admin });
   app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta inexistente' }));
   // Explicit static allowlist: never expose the repository, .env or node_modules.

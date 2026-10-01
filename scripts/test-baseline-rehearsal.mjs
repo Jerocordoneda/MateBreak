@@ -55,7 +55,8 @@ async function dataDigest() {
 const equivalence=JSON.parse(readFileSync(resolve(root,'docs/schema-metadata/migration-equivalence.json')));
 const historical=equivalence.filter(x=>x.version<='20260929144308');
 const pending=equivalence.filter(x=>x.version>'20260929144308');
-assert.equal(historical.length,22); assert.equal(pending.length,3);
+assert.equal(historical.length,22); assert.equal(pending.length,4);
+assert.equal(pending[3].file,'20261001112820_logistics_admin_recovery.sql');
 const captured=JSON.parse(readFileSync(resolve(root,'docs/schema-metadata/remote-migration-history.json'))).history;
 assert.equal(captured.length,18);
 for(const row of captured)assert(historical.some(x=>x.remoteVersion===row.version && x.tokenEquivalent===true));
@@ -135,7 +136,7 @@ try {
   const dryText=dry.stdout+dry.stderr;
   const planned=[...new Set(dryText.match(/\d{14}_[a-z_]+\.sql/g)||[])];
   assert.deepEqual(planned.sort(),pending.map(x=>x.file).sort()); report.pendingDryRun=planned;
-  console.log('Rehearsal: inject a REVOKE failure in migration 2; migration 1 must persist and 3 must not run.');
+  console.log('Rehearsal: inject a REVOKE failure in migration 2; migration 1 must persist and 3/4 must not run.');
   operator(failSetup);
   const failed=cli(['db','push','--local','--skip-vault','--yes'],false);
   assert.notEqual(failed.exitCode,0); assert((failed.stderr+failed.stdout).includes('MB_REHEARSAL_INJECTED_HARDENING_FAILURE'));
@@ -154,7 +155,7 @@ try {
   operator('drop event trigger mb_rehearsal_fail; drop function rehearsal_audit.fail_hardening();');
   const recoveryDry=cli(['db','push','--local','--skip-vault','--dry-run']);
   assert.deepEqual([...new Set((recoveryDry.stdout+recoveryDry.stderr).match(/\d{14}_[a-z_]+\.sql/g)||[])].sort(),pending.slice(1).map(x=>x.file).sort());
-  console.log('Rehearsal: recover forward by applying only hardening and logistics.');
+  console.log('Rehearsal: recover forward with only the remaining migrations.');
   cli(['db','push','--local','--skip-vault','--yes']);
   report.historyFinal=await history(); assert.deepEqual(report.historyFinal.map(x=>x.version),equivalence.map(x=>x.version));
   report.migrationDdl=JSON.parse(await mustSql("select coalesce(jsonb_agg(jsonb_build_object('tag',tag,'objects',objects) order by id),'[]') from rehearsal_audit.ddl;")); save('migration-ddl',report.migrationDdl);
@@ -168,7 +169,7 @@ try {
     writeFileSync(resolve(output,script.split('/').at(-1)+'.log'),r.stdout+r.stderr);
     assert.equal(r.status,0,r.stderr); console.log(r.stdout.trim());
   }
-  console.log('Rehearsal: rebuild all 25 migrations from scratch and compare logical schema/defaults.');
+  console.log('Rehearsal: rebuild all 26 migrations from scratch and compare logical schema/defaults.');
   cli(['db','reset','--local','--no-seed']);
   const fresh=await schema(),freshDefaults=await defaults(); save('schema-fresh-final',fresh); save('defaults-fresh-final',freshDefaults);
   report.finalSchemaComparison=compareSchemas(simulated,fresh);
@@ -185,7 +186,7 @@ try {
   report.status='FAIL'; report.failure=error.message; process.exitCode=1; console.error(error.message);
 } finally {
   // Retain failed state in volumes/artifacts for diagnosis; always stop public
-  // ports. A passing run ends on the fresh 25-migration baseline.
+  // ports. A passing run ends on the fresh 26-migration baseline.
   const stopped=spawnSync(process.execPath,['scripts/local-supabase.mjs','stop'],{cwd:root,env:cleanEnv,encoding:'utf8',windowsHide:true});
   report.localStackStopped=stopped.status===0;
   if(stopped.status!==0){report.status='FAIL'; process.exitCode=1; console.error('STOP FAILED: manually stop owned Supabase stack.');}

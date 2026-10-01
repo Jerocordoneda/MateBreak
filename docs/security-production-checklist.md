@@ -2,11 +2,17 @@
 
 Estado 2026-09-30: **no habilitar pagos reales ni desplegar aún**. La [suite local](local-development.md) pasó desde una base reconstruida por archivos versionados. Ver [DDL, catálogo, drift y alcance de plataforma](schema-reconstruction.md). Esto no reemplaza staging con configuración real. Cada casilla requiere evidencia fechada y responsable.
 
+Actualización 01/10/2026: [RC local](release-candidate-validation.md) PASS y
+[rehearsal](baseline-rehearsal-validation.md) actualizado a 26 migraciones. El usuario
+desactivó Deploy to production; no se pudo certificar automáticamente ese ajuste.
+Reconfirmar OFF antes de publicación y de merge. Los resultados/avisos remotos de
+abajo son antecedentes del 30/09, no una auditoría remota nueva.
+
 ## Antes del despliegue
 
 - [ ] Revisar la adopción del retro-bootstrap/puente histórico en el historial de proyectos ya existentes. **No ejecutar esas migraciones sobre producción** ni forzar su inclusión: son replay para bases vacías. Staging nuevo puede reconstruirse; el historial del proyecto real necesita un plan de baseline separado.
 
-- [ ] Aplicar en staging la migración pendiente `20260929204150_fix_minorista_checkout_lifecycle.sql` y luego `20260929214717_harden_default_privileges.sql`; ejecutar tests SQL/RLS A/B, lifecycle, stock, cancelación, idempotencia y verificar Advisor. **No están aplicadas al Supabase real.** Repetir después en producción con backup, ventana y rollback acordados.
+- [ ] Ensayar en staging las cuatro pendientes, en orden: lifecycle, hardening de aplicación, snapshots logísticos y recuperación administrativa. Seguir el [runbook](production-release-runbook.md); ejecutar SQL/RLS A/B, lifecycle, stock, cancelación, idempotencia, logística y Advisor. **No fueron aplicadas remotamente en esta tarea.** Producción requiere backup, ventana y autorización separados.
 - [ ] **REQUIERE VERIFICACIÓN MANUAL:** Supabase Dashboard → Auth → Providers/Email y Security: confirmación de email, configuración de redirect URLs, política de contraseñas, MFA/AAL2 para administradores y protección de contraseñas filtradas. El Security Advisor reportó `auth_leaked_password_protection` WARN.
 - [ ] **REQUIERE VERIFICACIÓN MANUAL:** Supabase Dashboard → Database → Roles/Policies, API exposed schemas, Network Restrictions, SSL, PITR/backups y prueba de restauración. Confirmar que `private` no esté expuesto y que la clave secret/service role nunca llegue al navegador.
 - [ ] **REQUIERE VERIFICACIÓN MANUAL:** Supabase Dashboard → Storage → `product-images`: lectura pública deliberada, uploads no autorizados, MIME/tamaño, cuotas y limpieza de objetos; no usarlo para PII.

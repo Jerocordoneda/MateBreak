@@ -10,6 +10,7 @@ const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 export function checkoutRoutes(app, { admin, config, hashToken, correo, payment, mockCheckout }) {
+  const pickupEnabled=Boolean(config.localPickupMock && !config.production && correo.mock && payment.mock);
   const directCookie = config.origin.startsWith('https:') ? '__Host-mb_direct' : 'mb_direct';
   const directToken = req => parseCookieHeader(req.headers.cookie || '').find(cookie => cookie.name === directCookie)?.value;
   const tokenFor = req => req.query.directa === '1' || req.body?.directa === true ? directToken(req) : req.cartToken;
@@ -65,9 +66,9 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
-      deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo))) && d.codigo !== 'correo_sucursal' &&
+      deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&
         (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
-      pickupEnabled:false,
+      pickupEnabled,
       user: req.user ? { email: req.user.email } : null });
   });
 
@@ -78,8 +79,9 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (!['correo_domicilio','correo_sucursal'].includes(mode)) throw fail(400, 'Modalidad inválida');
     let pickupPoint = null;
     if (mode === 'correo_sucursal') {
+      if(!pickupEnabled)throw fail(403,'Entrega a sucursal deshabilitada fuera del modo local/mock explícito');
       const provinceCode = req.body?.provincia_codigo, agencyCode = req.body?.punto_codigo;
-      if (!/^[A-Z]$/.test(provinceCode || '') || !/^[A-Z0-9]{2,20}$/.test(agencyCode || '')) throw fail(400, 'Sucursal inválida');
+      if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ]$/.test(provinceCode || '') || !/^[A-Z0-9]{2,20}$/.test(agencyCode || '')) throw fail(400, 'Sucursal inválida');
       const agencies = await correo.agencies(provinceCode);
       const agency = agencies.find(item => item.code === agencyCode);
       if (!agency) throw fail(400, 'La sucursal no está habilitada por Correo Argentino');
@@ -127,8 +129,9 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
   });
 
   app.get('/api/checkout/sucursales', async (req, res) => {
+    if(!pickupEnabled)throw fail(403,'Selector de sucursal deshabilitado');
     if (!correo.ready) throw fail(503, 'Correo Argentino todavía no está configurado');
-    if (!/^[A-Z]$/.test(req.query.provincia || '')) throw fail(400, 'Provincia inválida');
+    if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ]$/.test(req.query.provincia || '')) throw fail(400, 'Provincia inválida');
     const agencies = await correo.agencies(req.query.provincia);
     res.json(agencies.map(agency => ({ code: agency.code, name: agency.name, address: agency.location?.address || null })));
   });
@@ -141,10 +144,11 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       (envio !== 'retiro' && !uuid(cotizacion_id))) throw fail(400, 'Datos de compra inválidos');
     if (pago === 'mercadopago' && !payment.ready) throw fail(503, 'Mercado Pago todavía no está habilitado');
     if (envio !== 'retiro' && !correo.ready) throw fail(503, 'Correo Argentino todavía no está habilitado');
+    if(envio==='correo_sucursal' && !pickupEnabled)throw fail(403,'Entrega a sucursal deshabilitada');
     const token = tokenFor(req);
     if (!/^[a-f0-9]{64}$/.test(token || '')) throw fail(400, 'La sesión de compra venció');
     if (mockCheckout) {
-      if (pago !== 'mercadopago' || envio === 'correo_sucursal') throw fail(400, 'Método de prueba no disponible');
+      if (pago !== 'mercadopago') throw fail(400, 'Método de prueba no disponible');
       const selection = await cart(req), quote = await baseQuote(selection.id);
       const order = await mockCheckout.createOrder({ owner: hashToken(token), cart: selection, recipient,
         mode: envio, quoteId: cotizacion_id, quote, idempotencia });

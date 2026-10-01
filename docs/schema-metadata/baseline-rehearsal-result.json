@@ -24,32 +24,32 @@
     {
       "command": "supabase db push --local --dry-run --skip-vault",
       "exitCode": 0,
-      "stdout": "{\"upToDate\":false,\"dryRun\":true,\"migrations\":[\"20260929204150_fix_minorista_checkout_lifecycle.sql\",\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
-      "stderr": "DRY RUN: migrations will *not* be pushed to the database.\nConnecting to local database...\nWould push these migrations:\n • 20260929204150_fix_minorista_checkout_lifecycle.sql\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+      "stdout": "{\"upToDate\":false,\"dryRun\":true,\"migrations\":[\"20260929204150_fix_minorista_checkout_lifecycle.sql\",\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\",\"20261001112820_logistics_admin_recovery.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
+      "stderr": "DRY RUN: migrations will *not* be pushed to the database.\nConnecting to local database...\nWould push these migrations:\n • 20260929204150_fix_minorista_checkout_lifecycle.sql\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
     },
     {
       "command": "supabase db push --local --skip-vault --yes",
       "exitCode": 1,
       "stdout": "{\"_tag\":\"Error\",\"error\":{\"code\":\"DbPushApplyError\",\"message\":\"ERROR: MB_REHEARSAL_INJECTED_HARDENING_FAILURE (SQLSTATE P0001)\\nAt statement: 1\\nrevoke all on sequence public.producto_id_producto_seq, public.catalogo_categoria_id_seq,\\r\\n  public.catalogo_variante_id_seq from anon, authenticated\"}}\n",
-      "stderr": "Connecting to local database...\nDo you want to push these migrations to the local database?\n • 20260929204150_fix_minorista_checkout_lifecycle.sql\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n [Y/n] y\nApplying migration 20260929204150_fix_minorista_checkout_lifecycle.sql...\nApplying migration 20260929214717_harden_default_privileges.sql...\n"
+      "stderr": "Connecting to local database...\nDo you want to push these migrations to the local database?\n • 20260929204150_fix_minorista_checkout_lifecycle.sql\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\n [Y/n] y\nApplying migration 20260929204150_fix_minorista_checkout_lifecycle.sql...\nApplying migration 20260929214717_harden_default_privileges.sql...\n"
     },
     {
       "command": "supabase db push --local --skip-vault --dry-run",
       "exitCode": 0,
-      "stdout": "{\"upToDate\":false,\"dryRun\":true,\"migrations\":[\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
-      "stderr": "DRY RUN: migrations will *not* be pushed to the database.\nConnecting to local database...\nWould push these migrations:\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+      "stdout": "{\"upToDate\":false,\"dryRun\":true,\"migrations\":[\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\",\"20261001112820_logistics_admin_recovery.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
+      "stderr": "DRY RUN: migrations will *not* be pushed to the database.\nConnecting to local database...\nWould push these migrations:\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
     },
     {
       "command": "supabase db push --local --skip-vault --yes",
       "exitCode": 0,
-      "stdout": "{\"upToDate\":false,\"dryRun\":false,\"migrations\":[\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
-      "stderr": "Connecting to local database...\nDo you want to push these migrations to the local database?\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n [Y/n] y\nApplying migration 20260929214717_harden_default_privileges.sql...\nApplying migration 20261001003824_micorreo_logistics_snapshots.sql...\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+      "stdout": "{\"upToDate\":false,\"dryRun\":false,\"migrations\":[\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\",\"20261001112820_logistics_admin_recovery.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
+      "stderr": "Connecting to local database...\nDo you want to push these migrations to the local database?\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\n [Y/n] y\nApplying migration 20260929214717_harden_default_privileges.sql...\nApplying migration 20261001003824_micorreo_logistics_snapshots.sql...\nApplying migration 20261001112820_logistics_admin_recovery.sql...\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
     },
     {
       "command": "supabase db reset --local --no-seed",
       "exitCode": 0,
       "stdout": "{\"target\":\"local\",\"version\":\"\",\"message\":\"Reset local database.\"}\n",
-      "stderr": "Resetting local database...\nRecreating database...\nInitialising schema...\nSeeding globals from roles.sql...\nApplying migration 20260907203437_bootstrap_legacy_catalog.sql...\nApplying migration 20260907203438_commerce.sql...\nApplying migration 20260907205528_restrict_rls_event_function.sql...\nApplying migration 20260908093541_inventory_admin.sql...\nApplying migration 20260908094753_inventory_query_aliases.sql...\nApplying migration 20260908103049_account_roles_sales.sql...\nApplying migration 20260909000858_account_admin_roles.sql...\nApplying migration 20260909234040_admin_commercial_dashboard.sql...\nApplying migration 20260928160916_catalog_import.sql...\nApplying migration 20260928162849_catalog_reconcile_metadata.sql...\nApplying migration 20260928162850_restore_historical_public_catalog.sql...\nApplying migration 20260928210316_ars_variant_checkout.sql...\nApplying migration 20260928232227_reconcile_camionero_algarrobo.sql...\nApplying migration 20260929000621_physical_base_reconciliation.sql...\nApplying migration 20260929000841_on_demand_and_preparation.sql...\nApplying migration 20260929001114_receiving_and_engraving_operations.sql...\nApplying migration 20260929001306_align_board_procurement.sql...\nApplying migration 20260929122500_reconcile_thermo_publications.sql...\nApplying migration 20260929130000_box_per_mate_and_combo_mapping.sql...\nApplying migration 20260929131500_box_for_manual_sales.sql...\nApplying migration 20260929133000_map_premium_personalized_knife_sheath.sql...\nApplying migration 20260929144308_checkout_minorista_preparacion.sql...\nApplying migration 20260929204150_fix_minorista_checkout_lifecycle.sql...\nApplying migration 20260929214717_harden_default_privileges.sql...\nApplying migration 20261001003824_micorreo_logistics_snapshots.sql...\nRestarting containers...\nCreating Storage bucket: product-images\nFinished supabase db reset on branch main.\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+      "stderr": "Resetting local database...\nRecreating database...\nInitialising schema...\nSeeding globals from roles.sql...\nApplying migration 20260907203437_bootstrap_legacy_catalog.sql...\nApplying migration 20260907203438_commerce.sql...\nApplying migration 20260907205528_restrict_rls_event_function.sql...\nApplying migration 20260908093541_inventory_admin.sql...\nApplying migration 20260908094753_inventory_query_aliases.sql...\nApplying migration 20260908103049_account_roles_sales.sql...\nApplying migration 20260909000858_account_admin_roles.sql...\nApplying migration 20260909234040_admin_commercial_dashboard.sql...\nApplying migration 20260928160916_catalog_import.sql...\nApplying migration 20260928162849_catalog_reconcile_metadata.sql...\nApplying migration 20260928162850_restore_historical_public_catalog.sql...\nApplying migration 20260928210316_ars_variant_checkout.sql...\nApplying migration 20260928232227_reconcile_camionero_algarrobo.sql...\nApplying migration 20260929000621_physical_base_reconciliation.sql...\nApplying migration 20260929000841_on_demand_and_preparation.sql...\nApplying migration 20260929001114_receiving_and_engraving_operations.sql...\nApplying migration 20260929001306_align_board_procurement.sql...\nApplying migration 20260929122500_reconcile_thermo_publications.sql...\nApplying migration 20260929130000_box_per_mate_and_combo_mapping.sql...\nApplying migration 20260929131500_box_for_manual_sales.sql...\nApplying migration 20260929133000_map_premium_personalized_knife_sheath.sql...\nApplying migration 20260929144308_checkout_minorista_preparacion.sql...\nApplying migration 20260929204150_fix_minorista_checkout_lifecycle.sql...\nApplying migration 20260929214717_harden_default_privileges.sql...\nApplying migration 20261001003824_micorreo_logistics_snapshots.sql...\nApplying migration 20261001112820_logistics_admin_recovery.sql...\nRestarting containers...\nCreating Storage bucket: product-images\nFinished supabase db reset on branch main.\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
     }
   ],
   "migrationFileSha256": {
@@ -77,7 +77,8 @@
     "20260929144308_checkout_minorista_preparacion.sql": "7d237713af60851ff18230cc561e6dd1c31737db371d5e1993f321deef61d453",
     "20260929204150_fix_minorista_checkout_lifecycle.sql": "17981494c569d705acd27bf38052b34f1d4881b371a4a74f1f519934c651c98b",
     "20260929214717_harden_default_privileges.sql": "2e6c4391ac6f88ad7bf4895e6ec51c759e0db645ea9355f1129258aa49f0f5c5",
-    "20261001003824_micorreo_logistics_snapshots.sql": "b74314a36788fbd66179dbcb35a34a98a49cbf9ba6aadf25bdd261a45c4ed874"
+    "20261001003824_micorreo_logistics_snapshots.sql": "b74314a36788fbd66179dbcb35a34a98a49cbf9ba6aadf25bdd261a45c4ed874",
+    "20261001112820_logistics_admin_recovery.sql": "430d3fa2b6811a9303af4923a7156fc3fecfd199c24bf12febc5e89fe1934c04"
   },
   "historicalSchemaComparison": {
     "tables": {
@@ -349,13 +350,14 @@
     "defaultPrivilegesUnchanged": true,
     "schemaSha256": "db28360711ce7f16dd0e9716dccbdd8f8b151f7c231fee3b414826f97a0f8630",
     "identitySha256": "dec326f42086ce001c92fafb9bcce4122481b2d02d98c2513d96e05aeea4229e",
-    "dataSha256": "942cf416b4df992c7e0d1f1f593e5d0275f69b09c90cc79042d4dc2de921f00e",
+    "dataSha256": "e921a505eddc0855df90e9c22d4e8c8ff1a83e7033df561a62f5af5eff4e07ba",
     "tables": 47
   },
   "pendingDryRun": [
     "20260929204150_fix_minorista_checkout_lifecycle.sql",
     "20260929214717_harden_default_privileges.sql",
-    "20261001003824_micorreo_logistics_snapshots.sql"
+    "20261001003824_micorreo_logistics_snapshots.sql",
+    "20261001112820_logistics_admin_recovery.sql"
   ],
   "historyAfterFailure": [
     {
@@ -607,6 +609,11 @@
       "name": "micorreo_logistics_snapshots",
       "version": "20261001003824",
       "statementCount": 31
+    },
+    {
+      "name": "logistics_admin_recovery",
+      "version": "20261001112820",
+      "statementCount": 12
     }
   ],
   "migrationDdl": [
@@ -1098,26 +1105,156 @@
           "identity": null
         }
       ]
+    },
+    {
+      "tag": "CREATE TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_accion_admin"
+        },
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_accion_admin_pkey"
+        },
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_accion_admin"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE INDEX",
+      "objects": [
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_accion_admin_bulto"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_accion_admin"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_logistics_audit_immutable()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "envio_admin_audit_immutable on private.envio_accion_admin"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_logistics_refresh(pg_catalog.uuid)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_finish_shipment(pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_logistics_admin(pg_catalog.uuid,pg_catalog.text,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
     }
   ],
   "finalSchemaComparison": {
     "tables": {
-      "referenceCount": 49,
-      "candidateCount": 49,
+      "referenceCount": 50,
+      "candidateCount": 50,
       "missing": [],
       "added": [],
       "changed": []
     },
     "columns": {
-      "referenceCount": 327,
-      "candidateCount": 327,
+      "referenceCount": 341,
+      "candidateCount": 341,
       "missing": [],
       "added": [],
       "changed": []
     },
     "indexes": {
-      "referenceCount": 109,
-      "candidateCount": 109,
+      "referenceCount": 111,
+      "candidateCount": 111,
       "missing": [],
       "added": [],
       "changed": []
@@ -1130,15 +1267,15 @@
       "changed": []
     },
     "triggers": {
-      "referenceCount": 11,
-      "candidateCount": 11,
+      "referenceCount": 12,
+      "candidateCount": 12,
       "missing": [],
       "added": [],
       "changed": []
     },
     "functions": {
-      "referenceCount": 43,
-      "candidateCount": 43,
+      "referenceCount": 46,
+      "candidateCount": 46,
       "missing": [],
       "added": [],
       "changed": []
@@ -1151,8 +1288,8 @@
       "changed": []
     },
     "constraints": {
-      "referenceCount": 229,
-      "candidateCount": 229,
+      "referenceCount": 234,
+      "candidateCount": 234,
       "missing": [],
       "added": [],
       "changed": []
@@ -1162,14 +1299,14 @@
     "schemaConverges": true,
     "defaultPrivilegesConverge": true,
     "counts": {
-      "tables": 49,
-      "columns": 327,
-      "indexes": 109,
+      "tables": 50,
+      "columns": 341,
+      "indexes": 111,
       "policies": 9,
-      "triggers": 11,
-      "functions": 43,
+      "triggers": 12,
+      "functions": 46,
       "sequences": 4,
-      "constraints": 229
+      "constraints": 234
     },
     "platformAdminDefaultsUnchanged": true,
     "migrationFilesUnchanged": true
