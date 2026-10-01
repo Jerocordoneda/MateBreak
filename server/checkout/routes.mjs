@@ -2,8 +2,9 @@ import { randomBytes } from 'node:crypto';
 import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import { calculateTotals, shippingProgress, validateRecipient } from './policy.mjs';
 import { transferInstructions } from '../payments/transferencia.mjs';
-import { accountRole } from '../account.mjs';
-import { planPackages, quotePackages } from '../shipping/packaging.mjs';
+import { transferAdminRoutes } from '../payments/admin-routes.mjs';
+import { packagesFor } from './packaging-service.mjs';
+import { quotePackages } from '../shipping/packaging.mjs';
 import { shippingSnapshot } from '../shipping/snapshot.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -30,18 +31,6 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (error) throw fail(503, 'No se pudo recalcular el pedido');
     return data;
   };
-  const packagesFor = async selection => {
-    if (!selection.items?.length) return null;
-    const ids = [...new Set(selection.items.map(item => String(item.producto_id)))];
-    const { data, error } = await admin.from('producto')
-      .select('id_producto,tipo,catalogo_producto_categoria(catalogo_categoria(slug))').in('id_producto', ids);
-    if (error) throw fail(503, 'No se pudo determinar el embalaje');
-    return planPackages(selection.items, data.map(product => ({
-      id: product.id_producto, tipo: product.tipo,
-      categorias: product.catalogo_producto_categoria.map(link => link.catalogo_categoria.slug),
-    })), config.parcelProfiles);
-  };
-
   app.post('/api/compra-directa', async (req, res) => {
     const { variante_id, cantidad, personalizacion = '' } = req.body || {};
     if (!/^[1-9]\d{0,18}$/.test(String(variante_id)) || !Number.isInteger(cantidad) || cantidad < 1 || cantidad > 99 ||
@@ -62,12 +51,14 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     const { data: deliveries, error: deliveryError } = await admin.from('metodo_envio').select('codigo,nombre,activo').in('codigo', ['retiro','correo_domicilio','correo_sucursal']);
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
-      ? await packagesFor(selection) : null;
+      ? await packagesFor(selection, { admin, config }) : null;
     res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&
         (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
+      packaging: { status: packages ? 'automatic' : selection.items?.length ? 'manual' : 'empty' },
+      manualQuoteAvailable: Boolean(selection.items?.length && !packages),
       pickupEnabled,
       user: req.user ? { email: req.user.email } : null });
   });
@@ -92,8 +83,8 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     }
     const selection = await cart(req);
     if (!selection.items?.length) throw fail(400, 'La selección está vacía');
-    const packages = await packagesFor(selection);
-    if (!packages) throw fail(503, 'No hay una regla de embalaje para toda la selección');
+    const packages = await packagesFor(selection, { admin, config });
+    if (!packages) return res.status(202).json({ status:'manual_quote_required', message:'Vamos a revisar el embalaje y cotizar este pedido manualmente. Tu carrito sigue guardado; no se realizó ningún cobro.', cartId:selection.id });
     const rates = await quotePackages(correo, { destinationPostalCode: pickupPoint?.address.postalCode || recipient.codigo_postal,
       deliveryType: mode === 'correo_domicilio' ? 'D' : 'S', packages });
     if (!rates.length) throw fail(503, 'Correo Argentino no devolvió una tarifa válida');
@@ -126,6 +117,18 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     }
     if (!options.length) throw fail(503, 'Las tarifas de Correo Argentino vencieron');
     res.json(options);
+  });
+
+  // A downloadable handoff, without persisting PII, reserving stock or charging.
+  app.post('/api/checkout/cotizacion-manual', async (req, res) => {
+    if (!mockCheckout) requireUser(req);
+    const recipient = validateRecipient(req.body?.destinatario);
+    const selection = await cart(req);
+    if (!selection.items?.length) throw fail(400, 'La selección está vacía');
+    const quote = await baseQuote(selection.id);
+    res.set('Cache-Control','private, no-store').json({status:'manual_quote_required',
+      message:'Compartí esta solicitud con MateBreak para acordar el embalaje y el envío. No confirma un pedido ni reserva stock.',
+      recipient, items:quote.items, currency:quote.moneda, subtotal:quote.subtotal, createdAt:new Date().toISOString()});
   });
 
   app.get('/api/checkout/sucursales', async (req, res) => {
@@ -231,21 +234,5 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       instructions: data.pago?.some?.(entry => entry.metodo === 'transferencia') ? transferInstructions() : null });
   });
 
-  app.post('/api/admin/transferencias/:id/confirmar', async (req, res) => {
-    const userId = requireUser(req);
-    if (await accountRole(admin, req.user) !== 'administrador') throw fail(403, 'Solo administración puede confirmar transferencias');
-    if (!uuid(req.params.id) || typeof req.body?.referencia !== 'string' || !req.body.referencia.trim() || req.body.referencia.length > 150)
-      throw fail(400, 'Pedido o referencia inválidos');
-    res.json(await rpc('mb_confirmar_transferencia', { p_actor_id: userId, p_pedido_id: req.params.id, p_referencia: req.body.referencia.trim() }));
-  });
-
-  app.get('/api/admin/transferencias', async (req, res) => {
-    requireUser(req);
-    if (await accountRole(admin, req.user) !== 'administrador') throw fail(403, 'Solo administración puede revisar transferencias');
-    const { data, error } = await admin.from('pago').select('pedido_id,importe,pedido!inner(id,estado,reserva_hasta,creado_en,usuario_id)')
-      .eq('metodo', 'transferencia').eq('estado', 'pendiente').eq('pedido.estado', 'pendiente_pago').order('creado_en', { foreignTable: 'pedido', ascending: false }).limit(100);
-    if (error) throw fail(503, 'No se pudieron consultar las transferencias');
-    res.json(data.map(row => ({ id: row.pedido_id, importe: row.importe, reserva_hasta: row.pedido.reserva_hasta,
-      creado_en: row.pedido.creado_en })));
-  });
+  transferAdminRoutes(app, { admin, requireUser, uuid, rpc });
 }

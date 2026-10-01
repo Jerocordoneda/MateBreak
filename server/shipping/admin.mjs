@@ -1,5 +1,5 @@
 import path from 'node:path';
-import {accountRole} from '../account.mjs';
+import {accountRole} from '../modules/account/routes.mjs';
 const fail=(status,message)=>Object.assign(Error(message),{status});
 const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
 export function logisticsAdminRoutes(app,{admin,authFactory}) {
@@ -48,5 +48,5 @@ export function logisticsAdminRoutes(app,{admin,authFactory}) {
  });
  const files=path.resolve(import.meta.dirname,'../private-ui');
  for(const [route,file]of[['/interno/logistica','logistics.html'],['/interno/logistica/app.js','logistics.js'],['/interno/logistica/style.css','logistics.css']])
-  app.get(route,protect,(req,res)=>res.sendFile(path.join(files,file)));
+  app.get(route,protect,(req,res)=>res.sendFile(path.join(files,file), { dotfiles: 'allow' }));
 }

@@ -1,39 +1,48 @@
-// Warehouse packing policy. Dimensions are centimetres and weight is grams.
-// These are operational estimates, not carrier prices or product weights.
-export const MATE_BOX = Object.freeze({ length: 17, width: 17, height: 17, weight: 550 });
-export const SET_BOX = Object.freeze({ length: 30, width: 30, height: 20, weight: 1300 });
-const MAX_PARCELS = 20;
-
-export function planPackages(items, products, verifiedProfiles = {}) {
-  if (!Array.isArray(items) || !items.length) return null;
-  const byId = new Map(products.map(product => [String(product.id), product]));
-  let mates = 0, sets = 0;
-  for (const item of items) {
-    const quantity = Number(item.cantidad), product = byId.get(String(item.producto_id));
-    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 99 || !product) return null;
-    const categories = product.categorias || [];
-    if (product.tipo === 'combo' && categories.some(slug => slug.startsWith('set-'))) sets += quantity;
-    else if (product.tipo === 'simple' && categories.some(slug => slug === 'mates' || slug.startsWith('mates-'))) mates += quantity;
-    else if (items.length === 1 && quantity === 1 && verifiedProfiles[String(item.producto_id)]) {
-      return [{ ...verifiedProfiles[String(item.producto_id)] }];
-    } else return null;
-  }
-
-  const packages = [];
-  // Two sets share the large-box footprint; only the estimated weight grows.
-  while (sets > 0) {
-    const units = Math.min(2, sets);
-    packages.push({ ...SET_BOX, weight: SET_BOX.weight * units });
-    sets -= units;
-  }
-  // Loose mates stay in their own small boxes. Two boxes taped together use
-  // a stable 34 × 17 × 17 cm footprint, including in mixed orders.
-  while (mates > 0) {
-    const units = Math.min(2, mates);
-    packages.push({ ...MATE_BOX, length: MATE_BOX.length * units, weight: MATE_BOX.weight * units });
-    mates -= units;
-  }
-  return packages.length <= MAX_PARCELS ? packages : null;
+// Approved operational gross estimates: products plus packaging, cm / grams.
+import { withinAdmissionLimits } from './carrier-limits.mjs';
+import { dimensions } from './correo-argentino.mjs';
+export const MATE_BOX = Object.freeze({ length:17, width:17, height:17, weight:550 });
+export const SET_BOX = Object.freeze({ length:30, width:30, height:20, weight:1300 });
+const MAX_PARCELS = 20; // Transport/import contract; retail planning below allows at most two.
+const retailProfiles = [
+ { mates:1, sets:0, dimensions:MATE_BOX },
+ { mates:2, sets:0, dimensions:{ ...MATE_BOX, length:34, weight:1100 } },
+ { mates:0, sets:1, dimensions:SET_BOX },
+ { mates:0, sets:2, dimensions:{ ...SET_BOX, weight:2600 } },
+];
+const volume = p => p.length * p.width * p.height;
+function validDimensions(value) { try { const parcel=dimensions(value); return withinAdmissionLimits(parcel)?parcel:null; } catch { return null; } }
+export function packagingDecision(items, products, verifiedProfiles = {}, approvedRetailProfiles = []) {
+ if (!Array.isArray(items) || !items.length) return {status:'empty', packages:null};
+ const byId = new Map(products.map(p => [String(p.id),p]));
+ let mates=0, sets=0;
+ for (const item of items) {
+  const quantity=Number(item.cantidad), product=byId.get(String(item.producto_id));
+  if (!Number.isSafeInteger(quantity) || quantity<1 || !product) return {status:'invalid',packages:null};
+  const categories=product.categorias||[];
+  if(product.tipo==='combo' && categories.some(c=>c.startsWith('set-')))sets+=quantity;
+  else if(product.tipo==='simple' && categories.some(c=>c==='mates'||c.startsWith('mates-')))mates+=quantity;
+  else if(items.length===1 && quantity===1 && verifiedProfiles[String(item.producto_id)]) {
+   const box=validDimensions(verifiedProfiles[String(item.producto_id)]);
+   return box?{status:'automatic',packages:[box]}:{status:'manual',packages:null};
+  } else return {status:'manual',packages:null};
+ }
+ if(!Number.isSafeInteger(mates)||!Number.isSafeInteger(sets))return {status:'invalid',packages:null};
+ // Additional profiles are server-owned physical approvals, never capacities extrapolated from volume.
+ const profiles=[...retailProfiles,...(Array.isArray(approvedRetailProfiles)?approvedRetailProfiles:[])].filter(p=>
+  Number.isSafeInteger(p.mates) && Number.isSafeInteger(p.sets) && p.mates>=0 && p.sets>=0 && p.mates+p.sets>0 &&
+  validDimensions(p.dimensions)).sort((a,b)=>b.sets-a.sets || b.mates-a.mates);
+ const candidates=[];
+ for(const p of profiles) {
+  if(p.mates===mates && p.sets===sets)candidates.push([{...p.dimensions}]);
+  for(const q of profiles)if(p.mates+q.mates===mates && p.sets+q.sets===sets)candidates.push([{...p.dimensions},{...q.dimensions}]);
+ }
+ candidates.sort((a,b)=>a.length-b.length || a.reduce((s,p)=>s+volume(p),0)-b.reduce((s,p)=>s+volume(p),0));
+ return candidates.length?{status:'automatic',packages:candidates[0]}:{status:'manual',packages:null};
+}
+// Compatibility: callers that only need dimensions keep the established null/array contract.
+export function planPackages(items, products, verifiedProfiles = {}, approvedRetailProfiles = []) {
+ return packagingDecision(items,products,verifiedProfiles,approvedRetailProfiles).packages;
 }
 
 // MiCorreo /rates accepts one set of dimensions per request. Quote each

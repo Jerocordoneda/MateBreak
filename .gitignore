@@ -5,3 +5,5 @@ node_modules/
 supabase/.temp/
 .catalog-import/
 .baseline-rehearsal/
+
+dist/

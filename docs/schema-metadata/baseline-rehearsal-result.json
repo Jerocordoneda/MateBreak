@@ -53,7 +53,7 @@
     }
   ],
   "migrationFileSha256": {
-    "20260907203437_bootstrap_legacy_catalog.sql": "ca0c0ae8a09ef3a2f02464010880cec6af9f28dd5c20ed25465101b782e67d28",
+    "20260907203437_bootstrap_legacy_catalog.sql": "c983798cccc76f98c8843dad75fd8889b3d278a046ab94947087af7718e938ea",
     "20260907203438_commerce.sql": "59953ab62a3be591152b07d9c37d46089f26ef599cf0402126e29445416da19f",
     "20260907205528_restrict_rls_event_function.sql": "be330fbfd4db089308b9daea11e16b97ab256a20b5b484c0fd36feaa34562a3c",
     "20260908093541_inventory_admin.sql": "b35a4943321bb7d469f209e5970c231bbe3723f15a1357e805fd09042e22a65e",
@@ -63,7 +63,7 @@
     "20260909234040_admin_commercial_dashboard.sql": "b756c19555664e3382522e77cd901c21e9e1693b9723c8ea21b27a2656e609da",
     "20260928160916_catalog_import.sql": "ca263db61f1888307d3ce90c190fe0b04138b9d4d2f0f883e68d3d27cc3701f9",
     "20260928162849_catalog_reconcile_metadata.sql": "8dfefc811de54e4faaa933532c3c1c74c8f750932e52b5633fd4fc4724984e3d",
-    "20260928162850_restore_historical_public_catalog.sql": "d9b08671f76a21dfd587be1156119cb33e65acf8482c84427034bad5cb348640",
+    "20260928162850_restore_historical_public_catalog.sql": "13d2f2e2b8372d6c9dfe2822b44fb9b068a5f61c1c5b788771447a8c5e2bd324",
     "20260928210316_ars_variant_checkout.sql": "7fb3571abf76fd3c49d34fb10f4483d117208721bb01d0a1795ae40f79a1e608",
     "20260928232227_reconcile_camionero_algarrobo.sql": "f693d545838e6e78dc3df198626f34e4f250cd12a1d86b641aec998b16166dd9",
     "20260929000621_physical_base_reconciliation.sql": "d8af75892d4b7636301b0c249f5252d48a5aa1ce782023bede1e56f13852de76",
@@ -77,8 +77,8 @@
     "20260929144308_checkout_minorista_preparacion.sql": "7d237713af60851ff18230cc561e6dd1c31737db371d5e1993f321deef61d453",
     "20260929204150_fix_minorista_checkout_lifecycle.sql": "17981494c569d705acd27bf38052b34f1d4881b371a4a74f1f519934c651c98b",
     "20260929214717_harden_default_privileges.sql": "2e6c4391ac6f88ad7bf4895e6ec51c759e0db645ea9355f1129258aa49f0f5c5",
-    "20261001003824_micorreo_logistics_snapshots.sql": "b74314a36788fbd66179dbcb35a34a98a49cbf9ba6aadf25bdd261a45c4ed874",
-    "20261001112820_logistics_admin_recovery.sql": "430d3fa2b6811a9303af4923a7156fc3fecfd199c24bf12febc5e89fe1934c04"
+    "20261001003824_micorreo_logistics_snapshots.sql": "00bca3f50c9b0064c21319fa6950f8df44d037249ceba04fffe2d5252d1a4297",
+    "20261001112820_logistics_admin_recovery.sql": "d1e7e6940b7c92551c84f9f022434f8cd1a1bcfbfca5dc67f17ff1c3c2306939"
   },
   "historicalSchemaComparison": {
     "tables": {
@@ -348,9 +348,9 @@
     "objectOidsUnchanged": true,
     "allApplicationDataDigestsUnchanged": true,
     "defaultPrivilegesUnchanged": true,
-    "schemaSha256": "db28360711ce7f16dd0e9716dccbdd8f8b151f7c231fee3b414826f97a0f8630",
+    "schemaSha256": "3eeaeeb812659017b6e1212073601b8ea2be62e06990e24ce39590a122a0bb5a",
     "identitySha256": "dec326f42086ce001c92fafb9bcce4122481b2d02d98c2513d96e05aeea4229e",
-    "dataSha256": "e921a505eddc0855df90e9c22d4e8c8ff1a83e7033df561a62f5af5eff4e07ba",
+    "dataSha256": "422272ef7588f8a7e2a28732430ac38172c1007acb398bdc87c4ad3323a32f4b",
     "tables": 47
   },
   "pendingDryRun": [

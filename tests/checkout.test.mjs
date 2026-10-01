@@ -65,7 +65,7 @@ test('Mercado Pago requires explicit enablement and signs webhook with the offic
 
 test('catalog and cart are separate pages, and product cards open product details', () => {
   const cart=readFileSync(new URL('../src/pages/tienda.html',import.meta.url),'utf8');
-  const catalog=readFileSync(new URL('../src/js/catalog-ui.js',import.meta.url),'utf8');
+  const catalog=readFileSync(new URL('../src/features/catalog/catalog-ui.js',import.meta.url),'utf8');
   assert.doesNotMatch(cart, /id="catalogo"|id="productos"/);
   assert.match(catalog, /link\.href='\/productos\/'/);
   assert.match(catalog, /title\.href=link\.href/);

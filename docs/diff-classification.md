@@ -70,7 +70,7 @@ Incluye reconstrucción validada y esta iteración; sin borrado de historia ni p
 - `server/shipping/mock.mjs`
 - `server/shipping/packaging.mjs`
 - `server/shipping/snapshot.mjs`
-- `src/js/checkout.js`
+- `src/features/checkout/checkout.js`
 - `src/pages/checkout.html`
 
 ## Catálogo histórico
