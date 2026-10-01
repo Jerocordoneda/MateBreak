@@ -19,5 +19,6 @@ export function createMockShipping({ originPostalCode = '7000' } = {}) {
         estimatedDeliveryDays: 4, originPostalCode, mock: true }];
     },
     async agencies() { return []; },
+    async importShipment() { return {createdAt:new Date().toISOString()}; },
   };
 }

@@ -6,6 +6,22 @@ const direct = new URLSearchParams(location.search).get('directa') === '1';
 const suffix = direct ? '?directa=1' : '';
 let context, recipient, delivery = 'retiro', shippingQuote = null, payment = '', busy = false;
 let catalogImages = new Map();
+let agencies = [];
+function renderPickup() {
+  $('#pickup-selection').hidden = delivery !== 'correo_sucursal' || !context.pickupEnabled;
+}
+async function loadPickupAgencies() {
+  shippingQuote = null; agencies = []; $('#pickup-address').textContent = '';
+  const select = $('#pickup-agency'); select.replaceChildren(); select.disabled = true;
+  const province = $('#pickup-province').value;
+  if (!province) return;
+  try {
+    agencies = await api('/checkout/sucursales?provincia=' + encodeURIComponent(province));
+    const placeholder = node('option', 'Elegí una sucursal'); placeholder.value = ''; select.append(placeholder);
+    for (const agency of agencies) { const option = node('option', agency.name); option.value = agency.code; select.append(option); }
+    select.disabled = !agencies.length;
+  } catch (cause) { error(cause.message); }
+}
 
 async function api(path, options = {}) {
   const response = await fetch('/api' + path, { credentials: 'same-origin', ...options,
@@ -62,9 +78,9 @@ function renderChoices() {
   for (const option of context.deliveries) {
     const label = node('label', undefined, 'checkout-choice'), input = node('input');
     input.type = 'radio'; input.name = 'delivery'; input.value = option.codigo;
-    input.disabled = !option.activo || option.codigo === 'correo_sucursal';
+    input.disabled = !option.activo || (option.codigo === 'correo_sucursal' && !context.pickupEnabled);
     input.checked = delivery === option.codigo && !input.disabled;
-    input.onchange = () => { delivery = option.codigo; shippingQuote = null; renderOrder(); };
+    input.onchange = () => { delivery = option.codigo; shippingQuote = null; renderPickup(); renderOrder(); };
     label.append(input, node('span', option.nombre + (input.disabled ? ' · Próximamente' : ''))); deliveries.append(label);
   }
   $('#shipping-unavailable').hidden = context.modo_prueba || context.deliveries.every(option => option.activo);
@@ -108,7 +124,9 @@ async function prepareDelivery(event) {
     const chosen = context.deliveries.find(option => option.codigo === delivery && option.activo);
     if (!chosen) throw Error('Elegí una modalidad de entrega disponible');
     if (delivery !== 'retiro') {
-      const quotes = await api('/checkout/cotizar-envio', { method: 'POST', body: JSON.stringify({ destinatario: recipient, modalidad: delivery, directa: direct }) });
+      const pickup = delivery === 'correo_sucursal' ? {provincia_codigo:$('#pickup-province').value,punto_codigo:$('#pickup-agency').value} : {};
+      if (delivery === 'correo_sucursal' && !pickup.punto_codigo) throw Error('Elegí una sucursal');
+      const quotes = await api('/checkout/cotizar-envio', { method: 'POST', body: JSON.stringify({ destinatario: recipient, modalidad: delivery, directa: direct, ...pickup }) });
       shippingQuote = quotes[0];
       if (!shippingQuote) throw Error('No se pudo cotizar el envío');
     }
@@ -157,6 +175,15 @@ async function init() {
   } catch (cause) { error(cause.message); }
 }
 $('#recipient-form').addEventListener('submit', prepareDelivery);
+$('#pickup-province').addEventListener('change', loadPickupAgencies);
+$('#pickup-agency').addEventListener('change', () => {
+  shippingQuote = null;
+  const agency = agencies.find(a => a.code === $('#pickup-agency').value);
+  $('#pickup-address').textContent = agency ? [agency.address?.streetName,agency.address?.streetNumber,agency.address?.city,agency.address?.postalCode].filter(Boolean).join(' ') : '';
+});
+for (const [code,name] of Object.entries({A:'Salta',B:'Buenos Aires',C:'CABA',D:'San Luis',E:'Entre Ríos',F:'La Rioja',G:'Santiago del Estero',H:'Chaco',J:'San Juan',K:'Catamarca',L:'La Pampa',M:'Mendoza',N:'Misiones',P:'Formosa',Q:'Neuquén',R:'Río Negro',S:'Santa Fe',T:'Tucumán',U:'Chubut',V:'Tierra del Fuego',W:'Corrientes',X:'Córdoba',Y:'Jujuy',Z:'Santa Cruz'})) {
+  const option=node('option',name);option.value=code;$('#pickup-province').append(option);
+}
 $('#place-order').addEventListener('click', placeOrder);
 $('#checkout-login').addEventListener('submit', async event => {
   event.preventDefault(); error('');

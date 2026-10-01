@@ -63,3 +63,11 @@ Las migraciones están en [`supabase/migrations/`](supabase/migrations/) y las p
 La [guía de pagos y envíos](docs/checkout-pagos.md) detalla qué está implementado y qué falta para habilitarlo. El [ciclo de vida del pedido real](docs/ciclo-pedido-real.md) documenta estados, reservas, idempotencia y las pruebas SQL aisladas; su migración correctiva todavía no se desplegó. La [auditoría previa a pagos](docs/auditoria-prepagos.md) y la [guía de comercio](docs/comercio.md) completan las garantías existentes.
 
 La seguridad está documentada en el [modelo de amenazas](docs/security-threat-model.md), la [arquitectura y matriz de acceso SQL](docs/security-architecture.md) y el [checklist de producción](docs/security-production-checklist.md). Los checks Node corren en GitHub Actions; las pruebas SQL y de concurrencia usan una base PostgreSQL local descartable. Ninguna de las dos migraciones más recientes se aplicó al proyecto Supabase real.
+
+## Revisión de baseline y MiCorreo
+
+Antes de incorporar la reconstrucción a un proyecto existente, revisar
+[adopción del historial](docs/baseline-adoption.md). No ejecutar bootstrap/catálogo
+sobre producción ya poblada. MiCorreo sigue en mock: ver
+[arquitectura](docs/micorreo-architecture.md), [puertos locales](docs/local-network.md)
+y [clasificación del diff](docs/diff-classification.md).

@@ -24,6 +24,7 @@ try {
   const { readdirSync }=await import('node:fs');
   await run(['--test',...readdirSync(resolve(root,'tests')).filter(f=>f.endsWith('.test.mjs')).map(f=>'tests/'+f)]);
   await run(['scripts/test-local-sql.mjs']);
+  await run(['scripts/test-local-logistics.mjs']);
   docker(['run','--detach','--rm','--name',disposableContainer,'--label','matebreak.test=disposable',
     '--label',`matebreak.workdir=${root}`,'--env','POSTGRES_PASSWORD=disposable-local-only',
     'public.ecr.aws/supabase/postgres:17.6.1.171']);created=true;

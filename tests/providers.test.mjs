@@ -7,7 +7,8 @@ import { createMockPayment } from '../server/payments/mock.mjs';
 
 test('development defaults to mock and production defaults to real', () => {
   assert.deepEqual(resolveProviderModes({}), { shippingMode:'mock',paymentsMode:'mock' });
-  assert.deepEqual(resolveProviderModes({ NODE_ENV:'production' }), { shippingMode:'real',paymentsMode:'real' });
+  assert.throws(()=>resolveProviderModes({ NODE_ENV:'production' }), /mock no se permiten/);
+  assert.deepEqual(resolveProviderModes({ NODE_ENV:'production',SHIPPING_MODE:'real' }), { shippingMode:'real',paymentsMode:'real' });
   assert.throws(()=>resolveProviderModes({SHIPPING_MODE:'invalid'}));
   assert.throws(()=>resolveProviderModes({NODE_ENV:'production',PAYMENTS_MODE:'mock'}));
   assert.throws(()=>resolveProviderModes({SHIPPING_MODE:'mock',PAYMENTS_MODE:'real'}));

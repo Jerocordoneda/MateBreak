@@ -46,7 +46,7 @@ test('MiCorreo adapter sends documented postal and measured parcel fields', asyn
 test('MiCorreo lists pickup agencies using the documented response shape', async () => {
   const provider=createCorreoArgentino({username:'u',password:'p',customerId:'customer',originPostalCode:'7000'},async url=>({
     ok:true,json:async()=>url.endsWith('/token')?{token:'test-token'}:[
-      {code:'B0107',name:'Monte Grande',services:{pickupAvailability:true},location:{address:{city:'Monte Grande'}}},
+      {code:'B0107',name:'Monte Grande',status:'ACTIVE',services:{pickupAvailability:true},location:{address:{city:'Monte Grande',provinceCode:'B',postalCode:'1842'}}},
       {code:'B0108',name:'Sin retiro',services:{pickupAvailability:false}},
     ],
   }));

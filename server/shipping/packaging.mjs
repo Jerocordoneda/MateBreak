@@ -44,20 +44,22 @@ export async function quotePackages(provider, { destinationPostalCode, deliveryT
     provider.quote({ destinationPostalCode, deliveryType, dimensions })));
   let common = new Map(quotations[0].map(rate => [rate.service, {
     ...rate, costCents: Math.round(Number(rate.carrierCost) * 100), expires: Date.parse(rate.validTo),
+    parcels: [{ dimensions: packages[0], carrierCost: rate.carrierCost }],
   }]));
-  for (const rates of quotations.slice(1)) {
+  for (const [index, rates] of quotations.slice(1).entries()) {
     const byService = new Map(rates.map(rate => [rate.service, rate]));
     common = new Map([...common].flatMap(([service, total]) => {
       const rate = byService.get(service), cents = Math.round(Number(rate?.carrierCost) * 100);
       const expires = Date.parse(rate?.validTo);
       return rate && Number.isSafeInteger(cents) && cents >= 0 && Number.isFinite(expires)
-        ? [[service, { ...total, costCents: total.costCents + cents, expires: Math.min(total.expires, expires) }]] : [];
+        ? [[service, { ...total, costCents: total.costCents + cents, expires: Math.min(total.expires, expires),
+          parcels: [...total.parcels, { dimensions: packages[index + 1], carrierCost: rate.carrierCost }] }]] : [];
     }));
   }
   return [...common.values()].filter(rate => rate.service && Number.isSafeInteger(rate.costCents) &&
     rate.costCents >= 0 && Number.isFinite(rate.expires) && rate.expires > Date.now()).map(rate => ({
     provider: rate.provider, service: rate.service, name: rate.name,
     carrierCost: rate.costCents / 100, validTo: new Date(rate.expires).toISOString(),
-    packageCount: packages.length,
+    packageCount: packages.length, parcels: rate.parcels,
   }));
 }

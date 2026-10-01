@@ -61,7 +61,7 @@ test('checkout quotes the server-derived parcels and persists only carrier-retur
   const seen = { dimensions: [], inserted: null };
   const selection = { id:'11111111-1111-4111-8111-111111111111', items:[set(1),mate(1)], total:70_000 };
   const admin = {
-    rpc:async name=>({data:name==='mb_comercio'?selection:{items:[],subtotal:70_000,moneda:'ARS'},error:null}),
+    rpc:async name=>({data:name==='mb_comercio'?selection:name==='mb_shipping_fingerprint'?'a'.repeat(64):{items:[],subtotal:70_000,moneda:'ARS'},error:null}),
     from:table=>{
       if(table==='producto') return {select:()=>({in:async()=>({data:[
         {id_producto:1,tipo:'simple',catalogo_producto_categoria:[{catalogo_categoria:{slug:'mates-grabados'}}]},

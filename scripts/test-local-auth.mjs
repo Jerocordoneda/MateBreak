@@ -4,6 +4,8 @@ import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { createClient } from '@supabase/supabase-js';
 import { createApp } from '../server/app.mjs';
+import { createMockShipping } from '../server/shipping/mock.mjs';
+import { runShipmentJob } from '../server/shipping/jobs.mjs';
 import { root, localStatus, mustSql } from './local-test-runtime.mjs';
 import { resolve } from 'node:path';
 
@@ -81,7 +83,10 @@ try {
     mb_checkout_catalogo:{p_token_hash:'0'.repeat(64),p_usuario_id:ids[0],p_datos:{}},
     mb_cotizar_catalogo:{p_carrito_id:fake,p_pago:'mercadopago'},
     mb_confirmar_pago:{p_pago_id:fake,p_referencia:'TEST',p_importe:1,p_moneda:'ARS'},mb_expirar_reservas:{},
-    mb_actualizar_envio:{p_pedido_id:fake,p_estado:'preparando',p_transportista:null,p_seguimiento:null}};
+    mb_actualizar_envio:{p_pedido_id:fake,p_estado:'preparando',p_transportista:null,p_seguimiento:null},
+    mb_shipping_fingerprint:{p_carrito_id:fake,p_snapshot:{}},
+    mb_claim_shipment:{p_environment:'mock'},
+    mb_finish_shipment:{p_claim_id:fake,p_result:{}}};
   for(const db of [anon,a.db,b.db]) for(const [name,args] of Object.entries(calls)) {
     const r=await db.rpc(name,args); assert.equal(r.error?.code,'42501',`${name} must be service-only`);
   }
@@ -93,7 +98,7 @@ try {
   assert.equal(Number(unsafe),0,'Unsafe SECURITY DEFINER exposure');
   const forged=await fetch(status.API_URL+'/rest/v1/perfil?select=id',{headers:{apikey:status.ANON_KEY,Authorization:'Bearer invalid.signature.token'}});
   assert.equal(forged.status,401);
-  console.log('PASS Auth/JWT, direct RLS A/B, anon, private schema, 7 service-only RPCs, SECURITY DEFINER');
+  console.log('PASS Auth/JWT, direct RLS A/B, anon, private schema, 10 service-only RPCs, SECURITY DEFINER');
   const publicCatalog=await browser()('/productos');assert.equal(publicCatalog.status,200);
   assert.equal(publicCatalog.data.length,106);
   const forbiddenKeys=new Set(['stock','stock_origen','reservado','usuario_id','token_hash']);
@@ -147,6 +152,16 @@ try {
   const retry=await a.request('/checkout/pedidos','POST',body);assert.equal(retry.data.order.id,order.id);
   assert.equal((await checked(admin.from('pedido_stock').select('*').eq('pedido_id',order.id))).length,reserved.length);
   console.log('PASS persisted mock: cart -> shipping mock -> real local reservation/order -> mock payment -> owned result/retry');
+  let importCalls=0;
+  const logisticsProvider=createMockShipping();
+  const importMock=logisticsProvider.importShipment;
+  logisticsProvider.importShipment=async data=>{importCalls++;assert.ok(data.extOrderId.startsWith('MB-'+order.id+'-'));return importMock(data);};
+  const jobs=await Promise.all([runShipmentJob({admin,provider:logisticsProvider}),runShipmentJob({admin,provider:logisticsProvider})]);
+  assert.equal(jobs.filter(j=>j.processed).length,1);assert.equal(importCalls,1);
+  assert.equal((await checked(admin.from('envio').select('estado_integracion').eq('pedido_id',order.id).single())).estado_integracion,'importado');
+  assert.equal((await checked(admin.from('pedido').select('estado,cotizacion_envio_id').eq('id',order.id).single())).cotizacion_envio_id,quote.data[0].id);
+  assert.deepEqual(await runShipmentJob({admin,provider:logisticsProvider}),{processed:false});
+  console.log('PASS local logistics job: concurrent claims import a paid parcel once, preserve quote relation and financial state (mock only).');
   for(const paymentResult of ['rejected','pending']) {
     const modeServer=createServer();
     await new Promise(r=>modeServer.listen(0,'127.0.0.1',r));

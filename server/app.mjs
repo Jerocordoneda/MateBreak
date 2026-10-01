@@ -190,6 +190,11 @@ export function createApp(config, overrides = {}) {
   app.get('/mi-cuenta', (req, res) => res.sendFile(path.join(root, 'src/pages/cuenta.html')));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
+    if (error.name === 'MiCorreoError') {
+      console.warn(JSON.stringify({provider:'micorreo',endpoint:error.endpoint,status:error.status,
+        requestId:req.id,errorType:error.type}));
+      return res.status(503).json({error:'No pudimos consultar Correo Argentino. Intentá nuevamente.'});
+    }
     if (!error.status || error.status >= 500) securityEvent('SERVER_ERROR', req, { status: error.status ?? 500 });
     res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor' });
   });

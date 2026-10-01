@@ -4,6 +4,7 @@ import { calculateTotals, shippingProgress, validateRecipient } from './policy.m
 import { transferInstructions } from '../payments/transferencia.mjs';
 import { accountRole } from '../account.mjs';
 import { planPackages, quotePackages } from '../shipping/packaging.mjs';
+import { shippingSnapshot } from '../shipping/snapshot.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -66,6 +67,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo))) && d.codigo !== 'correo_sucursal' &&
         (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
+      pickupEnabled:false,
       user: req.user ? { email: req.user.email } : null });
   });
 
@@ -81,13 +83,16 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       const agencies = await correo.agencies(provinceCode);
       const agency = agencies.find(item => item.code === agencyCode);
       if (!agency) throw fail(400, 'La sucursal no está habilitada por Correo Argentino');
-      pickupPoint = { code: agency.code, name: agency.name, address: agency.location?.address || null };
+      if (agency.status !== 'ACTIVE' || !agency.services?.pickupAvailability ||
+          agency.location?.address?.provinceCode !== provinceCode || !agency.location.address.postalCode)
+        throw fail(400, 'La sucursal no está habilitada por Correo Argentino');
+      pickupPoint = { code: agency.code, name: agency.name, address: agency.location.address };
     }
     const selection = await cart(req);
     if (!selection.items?.length) throw fail(400, 'La selección está vacía');
     const packages = await packagesFor(selection);
     if (!packages) throw fail(503, 'No hay una regla de embalaje para toda la selección');
-    const rates = await quotePackages(correo, { destinationPostalCode: recipient.codigo_postal,
+    const rates = await quotePackages(correo, { destinationPostalCode: pickupPoint?.address.postalCode || recipient.codigo_postal,
       deliveryType: mode === 'correo_domicilio' ? 'D' : 'S', packages });
     if (!rates.length) throw fail(503, 'Correo Argentino no devolvió una tarifa válida');
     const quote = await baseQuote(selection.id);
@@ -99,10 +104,16 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       if (mockCheckout) quoteId = mockCheckout.saveQuote({ owner: hashToken(tokenFor(req)), cart: selection,
         recipient, mode, rate, quote });
       else {
+        const snapshot = shippingSnapshot({cart:selection,recipient,deliveryType:mode === 'correo_domicilio' ? 'D' : 'S',
+          pickupPoint,rate,environment:correo.mock ? 'mock' : correo.environment,
+          originPostalCode:config.correo?.originPostalCode || config.mockOriginPostalCode,
+          customerId:config.correo?.customerId,sender:config.correo?.sender});
+        const fingerprint = await rpc('mb_shipping_fingerprint', {p_carrito_id:selection.id,p_snapshot:snapshot});
+        if (!fingerprint) throw fail(409, 'El carrito cambió; volvé a cotizar');
         const { data, error } = await admin.from('checkout_cotizacion_envio').insert({
           carrito_id: selection.id, usuario_id: userId, destinatario: recipient, modalidad: mode,
           punto: pickupPoint, proveedor: 'correo_argentino', servicio: rate.service,
-          costo_transportista: rate.carrierCost, valido_hasta: validTo.toISOString(),
+          costo_transportista: rate.carrierCost, valido_hasta: validTo.toISOString(),snapshot,fingerprint,
         }).select('id').single();
         if (error) throw fail(503, 'No se pudo guardar la cotización');
         quoteId = data.id;
