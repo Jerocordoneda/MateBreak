@@ -5,6 +5,37 @@ import {spawn} from 'node:child_process';
 import {createServer} from 'node:net';
 import {createStagingVercelConfig,assertStagingVercelReady,validateBackendOrigin,backendRoutes} from '../scripts/staging-config.mjs';
 const backend='https://synthetic-fixture.onrender.com'; // Offline only; never contacted.
+test('staging config diagnostics preserve strict rejection of routing, Git, build and header changes',()=>{
+ const prepared=createStagingVercelConfig(backend);
+ const mutations=[
+  [c=>{c.git.deploymentEnabled=true;},'$.git.deploymentEnabled'],
+  [c=>{delete c.git;},'$.git (missing)'],
+  [c=>{c.installCommand='npm install';},'$.installCommand'],
+  [c=>{c.buildCommand='npm run build:frontend';},'$.buildCommand'],
+  [c=>{c.outputDirectory='.';},'$.outputDirectory'],
+  [c=>{c.framework='express';},'$.framework'],
+  [c=>{c.rewrites.pop();},'$.rewrites.length'],
+  [c=>{c.rewrites.push({source:'/:path*',destination:backend+'/:path*'});},'$.rewrites.length'],
+  [c=>{c.rewrites[4].destination='/index.html';},'$.rewrites[4].destination'],
+  [c=>{c.headers[0].headers[0].value='index, follow';},'$.headers[0].headers[0].value'],
+  [c=>{c.headers[0].headers[1].value='public, max-age=3600';},'$.headers[0].headers[1].value'],
+  [c=>{c.version=2;},'$ (unexpected keys)'],
+ ];
+ for(let i=0;i<backendRoutes.length;i++)mutations.push([c=>{c.rewrites[i].destination='https://wrong-fixture.onrender.com'+backendRoutes[i];},'$.rewrites['+i+'].destination']);
+ for(const [mutate,path]of mutations){const config=structuredClone(prepared);mutate(config);assert.throws(()=>assertStagingVercelReady(config,backend),error=>error.message.includes('blocked')&&error.message.includes(path));}
+ assert.equal(assertStagingVercelReady(JSON.parse(JSON.stringify(prepared)),backend),backend);
+});
+test('staging config diagnostics never echo rejected values or unexpected key names',()=>{
+ const sentinel='synthetic-private-value-do-not-log';
+ const config=createStagingVercelConfig(backend);
+ config.rewrites[0].destination=sentinel;
+ config[sentinel]={credential:sentinel};
+ assert.throws(()=>assertStagingVercelReady(config,backend),error=>{
+  assert.ok(error.message.includes('$.rewrites[0].destination'));
+  assert.ok(error.message.includes('$ (unexpected keys)'));
+  assert.ok(!error.message.includes(sentinel));return true;
+ });
+});
 test('staging frontend refuses incomplete routing, wrong backend and unsafe origins before build',()=>{
  const prepared=createStagingVercelConfig(backend);
  assert.equal(assertStagingVercelReady(prepared,backend),backend);
