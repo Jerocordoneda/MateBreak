@@ -29,9 +29,8 @@ test('one set plus one loose mate produces separate conservative parcels', () =>
 test('three sets split into two large parcels', () => {
   assert.deepEqual(planPackages([set(3)], products), [{ ...SET_BOX, weight: 2600 }, SET_BOX]);
 });
-test('mixed orders group sets first, then mate boxes, regardless of line order', () => {
-  const expected = [{ ...SET_BOX, weight: 2600 }, SET_BOX,
-    { length: 34, width: 17, height: 17, weight: 1100 }, MATE_BOX];
+test('mixed orders beyond two approved parcels require manual quotation regardless of line order', () => {
+  const expected = null;
   assert.deepEqual(planPackages([mate(3), set(3)], products), expected);
   assert.deepEqual(planPackages([set(1), mate(2), set(2), mate(1)], products), expected);
 });

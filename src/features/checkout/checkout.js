@@ -87,6 +87,7 @@ function renderChoices() {
     input.onchange = () => { delivery = option.codigo; shippingQuote = null; renderPickup(); renderOrder(); };
     label.append(input, node('span', option.nombre + (input.disabled ? ' · Próximamente' : ''))); deliveries.append(label);
   }
+  $('#manual-quote').hidden = !context.manualQuoteAvailable;
   $('#shipping-unavailable').hidden = context.modo_prueba || context.deliveries.every(option => option.activo);
   const payments = $('#payment-options'); payments.replaceChildren();
   for (const option of context.payments) {
@@ -135,6 +136,7 @@ async function prepareDelivery(event) {
       const pickup = delivery === 'correo_sucursal' ? {provincia_codigo:$('#pickup-province').value,punto_codigo:$('#pickup-agency').value} : {};
       if (delivery === 'correo_sucursal' && !pickup.punto_codigo) throw Error('Elegí una sucursal');
       const quotes = await api('/checkout/cotizar-envio', { method: 'POST', body: JSON.stringify({ destinatario: recipient, modalidad: delivery, directa: direct, ...pickup }) });
+      if (quotes.status === 'manual_quote_required') { $('#manual-quote').hidden = false; error(quotes.message); return; }
       shippingQuote = quotes[0];
       if (!shippingQuote) throw Error('No se pudo cotizar el envío');
     }
@@ -202,3 +204,12 @@ $('#checkout-login').addEventListener('submit', async event => {
   } catch (cause) { error(cause.message); }
 });
 init();
+
+$('#download-manual-quote').addEventListener('click', async () => {
+ try {
+  const request = await api('/checkout/cotizacion-manual',{method:'POST',body:JSON.stringify({destinatario:selectedRecipient(),directa:direct})});
+  const url=URL.createObjectURL(new Blob([JSON.stringify(request,null,2)],{type:'application/json'}));
+  const link=node('a');link.href=url;link.download='matebreak-cotizacion-manual.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  error(request.message);
+ } catch (cause) { error(cause.message); }
+});

@@ -28,6 +28,7 @@ const config = {
     customerId: env.CORREO_MICORREO_CUSTOMER_ID,
     originPostalCode: env.CORREO_ORIGIN_POSTAL_CODE,
   },
+  approvedRetailProfiles: env.CORREO_APPROVED_RETAIL_PROFILES_JSON ? JSON.parse(env.CORREO_APPROVED_RETAIL_PROFILES_JSON) : [],
   parcelProfiles: env.CORREO_VERIFIED_PARCELS_JSON ? JSON.parse(env.CORREO_VERIFIED_PARCELS_JSON) : {},
 };
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
