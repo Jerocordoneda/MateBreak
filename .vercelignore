@@ -5,6 +5,7 @@
 .github/
 .vscode/
 .vercel/
+vercel.staging.generated.json
 node_modules/
 dist/
 server/
