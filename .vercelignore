@@ -6,6 +6,8 @@
 .vscode/
 .vercel/
 vercel.staging.generated.json
+/README.md
+/tools/extract-strings.mjs
 node_modules/
 dist/
 server/
