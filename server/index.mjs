@@ -10,6 +10,7 @@ const config = {
   secret: process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY,
   origin: process.env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
   production,
+  localPersistMock: process.env.MATEBREAK_LOCAL_PERSIST_MOCK === '1',
   shippingMode,
   paymentsMode,
   mockPaymentResult: process.env.MOCK_PAYMENT_RESULT || 'approved',
@@ -29,6 +30,8 @@ const config = {
   parcelProfiles: process.env.CORREO_VERIFIED_PARCELS_JSON ? JSON.parse(process.env.CORREO_VERIFIED_PARCELS_JSON) : {},
 };
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
+if (config.localPersistMock && process.env.MATEBREAK_LOCAL_ONLY !== '1')
+  throw Error('MATEBREAK_LOCAL_PERSIST_MOCK requires MATEBREAK_LOCAL_ONLY=1.');
 if (process.env.MATEBREAK_LOCAL_ONLY === '1') {
   const endpoint = new URL(config.url), appOrigin = new URL(config.origin);
   if (!['localhost','127.0.0.1','[::1]'].includes(endpoint.hostname) || endpoint.port !== '54321' ||
@@ -39,7 +42,8 @@ if (process.env.MATEBREAK_LOCAL_ONLY === '1') {
 }
 if (production && new URL(config.url).protocol !== 'https:') throw Error('SUPABASE_URL debe usar HTTPS en producción');
 const { app, admin } = createApp(config);
-const server = app.listen(port, () => console.log(`MateBreak: ${config.origin}/ · Shipping ${shippingMode} · Payments ${paymentsMode}`));
+const server = app.listen(port, process.env.MATEBREAK_LOCAL_ONLY === '1' ? '127.0.0.1' : undefined,
+  () => console.log(`MateBreak: ${config.origin}/ · Shipping ${shippingMode} · Payments ${paymentsMode}`));
 server.headersTimeout = 10_000;
 server.requestTimeout = 30_000;
 server.timeout = 60_000;
@@ -53,7 +57,7 @@ const expire = async () => {
   } catch { console.error('Fallo de conexión al liberar reservas'); }
   finally { expiring = false; }
 };
-if (paymentsMode === 'real') {
+if (paymentsMode === 'real' || config.localPersistMock) {
   await expire();
   setInterval(expire, 60000).unref();
 }

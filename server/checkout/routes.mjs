@@ -61,7 +61,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
       ? await packagesFor(selection) : null;
-    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(mockCheckout),
+    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo))) && d.codigo !== 'correo_sucursal' &&
@@ -144,6 +144,27 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (pago === 'transferencia') return res.status(201).json({ order, instructions: transferInstructions() });
     if (order.estado !== 'pendiente_pago') return res.status(200).json({ order });
     if (Date.parse(order.reserva_hasta) <= Date.now()) throw fail(409, 'La reserva venció; consultá el estado del pedido');
+    // Explicit local-only persistence: use the real reservation/lifecycle RPCs,
+    // then a simulated provider. createApp rejects this mode outside localhost.
+    if (config.localPersistMock) {
+      const { data: localPayment, error } = await admin.from('pago').select('id,importe,moneda')
+        .eq('pedido_id', order.id).eq('metodo','mercadopago').single();
+      if (error) throw fail(503, 'No se pudo consultar el pago local');
+      const result = await payment.startPayment({ id: order.id, total: Number(localPayment.importe), currency: localPayment.moneda });
+      let completed = order;
+      if (result.status === 'approved') {
+        await rpc('mb_confirmar_pago', {
+          p_pago_id: localPayment.id, p_referencia: `TEST-LOCAL-${order.id}`,
+          p_importe: Number(localPayment.importe), p_moneda: localPayment.moneda });
+        const saved = await admin.from('pedido').select('id,estado,total,moneda,reserva_hasta')
+          .eq('id',order.id).eq('usuario_id',userId).single();
+        if (saved.error) throw fail(503, 'No se pudo consultar el resultado local');
+        completed = saved.data;
+      }
+      else if (result.status === 'rejected') completed = await rpc('mb_comercio', {
+        p_token_hash: hashToken(token), p_usuario_id: userId, p_accion:'cancelar', p_datos:{ id:order.id } });
+      return res.status(201).json({ order: completed, mock: true, paymentStatus: result.status });
+    }
     const claim = await admin.from('mercadopago_intento').insert({ pedido_id: order.id, estado: 'creando' });
     if (claim.error) {
       if (claim.error.code !== '23505') throw fail(503, 'No se pudo preparar el pago');

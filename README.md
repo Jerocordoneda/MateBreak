@@ -38,8 +38,14 @@ Con `SHIPPING_MODE=mock`, `PAYMENTS_MODE=mock` y `MOCK_PAYMENT_RESULT=approved` 
 
 Para probar rechazo o pendiente, cambiá `MOCK_PAYMENT_RESULT` a `rejected` o `pending` y reiniciá el servidor. `SHIPPING_MODE=real` usa MiCorreo; `PAYMENTS_MODE=real` usa Checkout Pro. En producción los mocks están prohibidos, y el inicio falla si se selecciona un proveedor real sin sus credenciales. La [guía de pagos y envíos](docs/checkout-pagos.md) detalla la activación pendiente.
 
+Para probar reservas y pedidos reales **en Supabase local**, activá además
+`MATEBREAK_LOCAL_PERSIST_MOCK=1` y `MATEBREAK_LOCAL_ONLY=1`. Exige login,
+localhost y ambos proveedores mock. La [suite local](docs/local-development.md)
+ejecuta el flujo completo y limpia sus fixtures con un reset local.
+
 ```bash
 npm test
+npm run test:local
 ```
 
 Las migraciones están en [`supabase/migrations/`](supabase/migrations/) y las pruebas SQL con rollback en [`supabase/tests/`](supabase/tests/). La [prueba reproducible de concurrencia real](docs/concurrencia-stock-aislada.md) utiliza PostgreSQL aislado.

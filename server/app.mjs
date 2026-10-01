@@ -28,11 +28,19 @@ export function createApp(config, overrides = {}) {
       parsedOrigin.username || parsedOrigin.password) throw Error('APP_ORIGIN debe ser un origen HTTP(S) sin path ni credenciales');
   const secure = parsedOrigin.protocol === 'https:';
   if (config.production && !secure) throw Error('APP_ORIGIN debe usar HTTPS en produccion');
+  if (config.localPersistMock) {
+    const endpoint = new URL(config.url);
+    if (config.production || config.shippingMode !== 'mock' || config.paymentsMode !== 'mock'
+      || endpoint.protocol !== 'http:' || endpoint.port !== '54321'
+      || !['localhost','127.0.0.1','[::1]'].includes(endpoint.hostname)
+      || !['localhost','127.0.0.1','[::1]'].includes(parsedOrigin.hostname))
+      throw Error('Persisted mock checkout requires local Supabase and mock providers.');
+  }
   const cookieName = secure ? '__Host-mb_cart' : 'mb_cart';
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
   const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
   const providers = createProviders(config, overrides);
-  const mockCheckout = providers.mock ? createMockCheckoutStore(providers.payment) : null;
+  const mockCheckout = providers.mock && !config.localPersistMock ? createMockCheckoutStore(providers.payment) : null;
   const authFactory = overrides.authFactory ?? ((req, res) => createServerClient(config.url, config.publishable, {
     cookieOptions: { httpOnly: true, secure, sameSite: 'lax', path: '/' },
     cookies: {

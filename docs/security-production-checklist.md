@@ -1,8 +1,10 @@
 # Preparación de seguridad para producción
 
-Estado 2026-09-29: **no habilitar pagos reales ni desplegar aún**. La [configuración de Supabase local](local-development.md) quedó preparada, pero Docker Desktop aún no está disponible; el reset desde cero y los tests Auth/RLS siguen pendientes. La revisión local no reemplaza pruebas contra un entorno de staging aislado con la configuración real. Cada casilla requiere evidencia fechada y responsable.
+Estado 2026-09-30: **no habilitar pagos reales ni desplegar aún**. La [suite local](local-development.md) pasó desde una base reconstruida por archivos versionados. Ver [DDL, catálogo, drift y alcance de plataforma](schema-reconstruction.md). Esto no reemplaza staging con configuración real. Cada casilla requiere evidencia fechada y responsable.
 
 ## Antes del despliegue
+
+- [ ] Revisar la adopción del retro-bootstrap/puente histórico en el historial de proyectos ya existentes. **No ejecutar esas migraciones sobre producción** ni forzar su inclusión: son replay para bases vacías. Staging nuevo puede reconstruirse; el historial del proyecto real necesita un plan de baseline separado.
 
 - [ ] Aplicar en staging la migración pendiente `20260929204150_fix_minorista_checkout_lifecycle.sql` y luego `20260929214717_harden_default_privileges.sql`; ejecutar tests SQL/RLS A/B, lifecycle, stock, cancelación, idempotencia y verificar Advisor. **No están aplicadas al Supabase real.** Repetir después en producción con backup, ventana y rollback acordados.
 - [ ] **REQUIERE VERIFICACIÓN MANUAL:** Supabase Dashboard → Auth → Providers/Email y Security: confirmación de email, configuración de redirect URLs, política de contraseñas, MFA/AAL2 para administradores y protección de contraseñas filtradas. El Security Advisor reportó `auth_leaked_password_protection` WARN.
@@ -20,11 +22,11 @@ Estado 2026-09-29: **no habilitar pagos reales ni desplegar aún**. La [configur
 
 ## Evidencia disponible
 
-- Node: 78/78 en la preparación local (77/77 en la auditoría `43aa55b`).
-- PostgreSQL local aislado en la auditoría anterior: privilegios 1/1; stock concurrente 20/20; lifecycle minorista 9/9; concurrencia minorista 2/2. **No repetidos en esta preparación**.
-- SQL histórico 18/18: **no ejecutado en esta preparación**. Requiere stack Supabase local completo; Docker no está disponible en esta máquina. El baseline `c2248fc` lo tenía validado, pero no se presenta como nueva prueba.
+- Node 80/80; SQL histórico 18/18; privilegios 1/1; stock concurrente 20/20; lifecycle minorista 9/9; concurrencia minorista 2/2, repetidos localmente el 30/09/2026.
+- Dos resets desde cero; Auth/JWT/RLS A/B/anon, 7 RPC service-only, SECURITY DEFINER, Storage y checkout mock con reserva/pedido/pago locales: pasaron.
+- Defaults del rol interno supabase_admin: separados con autorización del usuario; requieren operador de plataforma. No se otorgó ese rol a postgres. El test aislado del operador no implica aplicación en remoto.
 - `npm audit --json`: 0 vulnerabilidades reportadas también en esta preparación. El resultado cambia con nuevas alertas.
-- Supabase real: solo consultas de metadatos en la auditoría anterior; ninguna DDL/DML ni test ofensivo. En esta preparación no se accedió al proyecto real.
+- Supabase real: solo consultas READ ONLY de pg_catalog para DDL/metadatos en esta reconstrucción; ninguna fila de negocio, DDL/DML ni prueba destructiva remota.
 
 ## Respuesta a incidentes
 
