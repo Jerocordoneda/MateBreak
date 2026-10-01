@@ -2,7 +2,7 @@ import { randomBytes } from 'node:crypto';
 import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import { calculateTotals, shippingProgress, validateRecipient } from './policy.mjs';
 import { transferInstructions } from '../payments/transferencia.mjs';
-import { accountRole } from '../account.mjs';
+import { accountRole } from '../modules/account/routes.mjs';
 import { planPackages, quotePackages } from '../shipping/packaging.mjs';
 import { shippingSnapshot } from '../shipping/snapshot.mjs';
 

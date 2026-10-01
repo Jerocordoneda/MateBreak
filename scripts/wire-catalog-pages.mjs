@@ -3,7 +3,7 @@ import {readFile,writeFile} from 'node:fs/promises';
 import {load} from 'cheerio';
 const shop=await readFile('src/pages/tienda.html','utf8');
 const brand=shop.match(/<a data-page-brand class="mb-site-brand mb-page-brand"[\s\S]*?<\/a>/)[0];
-const detail=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Producto · MateBreak</title><link rel="stylesheet" href="/src/css/commerce.css"><link rel="stylesheet" href="/src/css/site-brand.css"><link rel="stylesheet" href="/src/css/catalog.css"><script type="module" src="/src/js/product-detail.js"></script><script type="module" src="/src/js/header-account.js"></script></head><body data-brand-shell="commerce"><a class="skip-link" href="#product-content">Saltar al producto</a><main>${brand}<nav class="commerce-sections" aria-label="Mi compra"><a href="/tienda#catalogo">Catálogo</a><a href="/tienda#carrito" data-cart-link>Mi carrito</a><a href="/mi-cuenta" data-account-link>Mi cuenta</a></nav><div id="product-content" aria-live="polite"><p>Cargando producto…</p></div></main><footer class="site-footer"><a href="/">MateBreak®</a><span>Una buena pausa cambia el día.</span></footer></body></html>`;
+const detail=`<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Producto · MateBreak</title><link rel="stylesheet" href="/src/css/commerce.css"><link rel="stylesheet" href="/src/css/site-brand.css"><link rel="stylesheet" href="/src/css/catalog.css"><script type="module" src="/src/features/catalog/product-detail.js"></script><script type="module" src="/src/js/header-account.js"></script></head><body data-brand-shell="commerce"><a class="skip-link" href="#product-content">Saltar al producto</a><main>${brand}<nav class="commerce-sections" aria-label="Mi compra"><a href="/tienda#catalogo">Catálogo</a><a href="/tienda#carrito" data-cart-link>Mi carrito</a><a href="/mi-cuenta" data-account-link>Mi cuenta</a></nav><div id="product-content" aria-live="polite"><p>Cargando producto…</p></div></main><footer class="site-footer"><a href="/">MateBreak®</a><span>Una buena pausa cambia el día.</span></footer></body></html>`;
 await writeFile('src/pages/producto.html',detail);
 const pages={
  'index.html':{featured:true},
@@ -24,6 +24,6 @@ for(const [file,options]of Object.entries(pages)){
  const mount=`<div class="catalog-home" data-catalog="${options.featured?'featured':'all'}" ${options.featured?'data-limit="4"':''} data-category="${options.category||''}" data-search="${options.search||''}"></div>`;
  for(const r of ranges)html=html.slice(0,r.startOffset)+mount+html.slice(r.endOffset);
  if(!ranges.length){console.log('Sin cuadrícula localizada:',file);continue;}
- html=html.replace('</head>','<link rel="stylesheet" href="/src/css/catalog.css"><script type="module" src="/src/js/catalog-pages.js"></script></head>');
+ html=html.replace('</head>','<link rel="stylesheet" href="/src/css/catalog.css"><script type="module" src="/src/features/catalog/catalog-pages.js"></script></head>');
  await writeFile(file,html);console.log(file,':',ranges.length,'cuadrículas conectadas');
 }
