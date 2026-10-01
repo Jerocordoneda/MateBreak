@@ -1,0 +1,416 @@
+{
+  "tables": [
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "anon=arwdDxtm/postgres",
+        "authenticated=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "rls": true,
+      "name": "combo",
+      "owner": "postgres",
+      "force_rls": false
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "anon=arwdDxtm/postgres",
+        "authenticated=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "rls": true,
+      "name": "combo_item",
+      "owner": "postgres",
+      "force_rls": false
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "anon=arwdDxtm/postgres",
+        "authenticated=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "rls": true,
+      "name": "producto",
+      "owner": "postgres",
+      "force_rls": false
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "rls": true,
+      "name": "producto_simple",
+      "owner": "postgres",
+      "force_rls": false
+    }
+  ],
+  "columns": [
+    {
+      "name": "id_producto",
+      "type": "bigint",
+      "table": "combo",
+      "default": null,
+      "identity": "",
+      "not_null": true,
+      "position": 1,
+      "generated": ""
+    },
+    {
+      "name": "id_combo",
+      "type": "bigint",
+      "table": "combo_item",
+      "default": null,
+      "identity": "",
+      "not_null": true,
+      "position": 1,
+      "generated": ""
+    },
+    {
+      "name": "id_producto_simple",
+      "type": "bigint",
+      "table": "combo_item",
+      "default": null,
+      "identity": "",
+      "not_null": true,
+      "position": 2,
+      "generated": ""
+    },
+    {
+      "name": "cantidad",
+      "type": "integer",
+      "table": "combo_item",
+      "default": "1",
+      "identity": "",
+      "not_null": true,
+      "position": 3,
+      "generated": ""
+    },
+    {
+      "name": "id_producto",
+      "type": "bigint",
+      "table": "producto",
+      "default": null,
+      "identity": "a",
+      "not_null": true,
+      "position": 1,
+      "generated": ""
+    },
+    {
+      "name": "nombre",
+      "type": "character varying(150)",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": true,
+      "position": 2,
+      "generated": ""
+    },
+    {
+      "name": "descripcion",
+      "type": "text",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 3,
+      "generated": ""
+    },
+    {
+      "name": "precio",
+      "type": "numeric(12,2)",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 4,
+      "generated": ""
+    },
+    {
+      "name": "tipo",
+      "type": "character varying(20)",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": true,
+      "position": 5,
+      "generated": ""
+    },
+    {
+      "name": "activo",
+      "type": "boolean",
+      "table": "producto",
+      "default": "true",
+      "identity": "",
+      "not_null": true,
+      "position": 6,
+      "generated": ""
+    },
+    {
+      "name": "creado_en",
+      "type": "timestamp with time zone",
+      "table": "producto",
+      "default": "now()",
+      "identity": "",
+      "not_null": true,
+      "position": 7,
+      "generated": ""
+    },
+    {
+      "name": "actualizado_en",
+      "type": "timestamp with time zone",
+      "table": "producto",
+      "default": "now()",
+      "identity": "",
+      "not_null": true,
+      "position": 8,
+      "generated": ""
+    },
+    {
+      "name": "source_url",
+      "type": "text",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 9,
+      "generated": ""
+    },
+    {
+      "name": "external_id",
+      "type": "text",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 10,
+      "generated": ""
+    },
+    {
+      "name": "slug",
+      "type": "text",
+      "table": "producto",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 11,
+      "generated": ""
+    },
+    {
+      "name": "moneda",
+      "type": "text",
+      "table": "producto",
+      "default": "'ARS'::text",
+      "identity": "",
+      "not_null": true,
+      "position": 12,
+      "generated": ""
+    },
+    {
+      "name": "id_producto",
+      "type": "bigint",
+      "table": "producto_simple",
+      "default": null,
+      "identity": "",
+      "not_null": true,
+      "position": 1,
+      "generated": ""
+    },
+    {
+      "name": "material",
+      "type": "character varying(80)",
+      "table": "producto_simple",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 3,
+      "generated": ""
+    },
+    {
+      "name": "categoria",
+      "type": "character varying(80)",
+      "table": "producto_simple",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 4,
+      "generated": ""
+    },
+    {
+      "name": "diseno",
+      "type": "character varying(120)",
+      "table": "producto_simple",
+      "default": null,
+      "identity": "",
+      "not_null": false,
+      "position": 5,
+      "generated": ""
+    },
+    {
+      "name": "stock",
+      "type": "integer",
+      "table": "producto_simple",
+      "default": "0",
+      "identity": "",
+      "not_null": false,
+      "position": 6,
+      "generated": ""
+    }
+  ],
+  "indexes": [
+    {
+      "name": "combo_pkey",
+      "table": "combo",
+      "definition": "CREATE UNIQUE INDEX combo_pkey ON public.combo USING btree (id_producto)"
+    },
+    {
+      "name": "combo_item_pkey",
+      "table": "combo_item",
+      "definition": "CREATE UNIQUE INDEX combo_item_pkey ON public.combo_item USING btree (id_combo, id_producto_simple)"
+    },
+    {
+      "name": "combo_item_producto_simple_idx",
+      "table": "combo_item",
+      "definition": "CREATE INDEX combo_item_producto_simple_idx ON public.combo_item USING btree (id_producto_simple)"
+    },
+    {
+      "name": "producto_pkey",
+      "table": "producto",
+      "definition": "CREATE UNIQUE INDEX producto_pkey ON public.producto USING btree (id_producto)"
+    },
+    {
+      "name": "producto_source_url_key",
+      "table": "producto",
+      "definition": "CREATE UNIQUE INDEX producto_source_url_key ON public.producto USING btree (source_url)"
+    },
+    {
+      "name": "producto_external_id_key",
+      "table": "producto",
+      "definition": "CREATE UNIQUE INDEX producto_external_id_key ON public.producto USING btree (external_id)"
+    },
+    {
+      "name": "producto_slug_key",
+      "table": "producto",
+      "definition": "CREATE UNIQUE INDEX producto_slug_key ON public.producto USING btree (slug)"
+    },
+    {
+      "name": "producto_simple_pkey",
+      "table": "producto_simple",
+      "definition": "CREATE UNIQUE INDEX producto_simple_pkey ON public.producto_simple USING btree (id_producto)"
+    }
+  ],
+  "policies": null,
+  "triggers": null,
+  "constraints": [
+    {
+      "name": "combo_pkey",
+      "type": "p",
+      "table": "combo",
+      "definition": "PRIMARY KEY (id_producto)"
+    },
+    {
+      "name": "combo_producto_fk",
+      "type": "f",
+      "table": "combo",
+      "definition": "FOREIGN KEY (id_producto) REFERENCES producto(id_producto) ON DELETE CASCADE"
+    },
+    {
+      "name": "combo_item_cantidad_check",
+      "type": "c",
+      "table": "combo_item",
+      "definition": "CHECK (cantidad > 0)"
+    },
+    {
+      "name": "combo_item_combo_fk",
+      "type": "f",
+      "table": "combo_item",
+      "definition": "FOREIGN KEY (id_combo) REFERENCES combo(id_producto) ON DELETE CASCADE"
+    },
+    {
+      "name": "combo_item_pkey",
+      "type": "p",
+      "table": "combo_item",
+      "definition": "PRIMARY KEY (id_combo, id_producto_simple)"
+    },
+    {
+      "name": "combo_item_simple_fk",
+      "type": "f",
+      "table": "combo_item",
+      "definition": "FOREIGN KEY (id_producto_simple) REFERENCES producto_simple(id_producto) ON DELETE RESTRICT"
+    },
+    {
+      "name": "combo_no_autorreferencia_chk",
+      "type": "c",
+      "table": "combo_item",
+      "definition": "CHECK (id_combo <> id_producto_simple)"
+    },
+    {
+      "name": "producto_activo_precio_requerido",
+      "type": "c",
+      "table": "producto",
+      "definition": "CHECK (NOT activo OR precio IS NOT NULL)"
+    },
+    {
+      "name": "producto_external_id_key",
+      "type": "u",
+      "table": "producto",
+      "definition": "UNIQUE (external_id)"
+    },
+    {
+      "name": "producto_moneda_check",
+      "type": "c",
+      "table": "producto",
+      "definition": "CHECK (moneda = 'ARS'::text)"
+    },
+    {
+      "name": "producto_pkey",
+      "type": "p",
+      "table": "producto",
+      "definition": "PRIMARY KEY (id_producto)"
+    },
+    {
+      "name": "producto_precio_check",
+      "type": "c",
+      "table": "producto",
+      "definition": "CHECK (precio >= 0::numeric)"
+    },
+    {
+      "name": "producto_slug_key",
+      "type": "u",
+      "table": "producto",
+      "definition": "UNIQUE (slug)"
+    },
+    {
+      "name": "producto_source_url_key",
+      "type": "u",
+      "table": "producto",
+      "definition": "UNIQUE (source_url)"
+    },
+    {
+      "name": "producto_tipo_check",
+      "type": "c",
+      "table": "producto",
+      "definition": "CHECK (tipo::text = ANY (ARRAY['simple'::character varying, 'combo'::character varying]::text[]))"
+    },
+    {
+      "name": "producto_simple_pkey",
+      "type": "p",
+      "table": "producto_simple",
+      "definition": "PRIMARY KEY (id_producto)"
+    },
+    {
+      "name": "producto_simple_producto_fk",
+      "type": "f",
+      "table": "producto_simple",
+      "definition": "FOREIGN KEY (id_producto) REFERENCES producto(id_producto) ON DELETE CASCADE"
+    },
+    {
+      "name": "producto_simple_stock_check",
+      "type": "c",
+      "table": "producto_simple",
+      "definition": "CHECK (stock >= 0)"
+    }
+  ]
+}

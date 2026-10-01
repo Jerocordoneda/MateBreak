@@ -95,7 +95,9 @@ insert into public.metodo_pago(codigo) values ('transferencia');
 -- the production checkout function and exists only in the isolated cluster.
 create function public.concurrency_fixture_delay() returns trigger language plpgsql as $$
 begin
- perform pg_sleep(0.35);
+ -- Docker Desktop's process startup can exceed 350ms. Leave enough time for
+ -- the independent observer to prove a real advisory-lock wait.
+ perform pg_sleep(1.25);
  return new;
 end $$;
 create trigger concurrency_fixture_delay before update of stock on public.producto_simple

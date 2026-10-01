@@ -46,7 +46,7 @@ test('MiCorreo adapter sends documented postal and measured parcel fields', asyn
 test('MiCorreo lists pickup agencies using the documented response shape', async () => {
   const provider=createCorreoArgentino({username:'u',password:'p',customerId:'customer',originPostalCode:'7000'},async url=>({
     ok:true,json:async()=>url.endsWith('/token')?{token:'test-token'}:[
-      {code:'B0107',name:'Monte Grande',services:{pickupAvailability:true},location:{address:{city:'Monte Grande'}}},
+      {code:'B0107',name:'Monte Grande',status:'ACTIVE',services:{pickupAvailability:true},location:{address:{city:'Monte Grande',provinceCode:'B',postalCode:'1842'}}},
       {code:'B0108',name:'Sin retiro',services:{pickupAvailability:false}},
     ],
   }));
@@ -65,7 +65,7 @@ test('Mercado Pago requires explicit enablement and signs webhook with the offic
 
 test('catalog and cart are separate pages, and product cards open product details', () => {
   const cart=readFileSync(new URL('../src/pages/tienda.html',import.meta.url),'utf8');
-  const catalog=readFileSync(new URL('../src/js/catalog-ui.js',import.meta.url),'utf8');
+  const catalog=readFileSync(new URL('../src/features/catalog/catalog-ui.js',import.meta.url),'utf8');
   assert.doesNotMatch(cart, /id="catalogo"|id="productos"/);
   assert.match(catalog, /link\.href='\/productos\/'/);
   assert.match(catalog, /title\.href=link\.href/);

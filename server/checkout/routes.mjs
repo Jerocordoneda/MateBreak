@@ -2,13 +2,16 @@ import { randomBytes } from 'node:crypto';
 import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import { calculateTotals, shippingProgress, validateRecipient } from './policy.mjs';
 import { transferInstructions } from '../payments/transferencia.mjs';
-import { accountRole } from '../account.mjs';
-import { planPackages, quotePackages } from '../shipping/packaging.mjs';
+import { transferAdminRoutes } from '../payments/admin-routes.mjs';
+import { packagesFor } from './packaging-service.mjs';
+import { quotePackages } from '../shipping/packaging.mjs';
+import { shippingSnapshot } from '../shipping/snapshot.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 export function checkoutRoutes(app, { admin, config, hashToken, correo, payment, mockCheckout }) {
+  const pickupEnabled=Boolean(config.localPickupMock && !config.production && correo.mock && payment.mock);
   const directCookie = config.origin.startsWith('https:') ? '__Host-mb_direct' : 'mb_direct';
   const directToken = req => parseCookieHeader(req.headers.cookie || '').find(cookie => cookie.name === directCookie)?.value;
   const tokenFor = req => req.query.directa === '1' || req.body?.directa === true ? directToken(req) : req.cartToken;
@@ -28,18 +31,6 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (error) throw fail(503, 'No se pudo recalcular el pedido');
     return data;
   };
-  const packagesFor = async selection => {
-    if (!selection.items?.length) return null;
-    const ids = [...new Set(selection.items.map(item => String(item.producto_id)))];
-    const { data, error } = await admin.from('producto')
-      .select('id_producto,tipo,catalogo_producto_categoria(catalogo_categoria(slug))').in('id_producto', ids);
-    if (error) throw fail(503, 'No se pudo determinar el embalaje');
-    return planPackages(selection.items, data.map(product => ({
-      id: product.id_producto, tipo: product.tipo,
-      categorias: product.catalogo_producto_categoria.map(link => link.catalogo_categoria.slug),
-    })), config.parcelProfiles);
-  };
-
   app.post('/api/compra-directa', async (req, res) => {
     const { variante_id, cantidad, personalizacion = '' } = req.body || {};
     if (!/^[1-9]\d{0,18}$/.test(String(variante_id)) || !Number.isInteger(cantidad) || cantidad < 1 || cantidad > 99 ||
@@ -60,12 +51,15 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     const { data: deliveries, error: deliveryError } = await admin.from('metodo_envio').select('codigo,nombre,activo').in('codigo', ['retiro','correo_domicilio','correo_sucursal']);
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
-      ? await packagesFor(selection) : null;
-    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(mockCheckout),
+      ? await packagesFor(selection, { admin, config }) : null;
+    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
-      deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo))) && d.codigo !== 'correo_sucursal' &&
+      deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&
         (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
+      packaging: { status: packages ? 'automatic' : selection.items?.length ? 'manual' : 'empty' },
+      manualQuoteAvailable: Boolean(selection.items?.length && !packages),
+      pickupEnabled,
       user: req.user ? { email: req.user.email } : null });
   });
 
@@ -76,18 +70,22 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (!['correo_domicilio','correo_sucursal'].includes(mode)) throw fail(400, 'Modalidad inválida');
     let pickupPoint = null;
     if (mode === 'correo_sucursal') {
+      if(!pickupEnabled)throw fail(403,'Entrega a sucursal deshabilitada fuera del modo local/mock explícito');
       const provinceCode = req.body?.provincia_codigo, agencyCode = req.body?.punto_codigo;
-      if (!/^[A-Z]$/.test(provinceCode || '') || !/^[A-Z0-9]{2,20}$/.test(agencyCode || '')) throw fail(400, 'Sucursal inválida');
+      if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ]$/.test(provinceCode || '') || !/^[A-Z0-9]{2,20}$/.test(agencyCode || '')) throw fail(400, 'Sucursal inválida');
       const agencies = await correo.agencies(provinceCode);
       const agency = agencies.find(item => item.code === agencyCode);
       if (!agency) throw fail(400, 'La sucursal no está habilitada por Correo Argentino');
-      pickupPoint = { code: agency.code, name: agency.name, address: agency.location?.address || null };
+      if (agency.status !== 'ACTIVE' || !agency.services?.pickupAvailability ||
+          agency.location?.address?.provinceCode !== provinceCode || !agency.location.address.postalCode)
+        throw fail(400, 'La sucursal no está habilitada por Correo Argentino');
+      pickupPoint = { code: agency.code, name: agency.name, address: agency.location.address };
     }
     const selection = await cart(req);
     if (!selection.items?.length) throw fail(400, 'La selección está vacía');
-    const packages = await packagesFor(selection);
-    if (!packages) throw fail(503, 'No hay una regla de embalaje para toda la selección');
-    const rates = await quotePackages(correo, { destinationPostalCode: recipient.codigo_postal,
+    const packages = await packagesFor(selection, { admin, config });
+    if (!packages) return res.status(202).json({ status:'manual_quote_required', message:'Vamos a revisar el embalaje y cotizar este pedido manualmente. Tu carrito sigue guardado; no se realizó ningún cobro.', cartId:selection.id });
+    const rates = await quotePackages(correo, { destinationPostalCode: pickupPoint?.address.postalCode || recipient.codigo_postal,
       deliveryType: mode === 'correo_domicilio' ? 'D' : 'S', packages });
     if (!rates.length) throw fail(503, 'Correo Argentino no devolvió una tarifa válida');
     const quote = await baseQuote(selection.id);
@@ -99,10 +97,16 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       if (mockCheckout) quoteId = mockCheckout.saveQuote({ owner: hashToken(tokenFor(req)), cart: selection,
         recipient, mode, rate, quote });
       else {
+        const snapshot = shippingSnapshot({cart:selection,recipient,deliveryType:mode === 'correo_domicilio' ? 'D' : 'S',
+          pickupPoint,rate,environment:correo.mock ? 'mock' : correo.environment,
+          originPostalCode:config.correo?.originPostalCode || config.mockOriginPostalCode,
+          customerId:config.correo?.customerId,sender:config.correo?.sender});
+        const fingerprint = await rpc('mb_shipping_fingerprint', {p_carrito_id:selection.id,p_snapshot:snapshot});
+        if (!fingerprint) throw fail(409, 'El carrito cambió; volvé a cotizar');
         const { data, error } = await admin.from('checkout_cotizacion_envio').insert({
           carrito_id: selection.id, usuario_id: userId, destinatario: recipient, modalidad: mode,
           punto: pickupPoint, proveedor: 'correo_argentino', servicio: rate.service,
-          costo_transportista: rate.carrierCost, valido_hasta: validTo.toISOString(),
+          costo_transportista: rate.carrierCost, valido_hasta: validTo.toISOString(),snapshot,fingerprint,
         }).select('id').single();
         if (error) throw fail(503, 'No se pudo guardar la cotización');
         quoteId = data.id;
@@ -115,9 +119,22 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     res.json(options);
   });
 
+  // A downloadable handoff, without persisting PII, reserving stock or charging.
+  app.post('/api/checkout/cotizacion-manual', async (req, res) => {
+    if (!mockCheckout) requireUser(req);
+    const recipient = validateRecipient(req.body?.destinatario);
+    const selection = await cart(req);
+    if (!selection.items?.length) throw fail(400, 'La selección está vacía');
+    const quote = await baseQuote(selection.id);
+    res.set('Cache-Control','private, no-store').json({status:'manual_quote_required',
+      message:'Compartí esta solicitud con MateBreak para acordar el embalaje y el envío. No confirma un pedido ni reserva stock.',
+      recipient, items:quote.items, currency:quote.moneda, subtotal:quote.subtotal, createdAt:new Date().toISOString()});
+  });
+
   app.get('/api/checkout/sucursales', async (req, res) => {
+    if(!pickupEnabled)throw fail(403,'Selector de sucursal deshabilitado');
     if (!correo.ready) throw fail(503, 'Correo Argentino todavía no está configurado');
-    if (!/^[A-Z]$/.test(req.query.provincia || '')) throw fail(400, 'Provincia inválida');
+    if (!/^[ABCDEFGHJKLMNPQRSTUVWXYZ]$/.test(req.query.provincia || '')) throw fail(400, 'Provincia inválida');
     const agencies = await correo.agencies(req.query.provincia);
     res.json(agencies.map(agency => ({ code: agency.code, name: agency.name, address: agency.location?.address || null })));
   });
@@ -130,10 +147,11 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       (envio !== 'retiro' && !uuid(cotizacion_id))) throw fail(400, 'Datos de compra inválidos');
     if (pago === 'mercadopago' && !payment.ready) throw fail(503, 'Mercado Pago todavía no está habilitado');
     if (envio !== 'retiro' && !correo.ready) throw fail(503, 'Correo Argentino todavía no está habilitado');
+    if(envio==='correo_sucursal' && !pickupEnabled)throw fail(403,'Entrega a sucursal deshabilitada');
     const token = tokenFor(req);
     if (!/^[a-f0-9]{64}$/.test(token || '')) throw fail(400, 'La sesión de compra venció');
     if (mockCheckout) {
-      if (pago !== 'mercadopago' || envio === 'correo_sucursal') throw fail(400, 'Método de prueba no disponible');
+      if (pago !== 'mercadopago') throw fail(400, 'Método de prueba no disponible');
       const selection = await cart(req), quote = await baseQuote(selection.id);
       const order = await mockCheckout.createOrder({ owner: hashToken(token), cart: selection, recipient,
         mode: envio, quoteId: cotizacion_id, quote, idempotencia });
@@ -144,6 +162,27 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (pago === 'transferencia') return res.status(201).json({ order, instructions: transferInstructions() });
     if (order.estado !== 'pendiente_pago') return res.status(200).json({ order });
     if (Date.parse(order.reserva_hasta) <= Date.now()) throw fail(409, 'La reserva venció; consultá el estado del pedido');
+    // Explicit local-only persistence: use the real reservation/lifecycle RPCs,
+    // then a simulated provider. createApp rejects this mode outside localhost.
+    if (config.localPersistMock) {
+      const { data: localPayment, error } = await admin.from('pago').select('id,importe,moneda')
+        .eq('pedido_id', order.id).eq('metodo','mercadopago').single();
+      if (error) throw fail(503, 'No se pudo consultar el pago local');
+      const result = await payment.startPayment({ id: order.id, total: Number(localPayment.importe), currency: localPayment.moneda });
+      let completed = order;
+      if (result.status === 'approved') {
+        await rpc('mb_confirmar_pago', {
+          p_pago_id: localPayment.id, p_referencia: `TEST-LOCAL-${order.id}`,
+          p_importe: Number(localPayment.importe), p_moneda: localPayment.moneda });
+        const saved = await admin.from('pedido').select('id,estado,total,moneda,reserva_hasta')
+          .eq('id',order.id).eq('usuario_id',userId).single();
+        if (saved.error) throw fail(503, 'No se pudo consultar el resultado local');
+        completed = saved.data;
+      }
+      else if (result.status === 'rejected') completed = await rpc('mb_comercio', {
+        p_token_hash: hashToken(token), p_usuario_id: userId, p_accion:'cancelar', p_datos:{ id:order.id } });
+      return res.status(201).json({ order: completed, mock: true, paymentStatus: result.status });
+    }
     const claim = await admin.from('mercadopago_intento').insert({ pedido_id: order.id, estado: 'creando' });
     if (claim.error) {
       if (claim.error.code !== '23505') throw fail(503, 'No se pudo preparar el pago');
@@ -195,21 +234,5 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       instructions: data.pago?.some?.(entry => entry.metodo === 'transferencia') ? transferInstructions() : null });
   });
 
-  app.post('/api/admin/transferencias/:id/confirmar', async (req, res) => {
-    const userId = requireUser(req);
-    if (await accountRole(admin, req.user) !== 'administrador') throw fail(403, 'Solo administración puede confirmar transferencias');
-    if (!uuid(req.params.id) || typeof req.body?.referencia !== 'string' || !req.body.referencia.trim() || req.body.referencia.length > 150)
-      throw fail(400, 'Pedido o referencia inválidos');
-    res.json(await rpc('mb_confirmar_transferencia', { p_actor_id: userId, p_pedido_id: req.params.id, p_referencia: req.body.referencia.trim() }));
-  });
-
-  app.get('/api/admin/transferencias', async (req, res) => {
-    requireUser(req);
-    if (await accountRole(admin, req.user) !== 'administrador') throw fail(403, 'Solo administración puede revisar transferencias');
-    const { data, error } = await admin.from('pago').select('pedido_id,importe,pedido!inner(id,estado,reserva_hasta,creado_en,usuario_id)')
-      .eq('metodo', 'transferencia').eq('estado', 'pendiente').eq('pedido.estado', 'pendiente_pago').order('creado_en', { foreignTable: 'pedido', ascending: false }).limit(100);
-    if (error) throw fail(503, 'No se pudieron consultar las transferencias');
-    res.json(data.map(row => ({ id: row.pedido_id, importe: row.importe, reserva_hasta: row.pedido.reserva_hasta,
-      creado_en: row.pedido.creado_en })));
-  });
+  transferAdminRoutes(app, { admin, requireUser, uuid, rpc });
 }

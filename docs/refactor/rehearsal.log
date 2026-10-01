@@ -1,0 +1,30 @@
+
+> test:baseline:local
+> node scripts/test-baseline-rehearsal.mjs
+
+Rehearsal: reset owned local DB to the 22 historical migrations.
+Rehearsal: real CLI repair --local applied 22, then reverted 18.
+Rehearsal: inject a REVOKE failure in migration 2; migration 1 must persist and 3/4 must not run.
+Rehearsal: recover forward with only the remaining migrations.
+PASS account-sales.sql
+PASS admin-dashboard.sql
+PASS admin-roles.sql
+PASS box-per-mate.sql
+PASS catalog-integrity.sql
+PASS catalog.sql
+PASS checkout-minorista.sql
+PASS commerce.sql
+PASS inventory.sql
+PASS physical-operations.sql
+PASS prepayment-cart.sql
+PASS prepayment-e2e.sql
+PASS prepayment-preparation.sql
+PASS prepayment-receipts.sql
+PASS prepayment-stock-expiration.sql
+PASS reconciliation.sql
+PASS thermo-publications.sql
+PASS variant-checkout.sql
+Historical SQL: 18/18 passed (synthetic fixtures, rolled back).
+PASS logistics SQL: fingerprints, ownership, expiry, immutable snapshots, paid multi-parcel claims; admin role/proof/idempotency, active/abandoned claims, retry limit, finite date, immutable audit and financial isolation.
+Rehearsal: rebuild all 26 migrations from scratch and compare logical schema/defaults.
+Baseline rehearsal PASS; local stack stop OK; evidence: .baseline-rehearsal/

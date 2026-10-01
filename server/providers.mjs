@@ -5,9 +5,17 @@ import { createMockPayment } from './payments/mock.mjs';
 
 const modes = new Set(['mock', 'real']);
 
+export function resolveMiCorreoEnvironment(env) {
+  const current=env.CORREO_MICORREO_ENVIRONMENT,legacy=env.CORREO_ENVIRONMENT;
+  if(current&&legacy&&current!==legacy)throw Error('MiCorreo environment variables disagree.');
+  const environment=current||legacy||'test';
+  if(!['test','production'].includes(environment))throw Error('MiCorreo environment inválido');
+  return environment;
+}
+
 export function resolveProviderModes(env) {
   const production = env.NODE_ENV === 'production';
-  const shippingMode = env.SHIPPING_MODE || (production ? 'real' : 'mock');
+  const shippingMode = env.SHIPPING_MODE || 'mock';
   const paymentsMode = env.PAYMENTS_MODE || (production ? 'real' : 'mock');
   if (!modes.has(shippingMode) || !modes.has(paymentsMode))
     throw Error('SHIPPING_MODE y PAYMENTS_MODE deben ser mock o real');
@@ -33,6 +41,8 @@ export function createProviders(config, overrides = {}) {
     : createCorreoArgentino(config.correo));
   if (config.shippingMode === 'real' && !shipping.ready)
     throw Error('SHIPPING_MODE=real requiere CORREO_MICORREO_USER, CORREO_MICORREO_PASSWORD, CORREO_MICORREO_CUSTOMER_ID y CORREO_ORIGIN_POSTAL_CODE');
+  if (config.production && config.shippingMode === 'real' && shipping.environment !== 'production')
+    throw Error('MiCorreo test no se permite en una aplicación de producción');
 
   const realPayment = overrides.mercadoPago ?? createMercadoPago({ ...config.mercadoPago,
     enabled: config.paymentsMode === 'mock' ? false : config.paymentsMode === 'real' ? true : config.mercadoPago?.enabled });

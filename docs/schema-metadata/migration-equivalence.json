@@ -1,0 +1,236 @@
+[
+  {
+    "file": "20260907203437_bootstrap_legacy_catalog.sql",
+    "version": "20260907203437",
+    "name": "bootstrap_legacy_catalog",
+    "remoteVersion": null,
+    "localTokenMd5": "8094d4f077a39b2a7842c4073d5d8847",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20260907203438_commerce.sql",
+    "version": "20260907203438",
+    "name": "commerce",
+    "remoteVersion": null,
+    "localTokenMd5": "be7fa1a84ee775cbee5aa007c4284dc7",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20260907205528_restrict_rls_event_function.sql",
+    "version": "20260907205528",
+    "name": "restrict_rls_event_function",
+    "remoteVersion": null,
+    "localTokenMd5": "a5cf28645565987de544a76f0c660e12",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20260908093541_inventory_admin.sql",
+    "version": "20260908093541",
+    "name": "inventory_admin",
+    "remoteVersion": "20260908093949",
+    "localTokenMd5": "706f31b46fa221cbb5a1f461c69b6567",
+    "remoteTokenMd5": "706f31b46fa221cbb5a1f461c69b6567",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260908094753_inventory_query_aliases.sql",
+    "version": "20260908094753",
+    "name": "inventory_query_aliases",
+    "remoteVersion": "20260908094715",
+    "localTokenMd5": "fff7721ee3795332aafe4bea0e64619f",
+    "remoteTokenMd5": "fff7721ee3795332aafe4bea0e64619f",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260908103049_account_roles_sales.sql",
+    "version": "20260908103049",
+    "name": "account_roles_sales",
+    "remoteVersion": "20260908103456",
+    "localTokenMd5": "82708b11a41205de2ebe9ddcce3f63c4",
+    "remoteTokenMd5": "82708b11a41205de2ebe9ddcce3f63c4",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260909000858_account_admin_roles.sql",
+    "version": "20260909000858",
+    "name": "account_admin_roles",
+    "remoteVersion": "20260909001422",
+    "localTokenMd5": "7a2325d2dba9ec2f6aba0cfa158bb329",
+    "remoteTokenMd5": "7a2325d2dba9ec2f6aba0cfa158bb329",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260909234040_admin_commercial_dashboard.sql",
+    "version": "20260909234040",
+    "name": "admin_commercial_dashboard",
+    "remoteVersion": "20260909234523",
+    "localTokenMd5": "cbdb5544e4152750fb3dcd68e30cbc87",
+    "remoteTokenMd5": "cbdb5544e4152750fb3dcd68e30cbc87",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260928160916_catalog_import.sql",
+    "version": "20260928160916",
+    "name": "catalog_import",
+    "remoteVersion": "20260928161630",
+    "localTokenMd5": "997fd15e1bf546be1ea93be9fd871aad",
+    "remoteTokenMd5": "997fd15e1bf546be1ea93be9fd871aad",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260928162849_catalog_reconcile_metadata.sql",
+    "version": "20260928162849",
+    "name": "catalog_reconcile_metadata",
+    "remoteVersion": "20260928162830",
+    "localTokenMd5": "17c956c2d2897427501a6aacae3faa8c",
+    "remoteTokenMd5": "17c956c2d2897427501a6aacae3faa8c",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260928162850_restore_historical_public_catalog.sql",
+    "version": "20260928162850",
+    "name": "restore_historical_public_catalog",
+    "remoteVersion": null,
+    "localTokenMd5": "783f5eab55612ba63775e76054c93c4f",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20260928210316_ars_variant_checkout.sql",
+    "version": "20260928210316",
+    "name": "ars_variant_checkout",
+    "remoteVersion": "20260928210655",
+    "localTokenMd5": "2fadce353db945ce13e9866a586b1fa4",
+    "remoteTokenMd5": "2fadce353db945ce13e9866a586b1fa4",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260928232227_reconcile_camionero_algarrobo.sql",
+    "version": "20260928232227",
+    "name": "reconcile_camionero_algarrobo",
+    "remoteVersion": "20260928232220",
+    "localTokenMd5": "d6859f7c3ca2281123d4e49f8bacaa76",
+    "remoteTokenMd5": "d6859f7c3ca2281123d4e49f8bacaa76",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929000621_physical_base_reconciliation.sql",
+    "version": "20260929000621",
+    "name": "physical_base_reconciliation",
+    "remoteVersion": "20260929000708",
+    "localTokenMd5": "25fc1204746a5a9a4ae2045d909ee1d4",
+    "remoteTokenMd5": "25fc1204746a5a9a4ae2045d909ee1d4",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929000841_on_demand_and_preparation.sql",
+    "version": "20260929000841",
+    "name": "on_demand_and_preparation",
+    "remoteVersion": "20260929001006",
+    "localTokenMd5": "c6ee87aeef68d4d52b4c3d3407a38f83",
+    "remoteTokenMd5": "c6ee87aeef68d4d52b4c3d3407a38f83",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929001114_receiving_and_engraving_operations.sql",
+    "version": "20260929001114",
+    "name": "receiving_and_engraving_operations",
+    "remoteVersion": "20260929001144",
+    "localTokenMd5": "5cec899994069af7f7deaa1a12d9018d",
+    "remoteTokenMd5": "5cec899994069af7f7deaa1a12d9018d",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929001306_align_board_procurement.sql",
+    "version": "20260929001306",
+    "name": "align_board_procurement",
+    "remoteVersion": "20260929001227",
+    "localTokenMd5": "39ac08c9486e1231a956916efc6c9c46",
+    "remoteTokenMd5": "39ac08c9486e1231a956916efc6c9c46",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929122500_reconcile_thermo_publications.sql",
+    "version": "20260929122500",
+    "name": "reconcile_thermo_publications",
+    "remoteVersion": "20260929004131",
+    "localTokenMd5": "80bff113f99f97a6c0b5ca7f88971ce9",
+    "remoteTokenMd5": "80bff113f99f97a6c0b5ca7f88971ce9",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929130000_box_per_mate_and_combo_mapping.sql",
+    "version": "20260929130000",
+    "name": "box_per_mate_and_combo_mapping",
+    "remoteVersion": "20260929005101",
+    "localTokenMd5": "2c94759b5fc564dd91c117e44125f4ec",
+    "remoteTokenMd5": "2c94759b5fc564dd91c117e44125f4ec",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929131500_box_for_manual_sales.sql",
+    "version": "20260929131500",
+    "name": "box_for_manual_sales",
+    "remoteVersion": "20260929005232",
+    "localTokenMd5": "45321ca3e7517939d06828b79ec37e91",
+    "remoteTokenMd5": "45321ca3e7517939d06828b79ec37e91",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929133000_map_premium_personalized_knife_sheath.sql",
+    "version": "20260929133000",
+    "name": "map_premium_personalized_knife_sheath",
+    "remoteVersion": "20260929020225",
+    "localTokenMd5": "d5cd0d1de2d9ca758aa364ad6de69f39",
+    "remoteTokenMd5": "d5cd0d1de2d9ca758aa364ad6de69f39",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929144308_checkout_minorista_preparacion.sql",
+    "version": "20260929144308",
+    "name": "checkout_minorista_preparacion",
+    "remoteVersion": "20260929150203",
+    "localTokenMd5": "a2de12314e284962839012aebab5ce50",
+    "remoteTokenMd5": "a2de12314e284962839012aebab5ce50",
+    "tokenEquivalent": true
+  },
+  {
+    "file": "20260929204150_fix_minorista_checkout_lifecycle.sql",
+    "version": "20260929204150",
+    "name": "fix_minorista_checkout_lifecycle",
+    "remoteVersion": null,
+    "localTokenMd5": "2785eec5d78144a66d51831890767f5c",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20260929214717_harden_default_privileges.sql",
+    "version": "20260929214717",
+    "name": "harden_default_privileges",
+    "remoteVersion": null,
+    "localTokenMd5": "ff7a479d5a31e8217ade36d2617dceb4",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261001003824_micorreo_logistics_snapshots.sql",
+    "version": "20261001003824",
+    "name": "micorreo_logistics_snapshots",
+    "remoteVersion": null,
+    "localTokenMd5": "517ca8b85b51a84057771aee90a52310",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261001112820_logistics_admin_recovery.sql",
+    "version": "20261001112820",
+    "name": "logistics_admin_recovery",
+    "remoteVersion": null,
+    "localTokenMd5": "1fd4d710009b9af89517c28c17ada59c",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  }
+]
