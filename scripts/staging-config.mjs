@@ -16,6 +16,33 @@ export function createStagingVercelConfig(backend) {
  ...Object.entries(frontendPages).map(([source,page])=>({source,destination:'/src/pages/'+page+'.html'}))],
  headers:[{source:'/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'}]}]};
 }
+// Diagnostic names only: public Vercel configuration/request properties, not an
+// acceptance list. Every additional property still fails isDeepStrictEqual.
+// References: https://vercel.com/docs/project-configuration and CLI 62.1.0
+// buildVercelConfigSchema (including its experimental properties).
+// Request-only names come from CLI 62.1.0 Now.create's requestBody; seeing
+// one does not establish its origin or make it valid in root vercel.json.
+const diagnosticRootNames=new Set([
+ '$schema','version','name','alias','scope','public','regions','functionFailoverRegions',
+ 'builds','routes','env','build','github','cleanUrls','trailingSlash','functions',
+ 'redirects','crons','images','ignoreCommand','devCommand','bunVersion','fluid',
+ 'bulkRedirectsPath','services','relatedProjects','schedules','proxy',
+ 'experimentalServices','experimentalServiceGroups','experimentalServicesV2',
+ 'buildMachine','project','meta','target','projectSettings','source','actor','autoAssignCustomDomains',
+]);
+function rootKeyDiagnostics(actual,expected) {
+ const expectedKeys=Object.keys(expected).sort();
+ if(!actual||typeof actual!=='object'||Array.isArray(actual))
+  return 'root keys: expected='+JSON.stringify(expectedKeys)+'; actual=not an object';
+ const actualKeys=Object.keys(actual);
+ const safeKeys=actualKeys.filter(key=>Object.hasOwn(expected,key)||diagnosticRootNames.has(key)).sort();
+ const additionalKeys=safeKeys.filter(key=>!Object.hasOwn(expected,key));
+ // Arbitrary names can themselves contain secrets, even if they look like
+ // identifiers. Never interpolate them, their contents, or nested extra keys.
+ return 'root keys: expected='+JSON.stringify(expectedKeys)+
+  '; actual known='+JSON.stringify(safeKeys)+'; additional known='+JSON.stringify(additionalKeys)+
+  '; undisclosed unexpected keys='+(actualKeys.length-safeKeys.length);
+}
 // Report only paths from the approved configuration, never actual values or
 // untrusted extra key names (which could contain credentials).
 function configurationDifferences(actual,expected,path='$') {
@@ -41,7 +68,7 @@ export function assertStagingVercelReady(config,backend) {
  const origin=validateBackendOrigin(backend),expected=createStagingVercelConfig(origin);
  if(!isDeepStrictEqual(config,expected)) {
   const differences=configurationDifferences(config,expected);
-  throw Error('Staging deploy blocked: vercel.json must be prepared and reviewed for this backend before build; differing paths: '+differences.slice(0,32).join(', ')+(differences.length>32?' (additional differences omitted)':''));
+  throw Error('Staging deploy blocked: vercel.json must be prepared and reviewed for this backend before build; differing paths: '+differences.slice(0,32).join(', ')+(differences.length>32?' (additional differences omitted)':'')+'; '+rootKeyDiagnostics(config,expected));
  }
  return origin;
 }

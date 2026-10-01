@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
-import {spawn} from 'node:child_process';
+import {readFileSync,mkdtempSync,mkdirSync,writeFileSync,copyFileSync,rmSync} from 'node:fs';
+import {spawn,spawnSync} from 'node:child_process';
 import {createServer} from 'node:net';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
 import {createStagingVercelConfig,assertStagingVercelReady,validateBackendOrigin,backendRoutes} from '../scripts/staging-config.mjs';
 const backend='https://synthetic-fixture.onrender.com'; // Offline only; never contacted.
 test('staging config diagnostics preserve strict rejection of routing, Git, build and header changes',()=>{
@@ -35,6 +37,68 @@ test('staging config diagnostics never echo rejected values or unexpected key na
   assert.ok(error.message.includes('$ (unexpected keys)'));
   assert.ok(!error.message.includes(sentinel));return true;
  });
+});
+
+test('root diagnostics name known Vercel properties but still reject every additional property',()=>{
+ for(const [key,value]of [['version',2],['$schema','synthetic-private-schema'],['regions',['synthetic-private-region']],['build',{env:{PRIVATE:'synthetic-private-env'}}],['env',{PRIVATE:'synthetic-private-env'}],['services',{}],['meta',{PRIVATE:'synthetic-private-meta'}],['projectSettings',{PRIVATE:'synthetic-private-setting'}]]){
+  const config=createStagingVercelConfig(backend);config[key]=value;
+  assert.throws(()=>assertStagingVercelReady(config,backend),error=>{
+   assert.ok(error.message.includes('$ (unexpected keys)'));
+   assert.ok(error.message.includes('additional known='+JSON.stringify([key])));
+   assert.ok(error.message.includes('undisclosed unexpected keys=0'));
+   assert.ok(!error.message.includes('synthetic-private'));
+   assert.ok(!error.message.includes('PRIVATE'));return true;
+  });
+ }
+});
+
+test('root diagnostics compare expected and effective safe names without leaking arbitrary names or values',()=>{
+ const config=createStagingVercelConfig(backend);delete config.installCommand;
+ config.version=2;config.$schema='synthetic-private-value';
+ for(const key of ['syntheticSecretLookingIdentifier','token\nINJECTED LOG','eyJsynthetic.payload.signature'])config[key]={nestedSecret:'synthetic-private-value'};
+ config.git['nested-private-key']='nested-private-value';
+ assert.throws(()=>assertStagingVercelReady(config,backend),error=>{
+  const message=error.message;
+  const expected=['buildCommand','framework','git','headers','installCommand','outputDirectory','rewrites'];
+  const actual=['$schema','buildCommand','framework','git','headers','outputDirectory','rewrites','version'];
+  assert.ok(message.includes('root keys: expected='+JSON.stringify(expected)));
+  assert.ok(message.includes('actual known='+JSON.stringify(actual)));
+  assert.ok(message.includes('additional known=["$schema","version"]'));
+  assert.ok(message.includes('undisclosed unexpected keys=3'));
+  assert.ok(message.includes('$.installCommand (missing)'));
+  assert.ok(message.includes('$.git (unexpected keys)'));
+  for(const forbidden of ['syntheticSecret','INJECTED','eyJsynthetic','synthetic-private','nested-private'])assert.ok(!message.includes(forbidden));
+  return true;
+ });
+});
+
+test('root diagnostics reject falsy metadata and malformed roots without logging their contents',()=>{
+ for(const value of [null,false,0,'']){
+  const config=createStagingVercelConfig(backend);config.version=value;
+  assert.throws(()=>assertStagingVercelReady(config,backend),/additional known=\["version"\]/);
+ }
+ for(const config of [null,false,'synthetic-private-root',['synthetic-private-root']])
+  assert.throws(()=>assertStagingVercelReady(config,backend),error=>error.message.includes('actual=not an object')&&!error.message.includes('synthetic-private-root'));
+});
+
+test('build reads only root vercel.json and never substitutes or merges the generated example',t=>{
+ const prefix=join(tmpdir(),'matebreak-config-diagnostic-'),root=mkdtempSync(prefix);
+ t.after(()=>{assert.ok(root.startsWith(prefix));rmSync(root,{recursive:true,force:true});});
+ mkdirSync(join(root,'scripts'));mkdirSync(join(root,'src'));
+ for(const name of ['build-staging.mjs','staging-config.mjs','build-frontend.mjs'])
+  copyFileSync(new URL('../scripts/'+name,import.meta.url),join(root,'scripts',name));
+ writeFileSync(join(root,'index.html'),'<html>synthetic offline fixture</html>');
+ const prepared=createStagingVercelConfig(backend),example=createStagingVercelConfig('https://different-fixture.onrender.com');
+ writeFileSync(join(root,'vercel.json'),JSON.stringify(prepared));
+ writeFileSync(join(root,'vercel.staging.generated.json'),JSON.stringify(example));
+ const run=()=>spawnSync(process.execPath,[join(root,'scripts','build-staging.mjs')],{cwd:root,env:{STAGING_BACKEND_ORIGIN:backend},encoding:'utf8',windowsHide:true});
+ const good=run();assert.ifError(good.error);assert.equal(good.status,0,good.stderr);
+ assert.deepEqual(JSON.parse(readFileSync(join(root,'vercel.json'),'utf8')),prepared);
+ prepared.version=2;
+ writeFileSync(join(root,'vercel.json'),JSON.stringify(prepared));
+ writeFileSync(join(root,'vercel.staging.generated.json'),JSON.stringify(createStagingVercelConfig(backend)));
+ const rejected=run();assert.ifError(rejected.error);assert.notEqual(rejected.status,0);
+ assert.ok(rejected.stderr.includes('additional known=["version"]'));
 });
 test('staging frontend refuses incomplete routing, wrong backend and unsafe origins before build',()=>{
  const prepared=createStagingVercelConfig(backend);
