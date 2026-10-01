@@ -104,9 +104,13 @@ los demás scripts operativos quedan excluidos mediante .vercelignore.
 
 No existe todavía binding local .vercel/project.json en este worktree:
 la comprobación bloqueante del paso 3 es obligatoria antes del primer deploy.
-El conector de listado no devuelve la configuración de la integración Git;
-la guarda local git.deploymentEnabled=false está comprobada. Revisar en el
-Dashboard que Git siga sin conectar; no se realizó ninguna conexión aquí.
+El listado del conector se complementó con GET /v9/projects del CLI oficial.
+Confirma id/nombre/accountId esperados y link=null: Git no está conectado.
+La lectura también muestra nodeVersion=24.x y installCommand/buildCommand/
+outputDirectory=null en el Dashboard. No se cambió configuración remota.
+package.json engines.node=22.x selecciona Node 22 para el build; vercel.json
+aporta npm ci, npm run build y dist. Antes del deploy autorizado, revisar
+que el Dashboard quede alineado con estos valores. No conectar Git.
 
 Las pruebas locales no certifican los rewrites ejecutados en Vercel ni cookies
 y sesiones a través del proxy: verificarlos tras el primer deploy autorizado.
@@ -117,3 +121,6 @@ archivos, exclusivamente index.html y src/. Revisión por patrones de secretos
 en 79 archivos de texto del build/configuración/informes: sin coincidencias.
 Las reglas de subida se comprobaron para excluir SQL, backend, .env, .vercel
 y capturas privadas, y conservar todos los inputs necesarios del build.
+
+- https://vercel.com/docs/project-configuration/git-configuration
+- https://vercel.com/docs/deployments/vercel-ignore
