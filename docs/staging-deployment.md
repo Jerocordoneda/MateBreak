@@ -1,5 +1,7 @@
 # MateBreak: primera publicación de pruebas
 
+Actualización final: usar **[staging-first-deploy.md](staging-first-deploy.md)** para las pantallas actuales de Vercel/Render, la matriz por servicio y el target Supabase `rxccjczyywhewqqdfgxm`, creado manualmente por el responsable. El nuevo root `vercel.json` mantiene bloqueado el build hasta confirmar Render; no se utiliza el auxiliar generado de la versión anterior.
+
 Estado: PR #3 integrado con autorización el 1 de octubre de 2026 en `local-supabase-validation` (`16b8a45cbe9b9955d2b844690836030335006d44`). PR #2 sigue abierto y sin autorización. No se crearon proyectos, desplegaron servicios ni ejecutaron escrituras remotas en Supabase. Rama local `codex/staging-preparation`: incorpora el consolidado mediante merge `34b732f`, preservando `f79c890` y `476a174` sin reescribirlos. Estos cambios adicionales todavía no tienen CI remoto ni forman parte de los PR #2/#3.
 
 ## Consolidación y autorizaciones
@@ -40,8 +42,8 @@ Se elige Render por el ajuste directo con API y worker y por su presupuesto inic
 - `deploy/staging/backend.env.example`: inventario de configuración sin secretos.
 - `deploy/staging/render.yaml`: API, auto deploy apagado, health check.
 - `deploy/staging/render-worker.yaml`: worker opcional, auto deploy apagado.
-- `deploy/staging/vercel.template.json`: ejemplo con backend `.invalid`; no es desplegable hasta regenerarlo.
-- `scripts/build-staging.mjs`: genera `dist/` y `vercel.staging.generated.json` con backend HTTPS explícito. Ambos son artefactos locales ignorados.
+- `deploy/staging/vercel.template.json`: copia del root config bloqueado, sin backend ficticio.
+- `scripts/build-staging.mjs`: valida vercel.json contra STAGING_BACKEND_ORIGIN antes de generar dist; no reescribe rutas durante build. `scripts/configure-staging-frontend.mjs` prepara el root config offline después de recibir la URL real.
 - `deploy/staging/fixtures.sql`: carga manual y transaccional de catálogo/stock sintéticos, fuera del historial de migraciones.
 - `server/config/staging.mjs`: rechazo previo a conexiones de la referencia productiva conocida, URLs incompatibles y proveedores reales.
 - `server/staging-worker.mjs`: worker mock sin opción de activar MiCorreo real.
@@ -89,6 +91,8 @@ Definir un origen estable, por ejemplo `https://<frontend-staging>.vercel.app`, 
 
 ## Render API y worker
 
+Para esta primera iteración se selecciona **Free**, nombre matebreak-api-staging y región Oregon; los valores vigentes están en `docs/staging-first-deploy.md`. No crear workers ni cron ahora. Los pasos del worker pago siguientes son sólo una referencia futura sujeta a nueva autorización. Free duerme y no mantiene el job de expiración activo durante la suspensión.
+
 1. Autorizar el commit revisado y publicar una rama staging separada en GitHub cuando corresponda. Los templates apuntan a `codex/staging-preparation`; actualizar explícitamente si la rama cambia.
 2. Revisar `deploy/staging/render.yaml`, conectar sólo el repositorio/rama aprobados y mantener `autoDeployTrigger: off`. El responsable crea el servicio; la importación inicial requiere aprobación porque puede lanzar un build.
 3. Configurar todas las variables de la tabla antes de lanzar la API. `npm ci` instala dependencias y `npm start` escucha en el `PORT` de Render. No montar `.env` de la tienda real.
@@ -98,13 +102,9 @@ Definir un origen estable, por ejemplo `https://<frontend-staging>.vercel.app`, 
 
 ## Vercel frontend
 
-1. Crear un proyecto distinto del sitio productivo, con rama/commit staging aprobado. Configurar Node 22, build `npm run build:staging`, output `dist`, framework Other. Sólo `STAGING_BACKEND_ORIGIN` es necesario en el build; no claves secretas Supabase.
-2. Antes de desplegar generar localmente con `$env:STAGING_BACKEND_ORIGIN='https://<api-staging>.onrender.com'; npm run build:staging` en PowerShell. Revisar `vercel.staging.generated.json`: destinos API/auth/interno/healthz deben apuntar únicamente al API staging. El ejemplo `.invalid` no puede usarse para publicar.
-3. El build genera un archivo auxiliar, pero no selecciona automáticamente la configuración Vercel del proyecto. Usar la CLI Vercel con `--local-config vercel.staging.generated.json` en una publicación manual aprobada, o revisar/copiar ese contenido como `vercel.json` en el checkout de release staging antes de importarlo. No modificar el proyecto productivo. Mantener `git.deploymentEnabled: false` y revisar en dashboard que no haya auto deploys.
-4. Aprobar el primer deploy del commit exacto y asociar la URL/alias staging estable. Si cambia el origen, actualizar `APP_ORIGIN` y el callback Auth antes de validar sesiones. No usar opciones de publicación productiva contra el proyecto de la tienda real.
-5. Comprobar que `/tienda`, `/carrito`, `/checkout`, `/checkout/resultado`, `/productos/<slug>` y `/mi-cuenta` resuelven páginas, y que `/api`, `/auth`, `/interno` y `/healthz` pasan al API. No publicar el repositorio completo: sólo `dist`.
+La configuración actual y los pasos exactos están en `docs/staging-first-deploy.md`. Root Directory ./, framework Other, Node 22, build npm run build:staging, output dist, install npm ci, rama codex/staging-preparation. El root vercel.json incluye git.deploymentEnabled false. Falta la URL Render real: el primer build/despliegue permanece bloqueado y no hay destinos .invalid. Antes de publicar la configuración completa, preparar y revisar los proxies API/Auth/interno/healthz con configure:staging:frontend. No finalizar la creación/Deploy sin autorización expresa.
 
-La navegación usa el origen de Vercel para las llamadas relativas. CORS no requiere abrir dominios: las mutaciones conservan verificación de Origin exacto. Las cookies son host-only `__Host-*`, HttpOnly, Secure y SameSite=Lax, compartidas por las rutas proxy del frontend. No agregar `Domain`, wildcard CORS ni `SameSite=None` para corregir problemas. Validar que Vercel conserva Set-Cookie y redirects; usar el frontend estable como punto de entrada, no el dominio directo del backend para checkout.
+La navegación usa el origen Vercel estable; las cookies Secure/HttpOnly/host-only y Origin exacto se conservan. Las pruebas HTTPS externas todavía están pendientes.
 
 ## Publicación aprobada y verificación
 

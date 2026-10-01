@@ -21,7 +21,8 @@
     "test:architecture": "node scripts/audit-architecture.mjs after",
     "build:staging": "node scripts/build-staging.mjs",
     "start:staging:worker": "node server/staging-worker.mjs",
-    "test:staging:fixtures:local": "node scripts/test-staging-fixtures-local.mjs"
+    "test:staging:fixtures:local": "node scripts/test-staging-fixtures-local.mjs",
+    "configure:staging:frontend": "node scripts/configure-staging-frontend.mjs"
   },
   "engines": {
     "node": ">=22"

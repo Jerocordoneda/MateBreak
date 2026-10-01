@@ -1,0 +1,22 @@
+{
+  "scannedFiles": 302,
+  "patterns": [
+    "private_key",
+    "supabase_secret",
+    "supabase_management",
+    "github_token",
+    "mercadopago_token",
+    "aws_key",
+    "privileged_jwt"
+  ],
+  "findings": [],
+  "privateEnvFilesTracked": false,
+  "staticOutputAllowlist": [
+    "index.html",
+    "src/"
+  ],
+  "staticOutputHasProductionDataEndpoint": false,
+  "syntaxFiles": 120,
+  "migrationHashesUnchanged": 26,
+  "limitations": "Pattern-based review; no remote credential validation. Known production ref exists only as denylist/documented historical metadata; inactive real adapters retain their provider URLs."
+}
