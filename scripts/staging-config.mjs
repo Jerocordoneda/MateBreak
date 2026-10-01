@@ -11,7 +11,7 @@ export function validateBackendOrigin(value) {
  return url.origin;
 }
 export function createStagingVercelConfig(backend) {
- return {git:{deploymentEnabled:false},buildCommand:'npm run build:staging',outputDirectory:'dist',framework:null,
+ return {git:{deploymentEnabled:false},installCommand:'npm ci',buildCommand:'npm run build',outputDirectory:'dist',framework:null,
  rewrites:[...(backend?backendRoutes.map(source=>({source,destination:validateBackendOrigin(backend)+source})):[]),
  ...Object.entries(frontendPages).map(([source,page])=>({source,destination:'/src/pages/'+page+'.html'}))],
  headers:[{source:'/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'}]}]};

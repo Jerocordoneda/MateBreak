@@ -2,10 +2,27 @@
   "git": {
     "deploymentEnabled": false
   },
-  "buildCommand": "npm run build:staging",
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://matebreak-api-staging.onrender.com/api/:path*"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "https://matebreak-api-staging.onrender.com/auth/:path*"
+    },
+    {
+      "source": "/interno/:path*",
+      "destination": "https://matebreak-api-staging.onrender.com/interno/:path*"
+    },
+    {
+      "source": "/healthz",
+      "destination": "https://matebreak-api-staging.onrender.com/healthz"
+    },
     {
       "source": "/tienda",
       "destination": "/src/pages/catalogo.html"
