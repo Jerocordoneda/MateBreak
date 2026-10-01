@@ -10,13 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const FADE_RANGE = 200;          // px de anticipación del difuminado
     const CURVE_TRIGGER = -260;      // --curve-move donde el header pasa a blanco
 
-    // Capa de blur con máscara: se disuelve hacia abajo junto al fondo.
-    let blurLayer = header.querySelector(".header-fade-blur");
-    if (!blurLayer) {
-        blurLayer = document.createElement("div");
-        blurLayer.className = "header-fade-blur";
-        header.insertBefore(blurLayer, header.firstChild);
-    }
+    // La capa decorativa de blur ya está en el HTML; sólo animamos sus estilos.
 
     header.style.backgroundColor = "transparent";
 
@@ -96,9 +90,4 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     requestAnimationFrame(frame);
-});
-
-// Accesos compartidos a carrito y cuenta desde todas las páginas del sitio.
-document.addEventListener('DOMContentLoaded', () => {
-    import('/src/js/header-account.js');
 });

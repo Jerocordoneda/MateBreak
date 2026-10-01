@@ -18,6 +18,7 @@
     "catalog:import": "node --env-file-if-exists=.env scripts/import-matebreak-products.mjs --apply",
     "catalog:reconcile": "node --env-file-if-exists=.env scripts/reconcile-inventory.mjs --out=docs/reconciliacion-variantes.csv",
     "build:frontend": "node scripts/build-frontend.mjs",
+    "build": "npm run build:staging",
     "test:architecture": "node scripts/audit-architecture.mjs after",
     "build:staging": "node scripts/build-staging.mjs",
     "start:staging:worker": "node server/staging-worker.mjs",

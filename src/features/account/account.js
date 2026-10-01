@@ -58,4 +58,3 @@ $('#password-toggle').onclick=()=>{const input=$('#signin [name=password]'),visi
 window.addEventListener('pageshow',event=>{if(event.persisted)load();});
 if(new URLSearchParams(location.search).get('auth')==='error')message('No pudimos confirmar el acceso. El enlace puede haber vencido. Si ya confirmaste tu email, intentá iniciar sesión.',true);
 load();
-import '../../js/header-account.js';

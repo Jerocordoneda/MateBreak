@@ -180,4 +180,3 @@ async function init() {
   }
 }
 init();
-import '../../js/header-account.js';
