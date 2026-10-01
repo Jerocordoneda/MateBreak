@@ -1,14 +1,15 @@
+import { createAuthFactory } from './integrations/supabase/auth.mjs';
 import { customerRoutes } from './modules/account/customer-routes.mjs';
 import { cartRoutes } from './modules/cart/routes.mjs';
 import { authRoutes } from './modules/auth/routes.mjs';
 import express from 'express';
 import { randomBytes, createHash } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
-import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
+import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inventoryRoutes } from './modules/inventory/routes.mjs';
-import { accountRole, accountRoutes } from './modules/account/routes.mjs';
+import { accountRoutes } from './modules/account/routes.mjs';
 import { catalogRoutes } from './modules/catalog/routes.mjs';
 import { checkoutRoutes } from './checkout/routes.mjs';
 import { createMockCheckoutStore } from './checkout/mock-store.mjs';
@@ -51,17 +52,9 @@ export function createApp(config, overrides = {}) {
   const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
   const providers = createProviders(config, overrides);
   const mockCheckout = providers.mock && !config.localPersistMock ? createMockCheckoutStore(providers.payment) : null;
-  const authFactory = overrides.authFactory ?? ((req, res) => createServerClient(config.url, config.publishable, {
-    cookieOptions: { httpOnly: true, secure, sameSite: 'lax', path: '/' },
-    cookies: {
-      getAll: () => parseCookieHeader(req.headers.cookie ?? ''),
-      setAll: (cookies, headers = {}) => {
-        for (const { name, value, options } of cookies) res.append('Set-Cookie', serializeCookieHeader(name, value, { ...options, httpOnly: true, secure, sameSite: 'lax', path: '/' }));
-        for (const [key, value] of Object.entries(headers)) res.set(key, value);
-      },
-    },
-  }));
+  const authFactory = overrides.authFactory ?? createAuthFactory(config, secure);
   app.use(securityMiddleware(config));
+  app.get('/healthz', (req, res) => res.set('Cache-Control','no-store').json({status:'ok'}));
   app.use('/api', express.json({ limit: '16kb' }));
   app.use('/api', async (req, res, next) => {
     req.auth = authFactory(req, res);
