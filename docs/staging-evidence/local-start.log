@@ -1,0 +1,16 @@
+
+> supabase:start
+> node scripts/local-supabase.mjs start
+
+Starting database from backup...
+A new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)
+We recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli
+{
+  "API_URL": "http://127.0.0.1:54321",
+  "REST_URL": "http://127.0.0.1:54321/rest/v1",
+  "STUDIO_URL": "http://127.0.0.1:54323",
+  "MAILPIT_URL": "http://127.0.0.1:54324",
+  "INBUCKET_URL": "http://127.0.0.1:54324",
+  "message": ""
+}
+WARNING: Supabase local publica puertos en 0.0.0.0/:: o no se pudo verificar su bind. No dejar el stack abierto permanentemente en una red no confiable. Al finalizar desarrollo/tests ejecutar npm run supabase:stop.
