@@ -81,6 +81,41 @@ test('root diagnostics reject falsy metadata and malformed roots without logging
   assert.throws(()=>assertStagingVercelReady(config,backend),error=>error.message.includes('actual=not an object')&&!error.message.includes('synthetic-private-root'));
 });
 
+test('physical-file key snapshots identify later key changes without exposing arbitrary names or values',()=>{
+ const config=createStagingVercelConfig(backend),physicalKeys=Object.keys(config);
+ config.name='synthetic-private-name';config.version=2;
+ assert.throws(()=>assertStagingVercelReady(config,backend,physicalKeys),error=>{
+  assert.ok(error.message.includes('additional known=["name","version"]'));
+  assert.ok(error.message.includes('file/evaluated root key sets match=false'));
+  assert.ok(!error.message.includes('synthetic-private-name'));return true;
+ });
+ config['synthetic-private-property']='synthetic-private-value';
+ const actualFileKeys=Object.keys(config);
+ assert.throws(()=>assertStagingVercelReady(config,backend,actualFileKeys),error=>{
+  assert.ok(error.message.includes('undisclosed unexpected keys=1'));
+  assert.ok(error.message.includes('file undisclosed root keys=1'));
+  assert.ok(error.message.includes('file/evaluated root key sets match=true'));
+  assert.ok(!error.message.includes('synthetic-private'));return true;
+ });
+ assert.equal(assertStagingVercelReady(createStagingVercelConfig(backend),backend,physicalKeys),backend);
+});
+
+test('name/version never exempt changes to any of the seven protected root fields',()=>{
+ const mutations=[
+  [c=>{c.git.deploymentEnabled=true;},'$.git.deploymentEnabled'],
+  [c=>{c.installCommand='npm install';},'$.installCommand'],
+  [c=>{c.buildCommand='npm run build:frontend';},'$.buildCommand'],
+  [c=>{c.outputDirectory='.';},'$.outputDirectory'],
+  [c=>{c.framework='express';},'$.framework'],
+  [c=>{c.rewrites[0].destination='https://wrong-fixture.onrender.com/api/:path*';},'$.rewrites[0].destination'],
+  [c=>{c.headers[0].headers[0].value='index, follow';},'$.headers[0].headers[0].value'],
+ ];
+ for(const [mutate,path]of mutations){
+  const config={...createStagingVercelConfig(backend),name:'synthetic-fixture',version:2};mutate(config);
+  assert.throws(()=>assertStagingVercelReady(config,backend,Object.keys(config)),error=>error.message.includes(path)&&error.message.includes('additional known=["name","version"]'));
+ }
+});
+
 test('build reads only root vercel.json and never substitutes or merges the generated example',t=>{
  const prefix=join(tmpdir(),'matebreak-config-diagnostic-'),root=mkdtempSync(prefix);
  t.after(()=>{assert.ok(root.startsWith(prefix));rmSync(root,{recursive:true,force:true});});
@@ -99,6 +134,16 @@ test('build reads only root vercel.json and never substitutes or merges the gene
  writeFileSync(join(root,'vercel.staging.generated.json'),JSON.stringify(createStagingVercelConfig(backend)));
  const rejected=run();assert.ifError(rejected.error);assert.notEqual(rejected.status,0);
  assert.ok(rejected.stderr.includes('additional known=["version"]'));
+ assert.ok(rejected.stderr.includes('file/evaluated root key sets match=true'));
+ prepared.name='synthetic-private-name';
+ prepared['synthetic-private-property']='synthetic-private-value';
+ writeFileSync(join(root,'vercel.json'),JSON.stringify(prepared));
+ const metadataRejected=run();assert.ifError(metadataRejected.error);assert.notEqual(metadataRejected.status,0);
+ assert.ok(metadataRejected.stderr.includes('additional known=["name","version"]'));
+ assert.ok(metadataRejected.stderr.includes('file parsed known root keys='));
+ assert.ok(metadataRejected.stderr.includes('file undisclosed root keys=1'));
+ assert.ok(metadataRejected.stderr.includes('file/evaluated root key sets match=true'));
+ assert.ok(!metadataRejected.stderr.includes('synthetic-private'));
 });
 test('staging frontend refuses incomplete routing, wrong backend and unsafe origins before build',()=>{
  const prepared=createStagingVercelConfig(backend);

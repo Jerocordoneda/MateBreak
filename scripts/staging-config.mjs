@@ -43,6 +43,16 @@ function rootKeyDiagnostics(actual,expected) {
   '; actual known='+JSON.stringify(safeKeys)+'; additional known='+JSON.stringify(additionalKeys)+
   '; undisclosed unexpected keys='+(actualKeys.length-safeKeys.length);
 }
+function fileRootKeyDiagnostics(fileRootKeys,actual,expected) {
+ if(fileRootKeys===undefined)return '';
+ const evaluatedKeys=actual&&typeof actual==='object'&&!Array.isArray(actual)?Object.keys(actual):null;
+ const matches=isDeepStrictEqual(fileRootKeys&&[...fileRootKeys].sort(),evaluatedKeys&&evaluatedKeys.sort());
+ if(fileRootKeys===null)return '; file parsed root=not an object; file/evaluated root key sets match='+matches;
+ const safeKeys=fileRootKeys.filter(key=>typeof key==='string'&&(Object.hasOwn(expected,key)||diagnosticRootNames.has(key))).sort();
+ return '; file parsed known root keys='+JSON.stringify(safeKeys)+
+  '; file undisclosed root keys='+(fileRootKeys.length-safeKeys.length)+
+  '; file/evaluated root key sets match='+matches;
+}
 // Report only paths from the approved configuration, never actual values or
 // untrusted extra key names (which could contain credentials).
 function configurationDifferences(actual,expected,path='$') {
@@ -64,11 +74,11 @@ function configurationDifferences(actual,expected,path='$') {
  }
  return [path];
 }
-export function assertStagingVercelReady(config,backend) {
+export function assertStagingVercelReady(config,backend,fileRootKeys) {
  const origin=validateBackendOrigin(backend),expected=createStagingVercelConfig(origin);
  if(!isDeepStrictEqual(config,expected)) {
   const differences=configurationDifferences(config,expected);
-  throw Error('Staging deploy blocked: vercel.json must be prepared and reviewed for this backend before build; differing paths: '+differences.slice(0,32).join(', ')+(differences.length>32?' (additional differences omitted)':'')+'; '+rootKeyDiagnostics(config,expected));
+  throw Error('Staging deploy blocked: vercel.json must be prepared and reviewed for this backend before build; differing paths: '+differences.slice(0,32).join(', ')+(differences.length>32?' (additional differences omitted)':'')+'; '+rootKeyDiagnostics(config,expected)+fileRootKeyDiagnostics(fileRootKeys,config,expected));
  }
  return origin;
 }
