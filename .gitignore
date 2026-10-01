@@ -7,3 +7,4 @@ supabase/.temp/
 .baseline-rehearsal/
 
 dist/
+vercel.staging.generated.json

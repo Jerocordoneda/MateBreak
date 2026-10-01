@@ -1,3 +1,4 @@
+import { persistedMock } from './config/staging.mjs';
 import { startReservationExpiry } from './jobs/expire-reservations.mjs';
 import { createApp } from './app.mjs';
 import { loadConfig } from './config/environment.mjs';
@@ -8,4 +9,4 @@ const server = app.listen(port, process.env.MATEBREAK_LOCAL_ONLY === '1' ? '127.
 server.headersTimeout = 10_000;
 server.requestTimeout = 30_000;
 server.timeout = 60_000;
-if (paymentsMode === 'real' || config.localPersistMock) await startReservationExpiry(admin);
+if (paymentsMode === 'real' || persistedMock(config)) await startReservationExpiry(admin);

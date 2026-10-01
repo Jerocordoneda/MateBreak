@@ -1,3 +1,4 @@
+import { assertStagingConfig, persistedMock } from './config/staging.mjs';
 import { createAuthFactory } from './integrations/supabase/auth.mjs';
 import { customerRoutes } from './modules/account/customer-routes.mjs';
 import { cartRoutes } from './modules/cart/routes.mjs';
@@ -24,6 +25,7 @@ export const hashToken = value => createHash('sha256').update(value).digest('hex
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 export function createApp(config, overrides = {}) {
+  assertStagingConfig(config);
   const app = express();
   app.disable('x-powered-by');
   app.disable('etag');
@@ -51,9 +53,10 @@ export function createApp(config, overrides = {}) {
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
   const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
   const providers = createProviders(config, overrides);
-  const mockCheckout = providers.mock && !config.localPersistMock ? createMockCheckoutStore(providers.payment) : null;
+  if (config.staging && (!providers.shipping.mock || !providers.payment.mock)) throw Error('Staging overrides must also be mock');
+  const mockCheckout = providers.mock && !persistedMock(config) ? createMockCheckoutStore(providers.payment) : null;
   const authFactory = overrides.authFactory ?? createAuthFactory(config, secure);
-  app.use(securityMiddleware(config));
+  app.use(securityMiddleware({ ...config, production: config.production || config.staging }));
   app.get('/healthz', (req, res) => res.set('Cache-Control','no-store').json({status:'ok'}));
   app.use('/api', express.json({ limit: '16kb' }));
   app.use('/api', async (req, res, next) => {

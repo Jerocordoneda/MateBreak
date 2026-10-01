@@ -128,7 +128,7 @@ function showStep(step) {
 async function prepareDelivery(event) {
   event.preventDefault(); error('');
   try {
-    if (!context.user && !context.modo_prueba) { $('#login-panel').hidden = false; $('#login-panel input').focus(); return; }
+    if (!context.user && (context.requiresAuthentication ?? !context.modo_prueba)) { $('#login-panel').hidden = false; $('#login-panel input').focus(); return; }
     recipient = selectedRecipient();
     const chosen = context.deliveries.find(option => option.codigo === delivery && option.activo);
     if (!chosen) throw Error('Elegí una modalidad de entrega disponible');
@@ -169,7 +169,7 @@ async function init() {
     if (context.cart.requiere_confirmacion_catalogo) { error('Un producto ya no está disponible para comprar. Revisá tu carrito.'); return; }
     try { catalogImages = new Map((await getProducts()).map(product => [String(product.id_producto), product.imagen_principal])); }
     catch { /* Images are decorative; the confirmed order is still available. */ }
-    $('#login-panel').hidden = !!context.user || context.modo_prueba;
+    $('#login-panel').hidden = !!context.user || !(context.requiresAuthentication ?? !context.modo_prueba);
     if (context.user) {
       $('#recipient-form [name=email]').value = context.user.email || '';
       try {

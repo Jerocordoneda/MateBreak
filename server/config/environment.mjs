@@ -1,15 +1,22 @@
+import { assertStagingConfig } from './staging.mjs';
 import { resolveProviderModes, resolveMiCorreoEnvironment } from '../providers.mjs';
 export function loadConfig(env = process.env) {
 const production = env.NODE_ENV === 'production';
 const port = Number(env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('PORT debe ser un puerto válido entre 1 y 65535.');
 const { shippingMode, paymentsMode } = resolveProviderModes(env);
+if (env.APP_ENV && !['local','staging','production'].includes(env.APP_ENV)) throw Error('APP_ENV inválido');
+if (env.MATEBREAK_STAGING_PERSIST_MOCK === '1' && env.APP_ENV !== 'staging') throw Error('Staging persistence requires APP_ENV=staging');
+if (env.APP_ENV === 'staging' && Object.entries(env).some(([name,value]) => value && /^(MP_|MERCADOPAGO_|CORREO_MICORREO_(USER|PASSWORD|CUSTOMER_ID)$|SUPABASE_ACCESS_TOKEN$|DATABASE_URL$|POSTGRES_URL$)/.test(name))) throw Error('Staging runtime refuses provider/management/database credentials');
 const config = {
   url: env.SUPABASE_URL,
   publishable: env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY,
   secret: env.SUPABASE_SECRET_KEY || env.SUPABASE_SERVICE_ROLE_KEY,
   origin: env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
   production,
+  staging: env.APP_ENV === 'staging',
+  stagingProjectRef: env.SUPABASE_STAGING_PROJECT_REF,
+  stagingPersistMock: env.MATEBREAK_STAGING_PERSIST_MOCK === '1',
   localPersistMock: env.MATEBREAK_LOCAL_PERSIST_MOCK === '1',
   localPickupMock: env.MATEBREAK_LOCAL_PICKUP_MOCK === '1',
   shippingMode,
@@ -44,5 +51,6 @@ if (env.MATEBREAK_LOCAL_ONLY === '1') {
   }
 }
 if (production && new URL(config.url).protocol !== 'https:') throw Error('SUPABASE_URL debe usar HTTPS en producción');
+assertStagingConfig(config);
 return { config, port, paymentsMode, shippingMode };
 }

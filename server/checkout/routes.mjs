@@ -1,3 +1,4 @@
+import { persistedMock } from '../config/staging.mjs';
 import { randomBytes } from 'node:crypto';
 import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
 import { calculateTotals, shippingProgress, validateRecipient } from './policy.mjs';
@@ -52,7 +53,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
       ? await packagesFor(selection, { admin, config }) : null;
-    res.json({ cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
+    res.json({ requiresAuthentication: !mockCheckout, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&
@@ -164,10 +165,10 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (Date.parse(order.reserva_hasta) <= Date.now()) throw fail(409, 'La reserva venció; consultá el estado del pedido');
     // Explicit local-only persistence: use the real reservation/lifecycle RPCs,
     // then a simulated provider. createApp rejects this mode outside localhost.
-    if (config.localPersistMock) {
+    if (persistedMock(config)) {
       const { data: localPayment, error } = await admin.from('pago').select('id,importe,moneda')
         .eq('pedido_id', order.id).eq('metodo','mercadopago').single();
-      if (error) throw fail(503, 'No se pudo consultar el pago local');
+      if (error) throw fail(503, 'No se pudo consultar el pago simulado');
       const result = await payment.startPayment({ id: order.id, total: Number(localPayment.importe), currency: localPayment.moneda });
       let completed = order;
       if (result.status === 'approved') {

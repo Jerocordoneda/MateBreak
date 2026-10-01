@@ -18,7 +18,10 @@
     "catalog:import": "node --env-file-if-exists=.env scripts/import-matebreak-products.mjs --apply",
     "catalog:reconcile": "node --env-file-if-exists=.env scripts/reconcile-inventory.mjs --out=docs/reconciliacion-variantes.csv",
     "build:frontend": "node scripts/build-frontend.mjs",
-    "test:architecture": "node scripts/audit-architecture.mjs after"
+    "test:architecture": "node scripts/audit-architecture.mjs after",
+    "build:staging": "node scripts/build-staging.mjs",
+    "start:staging:worker": "node server/staging-worker.mjs",
+    "test:staging:fixtures:local": "node scripts/test-staging-fixtures-local.mjs"
   },
   "engines": {
     "node": ">=22"
