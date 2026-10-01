@@ -18,4 +18,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: node scripts/audit-baseline.mjs --check
+      - run: npm run catalog:historical:check
       - run: npm audit --omit=dev --audit-level=high

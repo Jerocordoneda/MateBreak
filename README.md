@@ -71,3 +71,18 @@ Antes de incorporar la reconstrucción a un proyecto existente, revisar
 sobre producción ya poblada. MiCorreo sigue en mock: ver
 [arquitectura](docs/micorreo-architecture.md), [puertos locales](docs/local-network.md)
 y [clasificación del diff](docs/diff-classification.md).
+
+**Merge bloqueado:** la integración externa de Supabase tiene **Deploy to production
+activado** para `main`. No basta con que Actions solo ejecute tests. Ver
+[evidencia del bloqueo](docs/release-candidate-blocker.md),
+[runbook manual de liberación](docs/production-release-runbook.md) y
+[configuración/secretos](docs/production-secrets.md). No hacer push/PR/merge ni repair
+remoto antes de resolver ese automatismo.
+
+El [rehearsal de baseline](docs/production-release-runbook.md#ensayo-local-reproducible)
+se ejecuta con `npm run supabase:start` y `npm run test:baseline:local`. Reconstruye
+y modifica únicamente el history del stack local descartable, verifica adopción,
+fallo intermedio y convergencia, y lo detiene al finalizar. Resultado y comandos:
+[evidencia automática](docs/schema-metadata/baseline-rehearsal-result.json).
+CI ejecuta Node y equivalencias/generador offline; SQL, concurrencia, Auth/Storage
+y rehearsal completo son validaciones locales obligatorias antes de una liberación.

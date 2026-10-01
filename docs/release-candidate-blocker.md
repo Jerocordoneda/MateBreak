@@ -5,10 +5,17 @@ Rama revisada: `local-supabase-validation`, base `ca8150bfd76beffcc705e68969e695
 
 ## Condición de STOP encontrada
 
+Actualización confirmada por el usuario desde el Dashboard: Production branch
+`main`, **Deploy to production ACTIVADO**, Automatic branching deshabilitado/no
+disponible en el plan y Working directory `.`. No cambió opciones ni ejecutó
+Deploy/Retry/Reset. El bloqueo de push/PR/merge permanece; el usuario autorizó
+continuar exclusivamente el rehearsal local y el procedimiento previo al merge.
+
 El usuario pidió detener la preparación del PR si main dispara despliegues o
 migraciones productivas automáticas. Hay una integración externa de Supabase
 activa, además del workflow versionado de GitHub Actions. No es seguro afirmar
-que un merge no migra producción automáticamente.
+que un merge no migra producción automáticamente: el despliegue automático está
+confirmado activado.
 
 Evidencia obtenida exclusivamente por consultas de lectura:
 
@@ -73,34 +80,35 @@ siguen pendientes; no se sobrescribió configuración para anticipar la RC.
 
 ## Trabajo local realizado y límites
 
-Se inició exclusivamente el stack descartable del worktree y se hizo un reset
-local hasta `20260929144308`, aplicando los 22 archivos históricos a una base
-vacía. Esto prepara la estructura histórica, pero **no es todavía el rehearsal**:
-no se sustituyó history por los 18 timestamps alternativos, no se ejecutó
-migration repair ni se demostró convergencia/fallo intermedio. No presentar ese
-reset como evidencia de seguridad de la adopción sobre objetos preexistentes.
+En la primera detención solo se había reconstruido la base histórica; eso no
+constituía evidencia de repair. Después de confirmar las opciones del Dashboard,
+el usuario autorizó continuar localmente. El rehearsal automático ahora pasó:
+history 18 alternativas → 22 canónicas, cero DDL durante repair, mismos OIDs,
+datos/versiones xmin/secuencias y defaults. Fallo inyectado en hardening dejó
+history 23, revirtió ACL parciales y no ejecutó logística. Se recuperó hacia adelante
+hasta history 25 y el esquema converge con un reset limpio de las 25 migraciones.
+DDL confirmado de migraciones: 47 eventos observados. Tests SQL históricos 18/18
+y logísticos aprobados. Ver resultado automático y runbook enlazado.
 
-Al detener esta iteración se restauró el estado local con los 25 archivos de la
-rama mediante el wrapper de reset local y se detuvo el stack conservando volúmenes.
-No se cambiaron código, SQL, proveedores, firewall ni Docker daemon.
-No se repitieron las suites ya cerradas: los cambios de esta iteración son documentación.
-La RC, ensayo de history, UI logística, sucursales mock, runbook completo y nueva
-validación final quedan pendientes de resolver el bloqueo.
+Se agregaron el script de rehearsal, comparador, guardrails/test, warning de puertos,
+CI offline de equivalencias/generador y documentos operativos. No se cambiaron
+migraciones de aplicación, proveedores, firewall ni Docker daemon.
+La UI logística, acciones administrativas y sucursales mock siguen pendientes
+de la RC funcional original. El bloqueo de publicación/merge sigue vigente.
 
 ## Paso manual previo a continuar
 
 1. Abrir el proyecto MateBreak en [Supabase Dashboard](https://supabase.com/dashboard/project/nwpdfqwqxrkokluqqqfs).
 2. Entrar en **Project Settings → Integrations → GitHub Integration**.
-3. Revisar repo, working directory, production branch, **Deploy to production**,
-   **Automatic branching** y **Supabase changes only**. Informar sus valores sin
-   compartir claves. Para la liberación manual solicitada, Deploy to production
-   debe quedar deshabilitado mediante una decisión explícita del responsable.
-   Los previews automáticos también deben quedar resueltos antes de publicar
-   commits/abrir PR, porque esta tarea prohíbe ejecutar migrations remotas.
+3. Los valores ya están confirmados: Deploy to production ON para main,
+   Automatic branching OFF. Antes de publicar/mergear o reparar history remoto,
+   el responsable debe deshabilitar explícitamente Deploy to production y verificar
+   que se guardó. Esa intervención no fue autorizada ni realizada por el agente.
 4. No pulsar Deploy/Retry/Reset, no aceptar migration repair automático y no
    cambiar history. No desvincular ni borrar el proyecto o ramas.
-5. Volver a esta conversación con el estado de los controles. Confirmar primero
-   el mecanismo seguro; después se retoma el ensayo local y la preparación de RC.
+5. Volver a esta conversación con la confirmación del cambio, sin compartir claves.
+   El ensayo local ya está autorizado y completado; la preparación/publicación
+   de la RC requiere cerrar el automatismo productivo.
 
 No se creó PR, no se hizo push ni merge. No se modificaron producción, history
 productivo o configuración de integración; no se ejecutaron migrations remotas.

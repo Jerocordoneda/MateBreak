@@ -4,6 +4,16 @@ Referencias inmutables: main 15c9d64; reconstrucción validada 88eee2c0cb9b06ac0
 Inspección realizada el 30/09/2026 exclusivamente READ ONLY en nwpdfqwqxrkokluqqqfs.
 No se modificó history, datos ni schema remoto. Este documento **no autoriza ejecutar** los comandos futuros.
 
+Actualización de liberación: el usuario confirmó **Deploy to production ACTIVADO**
+en la integración GitHub de Supabase, rama `main`, working directory `.`, sin
+Automatic branching. **No publicar/mergear ni reparar history remoto antes de
+deshabilitar explícitamente y verificar ese automatismo.** Ver
+[bloqueo confirmado](release-candidate-blocker.md) y
+[procedimiento manual por fases](production-release-runbook.md).
+El rehearsal se ejecuta únicamente con `--local`; su evidencia está en
+`schema-metadata/baseline-rehearsal-result.json`. No confundir ese destino con
+los comandos remotos futuros de este documento.
+
 ## Evidencia y alcance
 
 El remoto tiene 18 registros, todos con timestamps distintos de los archivos locales equivalentes.

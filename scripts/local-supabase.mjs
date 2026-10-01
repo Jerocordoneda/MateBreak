@@ -71,6 +71,13 @@ export function runLocalCommand(command) {
     } catch { console.log('Local CLI completed; credential-bearing output withheld.'); }
   }
   if (child.status !== 0) process.exitCode = child.status || 1;
+  if (command === 'start' && child.status === 0) {
+    const published = spawnSync('docker', ['ps', '--filter', 'label=com.supabase.cli.project=matebreak-local-tests', '--format', '{{.Ports}}'],
+      {encoding:'utf8', windowsHide:true});
+    if (published.status !== 0 || /0\.0\.0\.0:|\[::\]:|:::/.test(published.stdout)) {
+      console.warn('WARNING: Supabase local publica puertos en 0.0.0.0/:: o no se pudo verificar su bind. No dejar el stack abierto permanentemente en una red no confiable. Al finalizar desarrollo/tests ejecutar npm run supabase:stop.');
+    }
+  }
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
