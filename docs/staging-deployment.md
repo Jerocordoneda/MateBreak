@@ -1,22 +1,22 @@
 # MateBreak: primera publicación de pruebas
 
-Estado: preparación local, sin merges, proyectos externos, despliegues ni escrituras remotas. Fecha de revisión: 1 de octubre de 2026. Rama local `codex/staging-preparation`, basada en PR #3 (`7e02c3e`). Estos cambios adicionales todavía no tienen CI remoto ni forman parte de los PR #2/#3.
+Estado: PR #3 integrado con autorización el 1 de octubre de 2026 en `local-supabase-validation` (`16b8a45cbe9b9955d2b844690836030335006d44`). PR #2 sigue abierto y sin autorización. No se crearon proyectos, desplegaron servicios ni ejecutaron escrituras remotas en Supabase. Rama local `codex/staging-preparation`: incorpora el consolidado mediante merge `34b732f`, preservando `f79c890` y `476a174` sin reescribirlos. Estos cambios adicionales todavía no tienen CI remoto ni forman parte de los PR #2/#3.
 
 ## Consolidación y autorizaciones
 
 | PR | Base comprobada | Head comprobado | Resultado |
 | --- | --- | --- | --- |
-| [#3](https://github.com/Jerocordoneda/MateBreak/pull/3) | `local-supabase-validation` / `4870fc733d4dccac1dd714e6485e071430eb4b89` | `codex/modular-refactor` / `7e02c3e11ae164f43567b5165b270684986640c7` | Abierto, mergeable, Node CI verde |
-| [#2](https://github.com/Jerocordoneda/MateBreak/pull/2) | `main` / `15c9d640075b52721d81be033ba647cef9f3988b` | `local-supabase-validation` / `4870fc733d4dccac1dd714e6485e071430eb4b89` | Abierto, mergeable, Node CI verde |
+| [#3](https://github.com/Jerocordoneda/MateBreak/pull/3) | `local-supabase-validation` / `4870fc733d4dccac1dd714e6485e071430eb4b89` antes de integrar | `codex/modular-refactor` / `7e02c3e11ae164f43567b5165b270684986640c7` | Integrado como `16b8a45`; CI aprobado antes del merge |
+| [#2](https://github.com/Jerocordoneda/MateBreak/pull/2) | `main` / `15c9d640075b52721d81be033ba647cef9f3988b` | `local-supabase-validation` / `16b8a45cbe9b9955d2b844690836030335006d44` | Abierto, mergeable, nuevo CI Node verde; sin autorización |
 
-Supabase Preview figura SKIPPED en ambos. La desactivación de Deploy to production fue informada por el responsable; no se inspeccionó su dashboard. Antes de cada integración, el responsable debe confirmar que sigue desactivado.
+Supabase Preview figura SKIPPED en ambos. Deploy to production OFF y Automatic branching OFF se verificaron directamente en el dashboard autenticado antes del merge de #3; Vercel no estaba conectado. No se modificó ninguna opción. Antes de cada integración, el responsable debe confirmar que sigue desactivado.
 
 La simulación `git merge-tree --write-tree` terminó sin conflictos para #3 y para el resultado combinado hacia main. Los 26 archivos de migración conservan sus SHA256 originales: ver `docs/staging-evidence/consolidation.json`. No hay migraciones nuevas en esta preparación. La simulación valida compatibilidad Git; la prueba local cubre comportamiento, pero no certifica permisos de un proyecto cloud nuevo.
 
 Orden obligatorio:
 
-1. Obtener autorización explícita para integrar #3 en `local-supabase-validation`. Volver a leer bases, heads, checks y hashes inmediatamente antes del merge; detenerse si cambió algo inesperado.
-2. Después del merge, comprobar el nuevo head de #2, su diff completo, CI nuevo y los mismos 26 hashes. El head de #2 cambiará como consecuencia esperada de integrar #3.
+1. Completado: autorización explícita, revisión de bases/heads/CI/automatizaciones y merge de #3 en `local-supabase-validation`.
+2. Completado: nuevo head de #2 `16b8a45`, CI Node SUCCESS y 26 hashes intactos. El árbol consolidado coincide exactamente con la refactorización aprobada. Ver `docs/staging-evidence/pr3-postmerge-review.json`; requiere nueva revisión inmediatamente antes de cualquier integración futura.
 3. Presentar el resultado y obtener autorización explícita para integrar #2 en main. Nunca interpretar la primera autorización como permiso para ambos merges.
 4. Revisar y publicar por separado esta rama de preparación cuando se autorice; exigir CI verde en el commit que finalmente se seleccione para staging. Actualizar la rama de los templates si cambia la rama de publicación. Ningún hosting debe conectarse automáticamente a main ni a la tienda real.
 
@@ -159,6 +159,8 @@ Validación ejecutada: Node **162/162**; integración completa local PASS (18/18
 
 Las evidencias locales se guardan en `docs/staging-evidence/`: consolidación/hashes, suite Node, suite completa, fixtures, auditoría de dependencias y arquitectura. La suite completa se ejecutó sobre el código de esta preparación; una prueba Node adicional de checkout persistente se agregó y ejecutó después. No se ejecutaron pruebas externas, no hay CI remoto de esta nueva rama y no se modificó `.env.example` del checkout principal.
 
-Pendiente del responsable: autorizar #3; autorizar #2 después de su nueva revisión; revisar/publicar la preparación; crear cuentas/proyectos staging; aportar referencias y URLs sin secretos; aprobar plan SQL y primer deploy; asignar claves staging directamente en Render; ejecutar la matriz externa. Mantener Deploy to production apagado.
+Pendiente del responsable: autorizar #2 después de su nueva revisión; revisar/publicar la preparación; crear cuentas/proyectos staging; aportar referencias y URLs sin secretos; aprobar plan SQL y primer deploy; asignar claves staging directamente en Render; ejecutar la matriz externa. Mantener Deploy to production apagado.
 
 Antes de producción: revisión independiente del baseline/privilegios cloud y políticas RLS; plan de migración y backups; pagos/webhooks reales revisados; contrato/perfiles/parcelas MiCorreo verificados; SMTP y entregabilidad; dominio/cookies; limiter compartido y proxies; monitoreo/alertas; requisitos de datos y roles; pruebas de carga y recuperación. Esta preparación no habilita Mercado Pago, MiCorreo, main ni Supabase productivo.
+
+Verificación posterior a #3: 159/159 tests en la rama consolidada, 162/162 en staging, auditoría del baseline/catálogo histórico aprobada, 0 vulnerabilidades productivas, build HTTPS/sintaxis aprobados. Los 26 hashes originales permanecen intactos en staging y los 26 blobs Git del consolidado son idénticos a los aprobados. El checkout Windows de la rama consolidada introduce CRLF: se verificó también igualdad tras normalizar finales de línea; el detalle está en la evidencia, sin modificar los SQL. No se repitió la suite completa SQL porque el árbol consolidado es idéntico al ya validado; se conserva la evidencia anterior. Main sigue en `15c9d64`. Esta nueva revisión y sus logs complementan la evidencia histórica, sin reemplazarla.
