@@ -8,6 +8,7 @@
 vercel.staging.generated.json
 /README.md
 /tools/extract-strings.mjs
+/tools/staging-idempotency-replay.js
 node_modules/
 dist/
 server/
