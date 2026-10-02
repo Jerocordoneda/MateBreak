@@ -7,6 +7,26 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {createStagingVercelConfig,assertStagingVercelReady,validateBackendOrigin,backendRoutes} from '../scripts/staging-config.mjs';
 const backend='https://synthetic-fixture.onrender.com'; // Offline only; never contacted.
+
+test('staging headers protect root explicitly and preserve non-root coverage under strict validation',()=>{
+ const prepared=createStagingVercelConfig(backend);
+ assert.deepEqual(prepared.headers.map(rule=>rule.source),['/','/:path*']);
+ for(const rule of prepared.headers)assert.deepEqual(rule.headers,[
+  {key:'X-Robots-Tag',value:'noindex, nofollow'},
+  {key:'Cache-Control',value:'no-store'},
+ ]);
+ const root=JSON.parse(readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
+ assert.equal(assertStagingVercelReady(root,'https://matebreak-api-staging.onrender.com'),'https://matebreak-api-staging.onrender.com');
+ for(const mutate of [
+  c=>{c.headers.shift();},c=>{c.headers.pop();},
+  c=>{c.headers[0].source='/index.html';},c=>{c.headers[1].source='/tienda';},
+  c=>{c.headers[0].headers[0].value='index, follow';},
+  c=>{c.headers[0].headers[1].value='public';},
+  c=>{c.headers[1].headers[0].value='index, follow';},
+  c=>{c.headers[1].headers[1].value='public';},
+  c=>{c.headers.push({source:'/',headers:[]});},
+ ]){const changed=structuredClone(prepared);mutate(changed);assert.throws(()=>assertStagingVercelReady(changed,backend),/blocked.*\$\.headers/);}
+});
 test('staging config diagnostics preserve strict rejection of routing, Git, build and header changes',()=>{
  const prepared=createStagingVercelConfig(backend);
  const mutations=[

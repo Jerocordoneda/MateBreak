@@ -14,7 +14,9 @@ export function createStagingVercelConfig(backend) {
  return {git:{deploymentEnabled:false},installCommand:'npm ci',buildCommand:'npm run build',outputDirectory:'dist',framework:null,
  rewrites:[...(backend?backendRoutes.map(source=>({source,destination:validateBackendOrigin(backend)+source})):[]),
  ...Object.entries(frontendPages).map(([source,page])=>({source,destination:'/src/pages/'+page+'.html'}))],
- headers:[{source:'/:path*',headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'}]}]};
+ // CLI 62.0.0 compiles /:path* without matching the literal root slash.
+ // Keep its existing coverage and protect the home document explicitly.
+ headers:['/','/:path*'].map(source=>({source,headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'}]}))};
 }
 // Diagnostic names only: public Vercel configuration/request properties, not an
 // acceptance list. Every additional property still fails isDeepStrictEqual.
