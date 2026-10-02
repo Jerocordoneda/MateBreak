@@ -59,23 +59,32 @@ function updateSummary() {
   window.dispatchEvent(new CustomEvent('mb:cart',{detail:count}));
   const badge=$('#cart-count');if(badge)badge.textContent=count;
   $('#selection-count').textContent = `${count} ${count === 1 ? 'producto' : 'productos'}`; $('#summary-count').textContent = `(${count})`;
-  $('#subtotal').textContent = money(cart.total);
-  $('#total').textContent = money(cart.total);
-  const remaining=Math.max(0,80000-Number(cart.total||0));
-  $('#shipping-progress').value=Math.min(80000,Number(cart.total||0));
-  $('#shipping-message').textContent=remaining>0?`Te faltan ${money(remaining)} para tener envío gratis`:'¡Tenés envío gratis!';
+  const quote = cart.cotizacion;
+  $('#subtotal').textContent = money(quote?.subtotal_original ?? cart.total);
+  $('#total').textContent = money(quote?.subtotal ?? cart.total);
+  $('#promotion-row').hidden = !quote?.descuento_promocional;
+  $('#promotion-discount').textContent = quote?.descuento_promocional ? `− ${money(quote.descuento_promocional)}` : '—';
+  $('#subtotal-label').textContent = quote ? 'Mercadería cotizada' : 'Subtotal estimado';
+  $('#shipping-progress').max = quote?.progress.threshold ?? 1;
+  $('#shipping-progress').value = quote ? Math.min(quote.progress.threshold, Number(quote.subtotal)) : 0;
+  $('#shipping-message').textContent = quote ? (quote.progress.eligible ? '¡Tenés envío gratis!' : `Te faltan ${money(quote.progress.remaining)} para tener envío gratis`) : 'El envío se confirma en el checkout.';
   const invalidItems = cart.items.some(i => i.activo === false);
-  $('#checkout-button').disabled = !loaded || !count || invalidItems || cartBusy || cart.requiere_confirmacion_catalogo;
+  $('#checkout-button').disabled = !loaded || !count || invalidItems || cartBusy || cart.requiere_confirmacion_catalogo || Boolean(cart.error_cotizacion);
   $('#checkout-notice').textContent = !loaded ? 'Cargando tu selección…' : !count ? 'Agregá un producto para empezar.' : invalidItems ? 'Quitá los productos no disponibles para continuar.' : 'El precio y la disponibilidad se confirman en el checkout.';
   if(cart.requiere_confirmacion_catalogo)$('#checkout-notice').textContent='Tu selección está guardada. Una variante requiere confirmar su relación con el inventario o su stock.';
+  if(cart.error_cotizacion)$('#checkout-notice').textContent=cart.error_cotizacion;
+  else if(quote && count)$('#checkout-notice').textContent=quote.descuento_promocional ? 'Promoción incluida. El envío y el total final se confirman en el checkout.' : 'Precio cotizado. El envío y el total final se confirman en el checkout.';
 }
 function renderCart() {
   $('#items').replaceChildren(); $('#items').setAttribute('aria-busy', String(cartBusy));
   if (!cart.items.length) $('#items').append(emptyState('A tu carrito le falta un buen mate.', 'Elegí ese compañero de todos los días. Nosotros te guardamos el lugar.', 'Explorar el catálogo', '/tienda'));
   for (const item of [...cart.items].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))) {
+    const quoted = cart.cotizacion?.items.find(line => item.variante_id ? String(line.variante_id) === String(item.variante_id) : line.variante_id == null && String(line.producto_id) === String(item.producto_id));
     const row = el('article', undefined, 'cart-item' + (item.activo === false ? ' unavailable' : ''));
     const symbol = el('div', undefined, 'product-symbol'); symbol.append(icon('mate'));
-    const detail = el('div'); detail.append(el('h3', item.nombre), el('p', `${money(item.precio)} por unidad`, 'unit-price'));
+    const detail = el('div'); detail.append(el('h3', item.nombre));
+    if(quoted && quoted.precio_original > quoted.precio_unitario)detail.append(el('del', `${money(quoted.precio_original)} precio original por unidad`, 'unit-price'));
+    detail.append(el('p', `${money(quoted?.precio_unitario ?? item.precio)} por unidad${quoted && quoted.precio_original > quoted.precio_unitario ? ' · Promoción aplicada' : ''}`, 'unit-price'));
     if(item.opciones)detail.append(el('p',Object.values(item.opciones).join(' · '),'unit-price'));
     if(item.personalizacion)detail.append(el('p',item.personalizacion,'unit-price'));
     if (item.activo === false) detail.append(el('p', 'Este producto ya no está disponible.', 'stock-warning'));
@@ -90,7 +99,7 @@ function renderCart() {
     stepper.append(minus, el('output', item.cantidad), plus);
     const remove = action('Quitar', () => changeQuantity(itemKey, 0), 'remove-item'); remove.dataset.cartAction = ''; remove.setAttribute('aria-label', `Quitar ${item.nombre}`);
     bottom.append(stepper, remove); detail.append(bottom);
-    row.append(symbol, detail, el('strong', money(item.subtotal), 'item-total')); $('#items').append(row);
+    row.append(symbol, detail, el('strong', money(quoted?.subtotal ?? item.subtotal), 'item-total')); $('#items').append(row);
   }
   updateSummary();
 }

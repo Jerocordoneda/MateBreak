@@ -31,8 +31,9 @@
         <aside class="order-summary" aria-labelledby="summary-title">
           <div class="summary-heading"><h2 id="summary-title">Resumen de compra</h2><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
           <div class="price-row"><span>Productos <span id="summary-count">(0)</span></span><strong id="subtotal">$ 0,00</strong></div>
+          <div id="promotion-row" class="price-row" hidden><span>Descuento promocional</span><strong id="promotion-discount">—</strong></div>
           <div class="shipping-progress"><p id="shipping-message">Te faltan $80.000 para tener envío gratis</p><progress id="shipping-progress" max="80000" value="0" aria-label="Progreso hacia el envío gratis"></progress></div>
-          <div class="summary-total"><div><span>Subtotal estimado</span><span class="currency">PESOS ARGENTINOS</span></div><strong id="total">$ 0,00</strong></div>
+          <div class="summary-total"><div><span id="subtotal-label">Subtotal estimado</span><span class="currency">PESOS ARGENTINOS</span></div><strong id="total">$ 0,00</strong></div>
           <p class="price-disclaimer">La entrega y el total definitivo se calculan en el checkout.</p>
           <button id="checkout-button" type="button" class="button-primary checkout-button" disabled><span>Iniciar compra</span><span aria-hidden="true">→</span></button>
           <p id="checkout-notice" class="checkout-notice">Agregá un producto para empezar.</p>

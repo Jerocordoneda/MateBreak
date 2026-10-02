@@ -89,7 +89,7 @@ test('Comprar ahora uses a separate HttpOnly cart credential and preserves ordin
   assert.equal(calls.at(-1).args.p_token_hash,hashToken(directToken));
   assert.deepEqual(calls.at(-1).args.p_datos,{variante_id:'456',cantidad:2,personalizacion:'Ana'});
   await fetch(base+'/api/carrito',{headers:{cookie:`${normalCookie}; __Host-mb_direct=${directToken}`}});
-  assert.equal(calls.at(-1).args.p_token_hash,hashToken(normalToken));
+  assert.equal(calls.filter(call=>call.name==='mb_comercio').at(-1).args.p_token_hash,hashToken(normalToken));
 });
 
 test('online payment preference receives only the persisted server-side order total', async t => {
