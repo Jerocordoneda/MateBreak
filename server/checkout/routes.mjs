@@ -7,6 +7,7 @@ import { transferAdminRoutes } from '../payments/admin-routes.mjs';
 import { packagesFor } from './packaging-service.mjs';
 import { quotePackages } from '../shipping/packaging.mjs';
 import { shippingSnapshot } from '../shipping/snapshot.mjs';
+import { persistedSimulation } from './order-simulation.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -53,7 +54,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
       ? await packagesFor(selection, { admin, config }) : null;
-    res.json({ requiresAuthentication: !mockCheckout, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock),
+    res.json({ requiresAuthentication: !mockCheckout, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock), mock_persistente: persistedMock(config),
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&
@@ -221,7 +222,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     }
     const userId = requireUser(req);
     if (!uuid(req.params.id)) throw fail(400, 'Pedido inválido');
-    const { data, error } = await admin.from('pedido').select('id,estado,total,moneda,subtotal_mercaderia,descuento_productos,costo_envio,reserva_hasta,creado_en,pago(metodo,estado)').eq('id', req.params.id).eq('usuario_id', userId).maybeSingle();
+    const { data, error } = await admin.from('pedido').select('id,estado,total,moneda,subtotal_mercaderia,descuento_productos,costo_envio,reserva_hasta,creado_en,pago(metodo,estado,referencia_externa)').eq('id', req.params.id).eq('usuario_id', userId).maybeSingle();
     if (error) throw fail(503, 'No se pudo consultar el pedido');
     if (!data) throw fail(404, 'Pedido no encontrado');
     let externalPaymentState = null;
@@ -231,7 +232,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       if (noticeError) throw fail(503, 'No se pudo consultar el estado del pago');
       externalPaymentState = notice?.estado_externo || null;
     }
-    res.json({ ...data, estado_pago_externo: externalPaymentState,
+    res.json({ ...data, simulacion: persistedSimulation(data) ? 'persistente' : null, estado_pago_externo: externalPaymentState,
       instructions: data.pago?.some?.(entry => entry.metodo === 'transferencia') ? transferInstructions() : null });
   });
 

@@ -1,3 +1,4 @@
+import { simulationKind } from './order-presentation.mjs';
 const orderId = new URLSearchParams(location.search).get('pedido');
 const $ = selector => document.querySelector(selector);
 const titles = { pendiente_pago: 'Pedido pendiente de pago', pagado: 'Pago confirmado', en_preparacion: 'Estamos preparando tu pedido', enviado: 'Tu pedido está en camino', entregado: 'Pedido entregado', cancelado: 'Pedido cancelado', expirado: 'La reserva venció' };
@@ -8,16 +9,18 @@ if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(orderId || '')) {
     const response = await fetch(`/api/checkout/pedidos/${encodeURIComponent(orderId)}`, { credentials: 'same-origin' });
     const order = await response.json();
     if (!response.ok) throw Error(order.error || 'No pudimos consultar el pedido');
-    $('#result-test-mode').hidden = !order.mock;
-    $('#result-title').textContent = order.mock
+    const simulation=simulationKind(order);
+    $('#result-test-mode').hidden = !simulation;
+    if(simulation)$('#result-test-mode').textContent=simulation==='persistente' ? 'Staging · pago simulado, pedido guardado con reserva de inventario de prueba.' : 'Pago de prueba sin persistencia.';
+    $('#result-title').textContent = simulation
       ? ({ pagado:'Compra de prueba aprobada', cancelado:'Pago de prueba rechazado', pendiente_pago:'Pago de prueba pendiente', expirado:'Prueba vencida' }[order.estado] || 'Estado de prueba')
       : order.estado === 'cancelado' && order.estado_pago_externo === 'rejected'
         ? 'Pago rechazado' : titles[order.estado] || 'Estado de tu pedido';
     const amount = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(order.total);
-    $('#result-description').textContent = order.mock
-      ? `Prueba ${order.id.slice(0,8).toUpperCase()} · ${amount} · ${order.paymentId}. No se realizó ningún cobro ni se reservó stock. Esta prueba desaparece al reiniciar el servidor.`
+    $('#result-description').textContent = simulation
+      ? `Prueba ${order.id.slice(0,8).toUpperCase()} · ${amount}. No se realizó ningún cobro ni despacho real. ${simulation==='persistente' ? 'El pedido y la reserva se conservan en Staging. Consultá el detalle en Mi cuenta.' : 'No se reservó stock. Esta prueba desaparece al reiniciar el servidor.'}`
       : `Pedido ${order.id.slice(0,8).toUpperCase()} · ${amount}. ${order.estado === 'pendiente_pago' ? 'Esperamos la confirmación del pago antes de preparar el envío.' : 'Consultá el detalle en Mi cuenta.'}`;
-    if (order.mock) { $('#result-next').href = '/tienda'; $('#result-next').textContent = 'Volver al catálogo'; }
+    if (simulation === 'volatil') { $('#result-next').href = '/tienda'; $('#result-next').textContent = 'Volver al catálogo'; }
     if (order.estado === 'pendiente_pago' && order.instructions) {
       $('#transfer-details').hidden = false;
       $('#transfer-message').textContent = `${order.instructions.message} Vence: ${new Date(order.reserva_hasta).toLocaleString('es-AR')}.`;

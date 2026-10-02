@@ -164,6 +164,9 @@ async function init() {
   try {
     context = await api('/checkout/contexto' + suffix);
     $('#test-mode').hidden = !context.modo_prueba;
+    if(context.modo_prueba)$('#test-mode').textContent=context.mock_persistente
+      ? 'Prueba de Staging · pago y envío simulados, sin cobros ni despachos reales. El pedido se guarda y reserva inventario de prueba.'
+      : 'Prueba sin persistencia · sin cobros, despachos ni reservas de inventario. Se borra al reiniciar el servidor.';
     if (context.modo_prueba) $('#payment-help').textContent = 'Este pago es simulado. No se solicita tarjeta ni se realiza un cobro.';
     if (!context.cart.items?.length) { error('Tu selección está vacía. Volvé al catálogo para elegir un producto.'); return; }
     if (context.cart.requiere_confirmacion_catalogo) { error('Un producto ya no está disponible para comprar. Revisá tu carrito.'); return; }
