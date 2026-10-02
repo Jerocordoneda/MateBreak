@@ -1,5 +1,5 @@
 import {getProductBySlug,money} from '../../services/products.js';
-import {node} from './catalog-ui.js';
+import {node,setProductPhoto} from './catalog-ui.js';
 const root=document.querySelector('#product-content');
 async function init(){
   try{
@@ -8,14 +8,14 @@ async function init(){
     document.title=p.nombre+' · MateBreak';
     const crumbs=node('nav',null,'product-breadcrumb');crumbs.setAttribute('aria-label','Ubicación');const back=node('a','← Todo el catálogo');back.href='/tienda';crumbs.append(back);
     for(const c of p.categorias){const a=node('a',c.nombre);a.href='/tienda?categoria='+encodeURIComponent(c.slug);crumbs.append(node('span','/'),a);}
-    const layout=node('div',null,'product-detail'),gallery=node('div'),hero=node('img',null,'product-gallery-main'),thumbs=node('div',null,'product-thumbnails');hero.alt=p.nombre;
-    const galleryImages=p.imagenes.filter(i=>i.rol!=='descripcion');
+    const layout=node('div',null,'product-detail'),gallery=node('div'),hero=node('div',null,'product-gallery-main'),thumbs=node('div',null,'product-thumbnails');
+    const galleryImages=p.imagenes.filter(i=>i.rol!=='descripcion'&&typeof i.url==='string'&&i.url.trim());
     const buttons=[];
-    const showImage=url=>{hero.src=url;buttons.forEach(({button,image})=>button.setAttribute('aria-pressed',String(image.url===url)));};
+    const showImage=url=>{setProductPhoto(hero,url,p.nombre);buttons.forEach(({button,image})=>button.setAttribute('aria-pressed',String(image.url===url)));};
     for(const [index,image] of galleryImages.entries()){
-      const button=node('button'),img=node('img');button.type='button';button.setAttribute('aria-label',`Ver imagen ${index+1}`);img.src=image.url;img.alt=image.alt||p.nombre;img.loading='lazy';button.append(img);button.onclick=()=>showImage(image.url);thumbs.append(button);buttons.push({button,image});
+      const button=node('button');button.type='button';button.setAttribute('aria-label',`Ver imagen ${index+1}`);setProductPhoto(button,image.url,image.alt||p.nombre);button.onclick=()=>showImage(image.url);thumbs.append(button);buttons.push({button,image});
     }
-    if(galleryImages.length)showImage(galleryImages[0].url);gallery.append(hero,thumbs);
+    showImage(galleryImages[0]?.url);gallery.append(hero,thumbs);
     const info=node('div',null,'product-info');info.append(node('p',p.tipo==='combo'?'PARA COMPARTIR':'PARA TU RITUAL','eyebrow'),node('h1',p.nombre));
     const pricing=node('div',null,'product-pricing'),form=node('form',null,'product-options'),selects=[];
     for(const option of p.opciones){const label=node('label',option.nombre),select=node('select');select.name=option.nombre;
@@ -58,7 +58,7 @@ async function init(){
     };
     layout.append(gallery,info);
     const copy=node('section',null,'product-copy');copy.append(node('h2','Cada detalle cuenta'),node('p',p.descripcion||'','product-description'));
-    const descImages=node('div',null,'product-description-images');for(const image of p.imagenes.filter(i=>i.rol==='descripcion')){const img=node('img');img.src=image.url;img.alt=image.alt||p.nombre;img.loading='lazy';descImages.append(img);}copy.append(descImages);
+    const descImages=node('div',null,'product-description-images');for(const image of p.imagenes.filter(i=>i.rol==='descripcion'&&typeof i.url==='string'&&i.url.trim())){const img=node('img');img.src=image.url;img.alt=image.alt||p.nombre;img.loading='lazy';descImages.append(img);}copy.append(descImages);
     if(p.componentes.length){const details=node('details'),list=node('ul');details.append(node('summary','Qué incluye este set'));p.componentes.forEach(c=>list.append(node('li',c.evidencia)));details.append(list);copy.append(details);}
     root.replaceChildren(crumbs,layout,copy);update();
   }catch(e){root.replaceChildren(node('p',e.message));}

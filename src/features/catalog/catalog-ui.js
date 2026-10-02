@@ -1,8 +1,19 @@
 import {getProducts,money} from '../../services/products.js';
 export function node(tag,text,cls){const el=document.createElement(tag);if(text!=null)el.textContent=text;if(cls)el.className=cls;return el;}
+export function setProductPhoto(frame,url,name){
+  const placeholder=()=>{
+    const label=node('span','Foto pendiente','product-photo-placeholder');
+    label.setAttribute('role','img');label.setAttribute('aria-label','Foto pendiente: '+name);
+    frame.replaceChildren(label);
+  };
+  if(typeof url!=='string'||!url.trim()){placeholder();return;}
+  const img=node('img');img.alt=name;img.loading='lazy';img.width=480;img.height=600;
+  img.addEventListener('error',()=>{if(frame.contains(img))placeholder();},{once:true});
+  img.src=url;frame.replaceChildren(img);
+}
 export function productCard(p) {
   const card=node('article',null,'catalog-card'),link=node('a',null,'catalog-image');link.href='/productos/'+encodeURIComponent(p.slug);
-  if(p.imagen_principal){const img=node('img');img.src=p.imagen_principal;img.alt=p.nombre;img.loading='lazy';img.width=480;img.height=600;link.append(img);}
+  setProductPhoto(link,p.imagen_principal,p.nombre);
   card.append(link);
   const text=node('div',null,'catalog-card-body'),title=node('a',null,'catalog-title');title.href=link.href;title.append(node('h3',p.nombre));
   const category=p.categorias.at(-1)?.nombre;text.append(node('span',category||'', 'eyebrow'),title);
@@ -31,7 +42,14 @@ export async function mountCatalog(container,{category='',search='',featured=fal
       const term=normalize(input?.value??search),cat=select?.value??category;
       let list=all.filter(p=>(!featured||p.destacado)&&(!cat||p.categorias.some(c=>c.slug===cat))&&normalize(p.nombre+' '+(p.descripcion||'')).includes(term));
       status.textContent=`${list.length} productos`;if(limit)list=list.slice(0,limit);
-      grid.replaceChildren(...list.map(productCard));if(!list.length)grid.append(node('p','No encontramos productos con esos filtros.'));
+      grid.replaceChildren(...list.map(productCard));
+      if(!list.length){
+        if(featured){
+          const empty=node('div',null,'catalog-empty');
+          const browse=node('a','Ver catálogo','text-link');browse.href='/tienda';
+          empty.append(node('p','Todavía no hay productos destacados.'),browse);grid.append(empty);
+        }else grid.append(node('p','No encontramos productos con esos filtros.'));
+      }
     }
     if(input)input.oninput=render;if(select)select.onchange=render;render();
   }catch(e){container.replaceChildren(node('p',e.message));const retry=node('button','Reintentar','button-secondary');retry.onclick=()=>mountCatalog(container,{category,search,featured,limit,filters});container.append(retry);}
