@@ -18,9 +18,10 @@ if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(orderId || '')) {
         ? 'Pago rechazado' : titles[order.estado] || 'Estado de tu pedido';
     const amount = new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(order.total);
     $('#result-description').textContent = simulation
-      ? `Prueba ${order.id.slice(0,8).toUpperCase()} · ${amount}. No se realizó ningún cobro ni despacho real. ${simulation==='persistente' ? 'El pedido y la reserva se conservan en Staging. Consultá el detalle en Mi cuenta.' : 'No se reservó stock. Esta prueba desaparece al reiniciar el servidor.'}`
-      : `Pedido ${order.id.slice(0,8).toUpperCase()} · ${amount}. ${order.estado === 'pendiente_pago' ? 'Esperamos la confirmación del pago antes de preparar el envío.' : 'Consultá el detalle en Mi cuenta.'}`;
+      ? `Prueba ${order.id.slice(0,8).toUpperCase()} · ${amount}. No se realizó ningún cobro ni despacho real. ${simulation==='persistente' ? 'El pedido y la reserva se conservan en Staging. Podés consultar tu pedido sin una cuenta.' : 'No se reservó stock. Esta prueba desaparece al reiniciar el servidor.'}`
+      : `Pedido ${order.id.slice(0,8).toUpperCase()} · ${amount}. ${order.estado === 'pendiente_pago' ? 'Esperamos la confirmación del pago antes de preparar el envío.' : 'Podés consultar tu pedido sin una cuenta.'}`;
     if (simulation === 'volatil') { $('#result-next').href = '/tienda'; $('#result-next').textContent = 'Volver al catálogo'; }
+    else { $('#result-next').href='/src/pages/pedido.html?pedido='+encodeURIComponent(order.id); $('#result-next').textContent='Ver mi pedido'; }
     if (order.estado === 'pendiente_pago' && order.instructions) {
       $('#transfer-details').hidden = false;
       $('#transfer-message').textContent = `${order.instructions.message} Vence: ${new Date(order.reserva_hasta).toLocaleString('es-AR')}.`;

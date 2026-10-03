@@ -1,4 +1,5 @@
 import {money as formatMoney} from '../../services/products.js';
+const direct=new URLSearchParams(location.search).get('directa')==='1';
 const $ = selector => document.querySelector(selector);
 const money = value => formatMoney(value,cart.moneda||'ARS');
 const el = (tag, text, className) => { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; };
@@ -30,7 +31,8 @@ function showPage(focus = false) {
   for (const link of document.querySelectorAll('[data-nav]')) {
     if (link.dataset.nav === name) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
   }
-  document.title = ({ carrito: 'Tu carrito', catalogo: 'Catálogo', cuenta: 'Mi cuenta', pedidos: 'Mis pedidos' })[name] + ' · MateBreak';
+  document.title = (direct&&name==='carrito'?'Compra inmediata':({ carrito: 'Tu carrito', catalogo: 'Catálogo', cuenta: 'Mi cuenta', pedidos: 'Mis pedidos' })[name]) + ' · MateBreak';
+  if(direct){$('#carrito h1').textContent='Tu compra inmediata.';}
   if (focus) { const title = $('#' + name + ' h1'); title.tabIndex = -1; title.focus({ preventScroll: true }); window.scrollTo({ top: 0 }); }
 }
 window.addEventListener('hashchange', () => showPage(true));
@@ -39,6 +41,7 @@ showPage();
 window.addEventListener('load',()=>{if(['#carrito','#pedidos'].includes(location.hash))window.scrollTo({top:0,behavior:'instant'});},{once:true});
 
 async function api(url, method = 'GET', data) {
+  if(direct && url.startsWith('/carrito'))url+='?directa=1';
   const response = await fetch('/api' + url, { method, credentials: 'same-origin', headers: data === undefined ? {} : { 'Content-Type': 'application/json' }, body: data === undefined ? undefined : JSON.stringify(data) });
   let result; try { result = await response.json(); } catch { throw Error('No pudimos conectar con la tienda. Intentá nuevamente.'); }
   if (!response.ok) throw Error(result.error || 'No se pudo completar la operación.'); return result;
@@ -56,7 +59,7 @@ function emptyState(title, description, linkText, href) {
 }
 function updateSummary() {
   const count = cart.items.reduce((sum, item) => sum + item.cantidad, 0);
-  window.dispatchEvent(new CustomEvent('mb:cart',{detail:count}));
+  if(!direct)window.dispatchEvent(new CustomEvent('mb:cart',{detail:count}));
   const badge=$('#cart-count');if(badge)badge.textContent=count;
   $('#selection-count').textContent = `${count} ${count === 1 ? 'producto' : 'productos'}`; $('#summary-count').textContent = `(${count})`;
   const quote = cart.cotizacion;
@@ -69,7 +72,7 @@ function updateSummary() {
   $('#shipping-progress').value = quote ? Math.min(quote.progress.threshold, Number(quote.subtotal)) : 0;
   $('#shipping-message').textContent = quote ? (quote.progress.eligible ? '¡Tenés envío gratis!' : `Te faltan ${money(quote.progress.remaining)} para tener envío gratis`) : 'El envío se confirma en el checkout.';
   const invalidItems = cart.items.some(i => i.activo === false);
-  $('#checkout-button').disabled = !loaded || !count || invalidItems || cartBusy || cart.requiere_confirmacion_catalogo || Boolean(cart.error_cotizacion);
+  $('#checkout-button').disabled = !loaded || !count || cart.estado==='convertido' || invalidItems || cartBusy || cart.requiere_confirmacion_catalogo || Boolean(cart.error_cotizacion);
   $('#checkout-notice').textContent = !loaded ? 'Cargando tu selección…' : !count ? 'Agregá un producto para empezar.' : invalidItems ? 'Quitá los productos no disponibles para continuar.' : 'El precio y la disponibilidad se confirman en el checkout.';
   if(cart.requiere_confirmacion_catalogo)$('#checkout-notice').textContent='Tu selección está guardada. Una variante requiere confirmar su relación con el inventario o su stock.';
   if(cart.error_cotizacion)$('#checkout-notice').textContent=cart.error_cotizacion;
@@ -174,7 +177,7 @@ form('#direccion', async data => {
   const { id, ...fields } = data; const saved = await api('/direcciones' + (id ? '/' + id : ''), id ? 'PUT' : 'POST', fields);
   $('#direccion').reset(); await renderPrivate(); updateSummary(); message('Dirección guardada. Ya podés seleccionarla para tu pedido.');
 });
-$('#checkout-button').onclick=()=>{if(!$('#checkout-button').disabled)location.assign('/checkout');};
+$('#checkout-button').onclick=()=>{if(!$('#checkout-button').disabled)location.assign('/checkout'+(direct?'?directa=1':''));};
 async function init() {
   try {
     const [initialCart, available] = await Promise.all([api('/carrito'), api('/metodos')]);

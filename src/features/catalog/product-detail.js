@@ -42,7 +42,7 @@ async function init(){
     }
     selects.forEach(s=>s.onchange=update);form.append(availability,quantityLabel,button,buyNow,status,cartLink);info.append(pricing,form);
     form.onsubmit=async event=>{
-      event.preventDefault();const direct=event.submitter===buyNow,v=selectedVariant(),units=Number(quantity.value);if(!v||!Number.isInteger(units)||units<1||units>99)return;button.disabled=true;buyNow.disabled=true;status.textContent=direct?'Preparando checkout…':'Guardando…';
+      event.preventDefault();const direct=event.submitter===buyNow,v=selectedVariant(),units=Number(quantity.value);if(!v||!Number.isInteger(units)||units<1||units>99)return;button.disabled=true;buyNow.disabled=true;status.textContent=direct?'Preparando tu compra inmediata…':'Guardando…';
       try{
         if(direct){
           const response=await fetch('/api/compra-directa',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({variante_id:v.id,cantidad:units,personalizacion:custom?.value||''})});
