@@ -1,6 +1,8 @@
 import { assertStagingConfig, persistedMock } from './config/staging.mjs';
 import { createAuthFactory } from './integrations/supabase/auth.mjs';
 import { customerRoutes } from './modules/account/customer-routes.mjs';
+import {selectionToken,validCartToken} from './checkout/cart-identity.mjs';
+import {privateOrderRoutes} from './orders/private-access.mjs';
 import { cartRoutes } from './modules/cart/routes.mjs';
 import { authRoutes } from './modules/auth/routes.mjs';
 import express from 'express';
@@ -68,7 +70,7 @@ export function createApp(config, overrides = {}) {
     req.hasCart = req.cartToken === existing;
     // Only cart/auth routes set this cookie: parallel catalog requests must not
     // overwrite the initial cart credential with unrelated random values.
-    if (req.cartToken !== existing && ((req.path.startsWith('/carrito') && req.path !== '/carrito/resumen') || req.path === '/auth/login')) res.append('Set-Cookie', serializeCookieHeader(cookieName, req.cartToken, cookieOptions));
+    if (req.cartToken !== existing && ((req.path.startsWith('/carrito') && req.path !== '/carrito/resumen' && req.query.directa!=='1') || req.path === '/auth/login')) res.append('Set-Cookie', serializeCookieHeader(cookieName, req.cartToken, cookieOptions));
     next();
   });
   const requireUser = req => { if (!req.user) throw fail(401, 'Iniciá sesión para continuar'); return req.user.id; };
@@ -77,7 +79,9 @@ export function createApp(config, overrides = {}) {
     res.append('Set-Cookie', serializeCookieHeader(cookieName, req.cartToken, cookieOptions));
   };
   const rpc = async (req, action, data = {}) => {
-    const result = await admin.rpc('mb_comercio', { p_token_hash: hashToken(req.cartToken), p_usuario_id: req.user?.id ?? null, p_accion: action, p_datos: data });
+    const token=req.path.startsWith('/api/carrito')?selectionToken(req,config.origin):req.cartToken;
+    if(!validCartToken(token))throw fail(400,'No hay una compra inmediata activa');
+    const result = await admin.rpc('mb_comercio', { p_token_hash: hashToken(token), p_usuario_id: req.user?.id ?? null, p_accion: action, p_datos: data });
     if (result.error) throw fail(409, result.error.code === 'P0001' ? result.error.message : 'No se pudo completar la operación');
     return result.data;
   };
@@ -91,6 +95,7 @@ export function createApp(config, overrides = {}) {
   inventoryRoutes(app, { admin, authFactory });
   logisticsAdminRoutes(app, {admin,authFactory});
   accountRoutes(app, { admin });
+  privateOrderRoutes(app,{admin,config});
   app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta inexistente' }));
   // Explicit static allowlist: never expose the repository, .env or node_modules.
   app.use('/src', express.static(path.join(root, 'src'), { dotfiles: 'deny' }));

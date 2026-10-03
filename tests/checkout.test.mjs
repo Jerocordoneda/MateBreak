@@ -88,6 +88,12 @@ test('Comprar ahora uses a separate HttpOnly cart credential and preserves ordin
   assert.notEqual(hashToken(normalToken),hashToken(directToken));
   assert.equal(calls.at(-1).args.p_token_hash,hashToken(directToken));
   assert.deepEqual(calls.at(-1).args.p_datos,{variante_id:'456',cantidad:2,personalizacion:'Ana'});
+  assert.equal((await response.json()).next,'/carrito?directa=1');
+  const both=`${normalCookie}; __Host-mb_direct=${directToken}`;
+  await fetch(base+'/api/carrito?directa=1',{headers:{cookie:both}});
+  assert.equal(calls.filter(call=>call.name==='mb_comercio').at(-1).args.p_token_hash,hashToken(directToken));
+  await fetch(base+'/api/carrito/variantes/456?directa=1',{method:'PUT',headers:{...requestHeaders,cookie:both},body:JSON.stringify({cantidad:1})});
+  assert.equal(calls.filter(call=>call.name==='mb_comercio').at(-1).args.p_token_hash,hashToken(directToken));
   await fetch(base+'/api/carrito',{headers:{cookie:`${normalCookie}; __Host-mb_direct=${directToken}`}});
   assert.equal(calls.filter(call=>call.name==='mb_comercio').at(-1).args.p_token_hash,hashToken(normalToken));
 });
@@ -180,7 +186,7 @@ test('signed Mercado Pago webhook rechecks payment with provider and retries ide
   assert.equal(calls.filter(call=>call.audit?.resultado==='aplicado').length,2);
 });
 
-for (const status of ['rejected','cancelled']) test(`Mercado Pago ${status} releases the order through the existing cancellation RPC`, async t => {
+for (const status of ['rejected','cancelled']) test(`Mercado Pago ${status} releases the order through the service-only cancellation RPC`, async t => {
   const calls=[],orderId='11111111-1111-4111-8111-111111111111';
   const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
     admin:{from:table=>table==='pedido'?{select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:orderId,usuario_id:'buyer',estado:'pendiente_pago',total:90_000,
@@ -194,7 +200,6 @@ for (const status of ['rejected','cancelled']) test(`Mercado Pago ${status} rele
     method:'POST',headers:{'x-signature':'valid','x-request-id':'req','content-type':'application/json'},body:'{}',
   });
   assert.equal(response.status,200);
-  assert.deepEqual(calls.map(call=>call.name),['mb_comercio']);
-  assert.equal(calls[0].args.p_accion,'cancelar');
-  assert.deepEqual(calls[0].args.p_datos,{id:orderId});
+  assert.deepEqual(calls.map(call=>call.name),['mb_cancelar_pedido_servicio']);
+  assert.deepEqual(calls[0].args,{p_pedido_id:orderId});
 });

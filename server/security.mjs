@@ -6,11 +6,13 @@ const policy = [
   [/^\/auth\/(login|registro|recover)/, 'auth', 8],
   [/^\/pagos\/mercadopago\/webhook$/, 'webhook', 60],
   [/^\/checkout\/(pedidos|cotizar-envio)/, 'checkout', 12],
+  [/^\/seguimiento\/(intercambiar|renovar)/,'order_links',6],
+  [/^\/seguimiento\//,'order_read',30],
   [/^\/(equipo|inventario|ventas|admin)/, 'admin', 60],
 ];
 
 export function securityEvent(type, req, fields = {}) {
-  const route = req.path.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, ':id').replace(/\/\d+(?=\/|$)/g, '/:id');
+  const route = req.path.startsWith('/api/seguimiento/')?'/api/seguimiento/:action':req.path.replace(/[0-9a-f]{8}-[0-9a-f-]{27,}/gi, ':id').replace(/\/\d+(?=\/|$)/g, '/:id');
   const event = { kind: 'security', type, request_id: req.id, route,
     ...(Number.isInteger(fields.status) ? { status: fields.status } : {}) };
   console.warn(JSON.stringify(event));

@@ -1,4 +1,5 @@
 import { securityEvent } from '../security.mjs';
+import {safeCardPresentation} from './card-presentation.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
@@ -28,14 +29,18 @@ export function paymentRoutes(app, { admin, mercadoPago }) {
     if (!internalPayment || !amountMatches) {
       outcome = 'revision_manual';
     } else if (payment.status === 'approved') {
+      const card=safeCardPresentation(payment);
+      if(card){
+        const saved=await admin.rpc('mb_record_payment_display',{p_payment_id:internalPayment.id,p_brand:card.brand,p_last4:card.last4});
+        if(saved.error)throw fail(503,'No se pudo guardar la presentación del pago');
+      }
       const result = await admin.rpc('mb_confirmar_pago', {
         p_pago_id: internalPayment.id, p_referencia: String(payment.id), p_importe: Number(payment.transaction_amount), p_moneda: 'ARS',
       });
       outcome = result.error ? 'revision_manual' : 'aplicado';
     } else if (['rejected','cancelled'].includes(payment.status)) {
       if (order.estado === 'pendiente_pago') {
-        const result = await admin.rpc('mb_comercio', { p_token_hash: '0'.repeat(64), p_usuario_id: order.usuario_id,
-          p_accion: 'cancelar', p_datos: { id: order.id } });
+        const result = await admin.rpc('mb_cancelar_pedido_servicio', {p_pedido_id:order.id});
         outcome = result.error ? 'revision_manual' : 'aplicado';
       } else outcome = 'ignorado';
     }

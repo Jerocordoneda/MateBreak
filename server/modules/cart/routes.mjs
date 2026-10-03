@@ -17,10 +17,10 @@ export function cartRoutes(app, { admin, checked, hashToken, rpc, rotateCart }) 
     let cart;
     try { cart = await rpc(req, 'carrito'); }
     catch (error) {
-      if (!['Sesion invalida', 'El carrito vencio'].includes(error.message)) throw error;
+      if (req.query.directa==='1' || !['Sesion invalida', 'El carrito vencio'].includes(error.message)) throw error;
       rotateCart(req, res); cart = await rpc(req, 'carrito');
     }
-    if (cart.estado === 'convertido') { rotateCart(req, res); cart = await rpc(req, 'carrito'); }
+    if (cart.estado === 'convertido' && req.query.directa!=='1') { rotateCart(req, res); cart = await rpc(req, 'carrito'); }
     res.json(await quoteCart(cart, admin));
   });
   app.put('/api/carrito/items/:id', async (req, res) => {
