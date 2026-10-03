@@ -1,3 +1,4 @@
+import {province} from '../shipping/provinces.mjs';
 export const FREE_SHIPPING_FROM_ARS = 80_000;
 export const TRANSFER_DISCOUNT = 0.10;
 
@@ -34,6 +35,7 @@ export function validateRecipient(value) {
     if (typeof text !== 'string' || text.trim().length < min || text.trim().length > max) throw Error(`Revisá ${key.replaceAll('_', ' ')}`);
     result[key] = text.trim();
   }
+  result.provincia=province(result.provincia).name;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email)) throw Error('Email inválido');
   if (!/^[+0-9 ()-]+$/.test(result.telefono) || result.telefono.replace(/\D/g, '').length < 7) throw Error('Teléfono inválido');
   if (!/^[A-Za-z0-9 -]+$/.test(result.codigo_postal)) throw Error('Código postal inválido');

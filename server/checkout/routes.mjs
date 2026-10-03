@@ -7,6 +7,7 @@ import { transferAdminRoutes } from '../payments/admin-routes.mjs';
 import { packagesFor } from './packaging-service.mjs';
 import { quotePackages } from '../shipping/packaging.mjs';
 import { shippingSnapshot } from '../shipping/snapshot.mjs';
+import { provinces } from '../shipping/provinces.mjs';
 import { persistedSimulation } from './order-simulation.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -62,7 +63,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
         (d.codigo === 'retiro' || (correo.ready && Boolean(packages))) })),
       packaging: { status: packages ? 'automatic' : selection.items?.length ? 'manual' : 'empty' },
       manualQuoteAvailable: Boolean(selection.items?.length && !packages),
-      pickupEnabled,
+      pickupEnabled, provinces,
       user: req.user ? { email: req.user.email } : null });
   });
 

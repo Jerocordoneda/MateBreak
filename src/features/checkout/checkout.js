@@ -1,3 +1,4 @@
+import {populateProvinces} from './province-select.mjs';
 import { getProducts } from '../../services/products.js';
 
 const $ = selector => document.querySelector(selector);
@@ -162,6 +163,7 @@ async function placeOrder() {
 async function init() {
   try {
     context = await api('/checkout/contexto' + suffix);
+    populateProvinces(context.provinces,$('#recipient-form [name=provincia]'),$('#pickup-province'));
     $('#test-mode').hidden = !context.modo_prueba;
     if(context.modo_prueba)$('#test-mode').textContent=context.mock_persistente
       ? 'Prueba de Staging · pago y envío simulados, sin cobros ni despachos reales. El pedido se guarda y reserva inventario de prueba.'
@@ -193,9 +195,7 @@ $('#pickup-agency').addEventListener('change', () => {
   const agency = agencies.find(a => a.code === $('#pickup-agency').value);
   $('#pickup-address').textContent = agency ? [agency.address?.streetName,agency.address?.streetNumber,agency.address?.city,agency.address?.postalCode].filter(Boolean).join(' ') : '';
 });
-for (const [code,name] of Object.entries({A:'Salta',B:'Buenos Aires',C:'CABA',D:'San Luis',E:'Entre Ríos',F:'La Rioja',G:'Santiago del Estero',H:'Chaco',J:'San Juan',K:'Catamarca',L:'La Pampa',M:'Mendoza',N:'Misiones',P:'Formosa',Q:'Neuquén',R:'Río Negro',S:'Santa Fe',T:'Tucumán',U:'Chubut',V:'Tierra del Fuego',W:'Corrientes',X:'Córdoba',Y:'Jujuy',Z:'Santa Cruz'})) {
-  const option=node('option',name);option.value=code;$('#pickup-province').append(option);
-}
+
 $('#place-order').addEventListener('click', placeOrder);
 init();
 
