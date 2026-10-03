@@ -232,5 +232,23 @@
     "localTokenMd5": "1fd4d710009b9af89517c28c17ada59c",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261003001216_guest_checkout_ownership.sql",
+    "version": "20261003001216",
+    "name": "guest_checkout_ownership",
+    "remoteVersion": null,
+    "localTokenMd5": "8ce3ffc19daf77864911b98bb3ca4ff4",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261003001218_private_order_access_and_notifications.sql",
+    "version": "20261003001218",
+    "name": "private_order_access_and_notifications",
+    "remoteVersion": null,
+    "localTokenMd5": "2e7abb1f174b00f6d2360b7684802186",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]
