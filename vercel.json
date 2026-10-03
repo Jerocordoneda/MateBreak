@@ -46,6 +46,10 @@
     {
       "source": "/mi-cuenta",
       "destination": "/src/pages/cuenta.html"
+    },
+    {
+      "source": "/mayorista",
+      "destination": "/src/pages/mayorista.html"
     }
   ],
   "headers": [

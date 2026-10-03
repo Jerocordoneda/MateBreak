@@ -1,6 +1,7 @@
 import {api,element,message} from './ui.mjs';
 import {dateTime} from './account-data.js';
 import {mountTeam} from './account-team.js';
+import {mountWholesaleAdmin} from './account-wholesale.js';
 
 const $=s=>document.querySelector(s);
 const money=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
@@ -94,6 +95,7 @@ async function loadTransfers(){
 }
 
 export async function mountAdmin(currentUser){
+  mountWholesaleAdmin().catch(cause=>message(cause.message,true));
   $('#refresh-transfers').onclick=async()=>{try{await loadTransfers();}catch(e){message(e.message,true);}};
   $('#refresh-dashboard').onclick=async()=>{try{await loadDashboard();message('Dashboard actualizado.');}catch(e){message(e.message,true);}};
   $('#dashboard-period').onchange=async()=>{try{await loadDashboard();}catch(e){message(e.message,true);}};
