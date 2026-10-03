@@ -4,8 +4,10 @@ import {deliveryText,simulationKind} from '../checkout/order-presentation.mjs';
 const states={pendiente_pago:'Pendiente de pago',pagado:'Pago confirmado',en_preparacion:'En preparación',enviado:'En camino',entregado:'Entregado',cancelado:'Cancelado'};
 const money=(value,currency)=>new Intl.NumberFormat('es-AR',{style:'currency',currency:currency||'ARS'}).format(Number(value));
 let records=[];
-export async function loadOrders(){
- records=await api('/pedidos');
+export async function loadOrders({signal,current=()=>true}={}){
+ const loaded=await api('/pedidos','GET',undefined,{signal});
+ if(!current())return null;
+ records=loaded;
  document.querySelector('#orders-search').oninput=renderOrders;document.querySelector('#orders-filter').onchange=renderOrders;
  renderOrders();return records;
 }
