@@ -50,6 +50,10 @@
     {
       "source": "/mayorista",
       "destination": "/src/pages/mayorista.html"
+    },
+    {
+      "source": "/regalos-empresariales",
+      "destination": "/src/pages/regalos-empresariales.html"
     }
   ],
   "headers": [

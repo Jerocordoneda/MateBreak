@@ -103,6 +103,7 @@ export function createApp(config, overrides = {}) {
   app.use('/src', express.static(path.join(root, 'src'), { dotfiles: 'deny' }));
   app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(root, 'index.html'), { dotfiles: 'allow' }));
   app.get('/tienda', (req, res) => res.sendFile(path.join(root, 'src/pages/catalogo.html'), { dotfiles: 'allow' }));
+  app.get('/regalos-empresariales', (req,res)=>res.sendFile(path.join(root,'src/pages/regalos-empresariales.html'), {dotfiles:'allow'}));
   app.get('/mayorista', (req,res)=>res.sendFile(path.join(root,'src/pages/mayorista.html'), {dotfiles:'allow'}));
   app.get('/carrito', (req, res) => res.sendFile(path.join(root, 'src/pages/tienda.html'), { dotfiles: 'allow' }));
   app.get('/checkout', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout.html'), { dotfiles: 'allow' }));
