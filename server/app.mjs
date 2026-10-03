@@ -13,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { inventoryRoutes } from './modules/inventory/routes.mjs';
 import { accountRoutes } from './modules/account/routes.mjs';
+import {wholesaleRoutes} from './wholesale/routes.mjs';
 import { catalogRoutes } from './modules/catalog/routes.mjs';
 import { checkoutRoutes } from './checkout/routes.mjs';
 import { createMockCheckoutStore } from './checkout/mock-store.mjs';
@@ -96,11 +97,13 @@ export function createApp(config, overrides = {}) {
   logisticsAdminRoutes(app, {admin,authFactory});
   accountRoutes(app, { admin });
   privateOrderRoutes(app,{admin,config});
+  wholesaleRoutes(app,{admin,config});
   app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta inexistente' }));
   // Explicit static allowlist: never expose the repository, .env or node_modules.
   app.use('/src', express.static(path.join(root, 'src'), { dotfiles: 'deny' }));
   app.get(['/', '/index.html'], (req, res) => res.sendFile(path.join(root, 'index.html'), { dotfiles: 'allow' }));
   app.get('/tienda', (req, res) => res.sendFile(path.join(root, 'src/pages/catalogo.html'), { dotfiles: 'allow' }));
+  app.get('/mayorista', (req,res)=>res.sendFile(path.join(root,'src/pages/mayorista.html'), {dotfiles:'allow'}));
   app.get('/carrito', (req, res) => res.sendFile(path.join(root, 'src/pages/tienda.html'), { dotfiles: 'allow' }));
   app.get('/checkout', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout.html'), { dotfiles: 'allow' }));
   app.get('/checkout/resultado', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout-resultado.html'), { dotfiles: 'allow' }));

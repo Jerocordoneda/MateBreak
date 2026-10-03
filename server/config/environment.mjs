@@ -23,6 +23,7 @@ const config = {
   paymentsMode,
   mockPaymentResult: env.MOCK_PAYMENT_RESULT || 'approved',
   mockOriginPostalCode: env.MOCK_ORIGIN_POSTAL_CODE || '7000',
+  wholesaleWhatsapp: env.WHOLESALE_WHATSAPP_NUMBER || '',
   mercadoPago: {
     accessToken: env.MP_ACCESS_TOKEN || env.MERCADOPAGO_ACCESS_TOKEN,
     webhookSecret: env.MERCADOPAGO_WEBHOOK_SECRET,

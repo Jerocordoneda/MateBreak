@@ -8,6 +8,8 @@ const policy = [
   [/^\/checkout\/(pedidos|cotizar-envio)/, 'checkout', 12],
   [/^\/seguimiento\/(intercambiar|renovar)/,'order_links',6],
   [/^\/seguimiento\//,'order_read',30],
+  [/^\/mayorista\/solicitudes$/, 'wholesale_submit', 6],
+  [/^\/mayorista\/cotizar$/, 'wholesale_quote', 60],
   [/^\/(equipo|inventario|ventas|admin)/, 'admin', 60],
 ];
 

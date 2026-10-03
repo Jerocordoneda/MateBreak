@@ -1,0 +1,37 @@
+import {randomBytes,createHash} from 'node:crypto';
+import {parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
+import {provinces} from '../shipping/provinces.mjs';
+import {buyer,selection,whatsappMessage,whatsappNumber} from './policy.mjs';
+const fail=(status,message)=>Object.assign(Error(message),{status});
+const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+export function wholesaleRoutes(app,{admin,config}){
+ const secure=config.origin.startsWith('https:'),prefix=secure?'__Host-':'',ownerName=prefix+'mb_wholesale',refName=prefix+'mb_wholesale_ref';
+ const cookie=(req,name)=>parseCookieHeader(req.headers.cookie||'').find(c=>c.name===name)?.value;
+ const source=req=>{const ref=cookie(req,refName);if(!ref||ref==='web')return null;if(!/^[a-zA-Z0-9_-]{3,64}$/.test(ref))throw fail(400,'Referencia comercial inválida');return ref;};
+ const rpc=async(name,args)=>{const result=await admin.rpc(name,args);if(result.error)throw fail(result.error.code==='42501'?403:result.error.code==='P0001'?409:503,['P0001','42501'].includes(result.error.code)?result.error.message:'No se pudo procesar la solicitud mayorista');return result.data;};
+ const setCookie=(res,name,value)=>res.append('Set-Cookie',serializeCookieHeader(name,value,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge:2592000}));
+ app.get('/api/mayorista/catalogo',async(req,res)=>{
+  let ref=source(req);const existing=cookie(req,refName);
+  if(!existing&&req.query.ref!==undefined){if(typeof req.query.ref!=='string'||!/^[a-zA-Z0-9_-]{3,64}$/.test(req.query.ref))throw fail(400,'Referencia comercial inválida');ref=req.query.ref;}
+  const catalog=await rpc('mb_wholesale_catalog',{p_ref:ref});if(!catalog.referenceValid)throw fail(400,'Referencia comercial no disponible');
+  if(!/^[a-f0-9]{64}$/.test(cookie(req,ownerName)||''))setCookie(res,ownerName,randomBytes(32).toString('hex'));
+  if(!existing)setCookie(res,refName,ref||'web');
+  const items=catalog.items.map(i=>{const {imagePath,...item}=i;return{...item,image:imagePath?admin.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl:null};});
+  res.json({items,minimum:catalog.minimum,provinces,contactReady:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||'')});
+ });
+ app.post('/api/mayorista/cotizar',async(req,res)=>res.json(await rpc('mb_wholesale_quote',{p_items:selection(req.body?.items)})));
+ app.post('/api/mayorista/solicitudes',async(req,res)=>{
+  const phone=whatsappNumber(config.wholesaleWhatsapp),owner=cookie(req,ownerName);
+  if(!/^[a-f0-9]{64}$/.test(owner||'')||!uuid(req.body?.idempotencia))throw fail(400,'Reabrí el catálogo antes de enviar');
+  const data=buyer(req.body?.comprador),items=selection(req.body?.items);
+  const receipt=await rpc('mb_wholesale_submit',{p_owner:createHash('sha256').update(owner).digest('hex'),p_key:req.body.idempotencia,p_buyer:data,p_items:items,p_ref:source(req)});
+  const message=whatsappMessage(receipt);res.status(201).json({...receipt,message,whatsappUrl:'https://wa.me/'+phone+'?text='+encodeURIComponent(message)});
+ });
+ app.get('/api/admin/mayorista',async(req,res)=>{if(!req.user)throw fail(401,'Iniciá sesión');res.json(await rpc('mb_wholesale_manage',{p_actor:req.user.id,p_action:'list',p_data:{}}));});
+ app.post('/api/admin/mayorista/estado',async(req,res)=>{
+  if(!req.user)throw fail(401,'Iniciá sesión');const b=req.body||{};
+  if(!uuid(b.id)||!['en_conversacion','presupuesto_confirmado','esperando_sena','sena_acreditada','venta_concretada','cancelada'].includes(b.state)||[b.closer,b.orderId,b.manualSaleId].some(v=>v!=null&&!uuid(v))||typeof (b.note??'')!=='string'||(b.note||'').length>500)throw fail(400,'Estado comercial inválido');
+  const data={id:b.id,state:b.state,note:b.note||'',...(b.closer?{closer:b.closer}:{}),...(b.orderId?{orderId:b.orderId}:{}),...(b.manualSaleId?{manualSaleId:b.manualSaleId}:{})};
+  res.json(await rpc('mb_wholesale_manage',{p_actor:req.user.id,p_action:'state',p_data:data}));
+ });
+}
