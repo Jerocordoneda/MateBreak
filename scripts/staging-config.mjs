@@ -1,6 +1,6 @@
 // Offline configuration shared by the preparer, build gate and tests.
 import {isDeepStrictEqual} from 'node:util';
-export const frontendPages={'/tienda':'catalogo','/carrito':'tienda','/checkout/resultado':'checkout-resultado','/checkout':'checkout','/productos/:slug':'producto','/mi-cuenta':'cuenta','/mayorista':'mayorista'};
+export const frontendPages={'/tienda':'catalogo','/carrito':'tienda','/checkout/resultado':'checkout-resultado','/checkout':'checkout','/productos/:slug':'producto','/mi-cuenta':'cuenta','/mayorista':'mayorista','/regalos-empresariales':'regalos-empresariales'};
 export const backendRoutes=['/api/:path*','/auth/:path*','/interno/:path*','/healthz'];
 export function validateBackendOrigin(value) {
  if(!value)throw Error('Staging deploy blocked: STAGING_BACKEND_ORIGIN is missing');

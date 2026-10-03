@@ -1,4 +1,5 @@
 import {verifiedWholesaleSession} from './access.mjs';
+import {commercialContext} from './context.mjs';
 import {parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
 import {provinces} from '../shipping/provinces.mjs';
 import {buyer,selection,whatsappMessage,whatsappNumber} from './policy.mjs';
@@ -10,14 +11,20 @@ export function wholesaleRoutes(app,{admin,config}){
  const source=req=>{const ref=cookie(req,refName);if(!ref||ref==='web')return null;if(!/^[a-zA-Z0-9_-]{3,64}$/.test(ref))throw fail(400,'Referencia comercial inválida');return ref;};
  const rpc=async(name,args)=>{const result=await admin.rpc(name,args);if(result.error)throw fail(result.error.code==='42501'?403:result.error.code==='P0001'?409:503,['P0001','42501'].includes(result.error.code)?result.error.message:'No se pudo procesar la solicitud mayorista');return result.data;};
  const setCookie=(res,name,value)=>res.append('Set-Cookie',serializeCookieHeader(name,value,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge:2592000}));
- app.use('/api/mayorista',async(req,res,next)=>{req.wholesaleSession=await verifiedWholesaleSession(req,admin);next();});
+ app.use('/api/mayorista',async(req,res,next)=>{req.wholesaleSession=await verifiedWholesaleSession(req,admin);if(req.headers['x-matebreak-account']&&req.headers['x-matebreak-account']!==req.user.id)throw fail(401,'La cuenta cambió. Volvé a ingresar al catálogo.');next();});
  app.get('/api/mayorista/catalogo',async(req,res)=>{
   let ref=source(req);const existing=cookie(req,refName);
   if(!existing&&req.query.ref!==undefined){if(typeof req.query.ref!=='string'||!/^[a-zA-Z0-9_-]{3,64}$/.test(req.query.ref))throw fail(400,'Referencia comercial inválida');ref=req.query.ref;}
   const catalog=await rpc('mb_wholesale_catalog',{p_ref:ref});if(!catalog.referenceValid)throw fail(400,'Referencia comercial no disponible');
   if(!existing)setCookie(res,refName,ref||'web');
   const items=catalog.items.map(i=>{const {imagePath,...item}=i;return{...item,image:item.image||(imagePath?admin.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl:null)};});
-  res.json({items,minimum:catalog.minimum,provinces,contactReady:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||''),contactUrl:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||'')?'https://wa.me/'+config.wholesaleWhatsapp:null});
+  res.json({accountId:req.user.id,items,minimum:catalog.minimum,provinces,contactReady:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||''),contactUrl:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||'')?'https://wa.me/'+config.wholesaleWhatsapp:null});
+ });
+ app.get('/api/mayorista/acceso',(req,res)=>res.json({accountId:req.user.id}));
+ app.get('/api/mayorista/perfil',async(req,res)=>{
+  const [profile,addresses]=await Promise.all([req.auth.from('perfil').select('nombre,telefono').eq('id',req.user.id).maybeSingle(),req.auth.from('direccion').select('id,destinatario,telefono,calle,ciudad,departamento,pais').eq('usuario_id',req.user.id).order('creado_en')]);
+  if(profile.error||addresses.error)throw fail(503,'No pudimos cargar tus datos. Podés completarlos manualmente.');
+  res.json(commercialContext(req.user,profile.data,addresses.data||[]));
  });
  app.post('/api/mayorista/cotizar',async(req,res)=>res.json(await rpc('mb_wholesale_quote',{p_items:selection(req.body?.items)})));
  app.post('/api/mayorista/solicitudes',async(req,res)=>{

@@ -23,7 +23,9 @@
     "build:staging": "node scripts/build-staging.mjs",
     "start:staging:worker": "node server/staging-worker.mjs",
     "test:staging:fixtures:local": "node scripts/test-staging-fixtures-local.mjs",
-    "configure:staging:frontend": "node scripts/configure-staging-frontend.mjs"
+    "configure:staging:frontend": "node scripts/configure-staging-frontend.mjs",
+    "test:wholesale:account": "node scripts/test-wholesale-account.mjs",
+    "test:wholesale:account:browser": "node tests/wholesale-account-browser.mjs"
   },
   "engines": {
     "node": "22.x"

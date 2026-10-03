@@ -2,7 +2,7 @@ import fs from 'node:fs';import assert from 'node:assert/strict';
 import {startWholesalePreview} from '../scripts/wholesale-preview-runtime.mjs';
 const {chromium}=await import(process.env.MATEBREAK_PLAYWRIGHT_MODULE||'playwright');
 const e=process.env.MATEBREAK_EVIDENCE_DIR;assert.ok(e);assert.ok(!fs.realpathSync('.').toLowerCase().startsWith(e.toLowerCase()));fs.mkdirSync(e,{recursive:true});
-const remote=process.env.MATEBREAK_STAGING_E2E==='1';
+assert.notEqual(process.env.MATEBREAK_STAGING_E2E,'1','Cloud requests require separate explicit authorization; this suite is local only');const remote=false;
 const runtime=remote?null:await startWholesalePreview({commercial:true});
 const base=remote?'https://matebreak-staging.vercel.app':runtime.base;
 const browser=await chromium.launch({channel:'chrome',headless:true});const report={source:remote?'Staging':'local PostgreSQL',cases:[],errors:[],receipts:[]};
@@ -10,14 +10,15 @@ try{for(const width of [1440,360]){
  const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();
  await page.addInitScript(()=>{window.open=url=>{window.__whatsapp=url;return null;};});
  await context.route('https://wa.me/**',r=>r.abort());page.on('pageerror',err=>report.errors.push(err.message));
- await page.goto(base+'/');const navigation=page.locator('a[data-path=regalos]');assert.equal(await navigation.getAttribute('href'),'/mayorista');
- const enterprise=page.getByRole('link',{name:'Realizar regalo empresarial',exact:true});assert.equal(await enterprise.getAttribute('href'),'/mayorista');
- await enterprise.click();await page.waitForFunction(()=>document.querySelectorAll('.wholesale-product').length===11);
+ await page.goto(base+'/');const navigation=page.locator('a[data-path=regalos]');assert.equal(await navigation.getAttribute('href'),'/regalos-empresariales');
+ const enterprise=page.getByRole('link',{name:'Realizar regalo empresarial',exact:true});assert.equal(await enterprise.getAttribute('href'),'/regalos-empresariales');
+ await context.request.post(base+'/api/auth/login',{headers:{origin:base},data:{email:'alice@example.invalid',password:'fixture-password-only'}});await enterprise.click();await page.locator('[data-wholesale-entry]').first().click();await page.waitForFunction(()=>document.querySelectorAll('.wholesale-product').length===11);
  assert.equal(await page.locator('h1').innerText(),'Compra Mayorista.');
  assert.equal(await page.locator('#wholesale-contact').getAttribute('href'),'https://wa.me/5492266488213');
  for(const tier of ['10','50','100']){await page.locator('#wholesale-tier').selectOption(tier);const price=await page.locator('[data-variant="700006"] .wholesale-price').innerText();assert.match(price,new RegExp({'10':'5.000','50':'4.500','100':'3.900'}[tier]));}
  await page.locator('#wholesale-tier').selectOption('10');
  assert.equal(await page.locator('.wholesale-photo img').count(),10);
+ await page.locator('.wholesale-photo img').evaluateAll(images=>images.forEach(image=>image.loading='eager'));
  await page.waitForFunction(()=>[...document.querySelectorAll('.wholesale-photo img')].every(i=>i.complete&&i.naturalWidth>0));
  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
  await page.screenshot({path:e+'/catalog-'+width+'.png',fullPage:true});

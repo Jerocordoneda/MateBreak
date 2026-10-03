@@ -1,0 +1,9 @@
+{
+  "projectRef": "rxccjczyywhewqqdfgxm",
+  "expectedSiteUrl": "https://matebreak-staging.vercel.app",
+  "preserveRedirectUrls": ["https://matebreak-staging.vercel.app/auth/callback"],
+  "addRedirectUrl": "https://matebreak-staging.vercel.app/auth/callback?volver=mayorista",
+  "status": "prepared_only_requires_deployment_authorization",
+  "smtpChanges": false,
+  "providerChanges": false
+}

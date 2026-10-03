@@ -36,7 +36,7 @@ export function securityMiddleware({ origin, production }) {
     if (!req.path.startsWith('/api/')) return next();
     res.set('Cache-Control', 'private, no-store');
     const route = req.path.slice(4);
-    const [, category, limit] = policy.find(([pattern]) => pattern.test(route)) ?? [null, 'api', 180];
+    const [, category, limit] = policy.find(([pattern,category]) => pattern.test(route) && (category!=='wholesale_submit'||req.method==='POST')) ?? [null, 'api', 180];
     const now = Date.now();
     for (const [key, value] of buckets) if (value.until <= now) buckets.delete(key);
     const key = `${req.socket.remoteAddress}:${category}`;

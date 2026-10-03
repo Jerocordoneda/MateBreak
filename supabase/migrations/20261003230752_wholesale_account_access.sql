@@ -13,6 +13,14 @@ grant execute on function public.mb_wholesale_access(uuid,uuid) to service_role;
 
 -- Nullable ownership keeps historical guest leads and events untouched.
 alter table private.wholesale_request add column account_id uuid references auth.users(id);
+alter table private.wholesale_request add constraint wholesale_account_owner_matches check(account_id is null or owner_hash=md5('matebreak-account:'||account_id::text)||md5('wholesale-account:'||account_id::text));
+create function private.wholesale_account_immutable() returns trigger language plpgsql security invoker set search_path='' as $$
+begin
+ if old.account_id is not null and new.account_id is distinct from old.account_id then raise exception 'La cuenta de la solicitud no se puede cambiar';end if;
+ return new;
+end $$;
+revoke all on function private.wholesale_account_immutable() from public,anon,authenticated;
+create trigger wholesale_account_immutable before update of account_id on private.wholesale_request for each row execute function private.wholesale_account_immutable();
 create index wholesale_request_account_date on private.wholesale_request(account_id,created_at desc) where account_id is not null;
 grant update(account_id) on private.wholesale_request to service_role;
 -- Legacy capability is no longer an exposed RPC; internal reuse preserves its
@@ -40,3 +48,4 @@ begin
 end $$;
 revoke all on function public.mb_wholesale_submit_account(uuid,uuid,uuid,jsonb,jsonb,text),public.mb_wholesale_own(uuid,uuid,uuid) from public,anon,authenticated;
 grant execute on function public.mb_wholesale_submit_account(uuid,uuid,uuid,jsonb,jsonb,text),public.mb_wholesale_own(uuid,uuid,uuid) to service_role;
+notify pgrst,'reload schema';

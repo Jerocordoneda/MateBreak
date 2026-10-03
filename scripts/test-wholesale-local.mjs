@@ -53,5 +53,5 @@ try{
  assert.equal(read(`select public.mb_wholesale_quote(${l(items)});`).eligible,false,'minimum is server configuration');
  assert.throws(()=>q(`set role service_role;select private.mb_wholesale_submit(${l(owner)},'22222222-2222-4222-8222-222222222222',${l(buyer)},${l(items)},null);`));
  assert.equal(q('select count(*) from private.wholesale_request;'),'1');
- console.log('PASS isolated 29-migration rehearsal; catalog/minimum/authoritative prices; 3 concurrent identical submissions = 1 lead/event; RLS/ACL/role denial; attribution immutable; transitions enforced; zero orders/payments/stock effects');
+ console.log('PASS isolated 31-migration rehearsal; catalog/minimum/authoritative prices; 3 concurrent identical submissions = 1 lead/event; RLS/ACL/role denial; attribution immutable; transitions enforced; zero orders/payments/stock effects');
 }finally{db.close();}
