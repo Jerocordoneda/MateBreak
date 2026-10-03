@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {createWholesaleDatabase,seedWholesale,literal as l} from './wholesale-local-runtime.mjs';
 const db=createWholesaleDatabase(),q=db.query,owner='a'.repeat(64),key='11111111-1111-4111-8111-111111111111';
 const buyer={nombre:'Prueba Local',email:'fixture@example.invalid',whatsapp:'1100000000',localidad:'Tandil',provincia:'Buenos Aires',empresa:'Empresa sintética',comentarios:'Logo ficticio'};
-const items=[{id:'900001',cantidad:10}],invoke=()=>`select public.mb_wholesale_submit(${l(owner)},${l(key)},${l(buyer)},${l(items)},'seller01');`;
+const items=[{id:'900001',cantidad:10}],invoke=()=>`select private.mb_wholesale_submit(${l(owner)},${l(key)},${l(buyer)},${l(items)},'seller01');`;
 try{
  q(readFileSync(new URL('../supabase/tests/guest-checkout.sql',import.meta.url),'utf8'));
  assert.equal(q('select count(*) from public.pedido;'),'0');
@@ -20,7 +20,7 @@ try{
  assert.throws(()=>q('set role authenticated;select public.mb_wholesale_catalog(null);'));
  assert.throws(()=>q('set role service_role;select public.mb_wholesale_manage(null,\'list\');'));
  assert.throws(()=>q('set role service_role;'+invoke().replace('seller01','unknown')));
- assert.throws(()=>q(`set role service_role;select public.mb_wholesale_submit(${l(owner)},${l(key)},${l(buyer)},${l([{id:'900001',cantidad:5},{id:'900004',cantidad:5}])},null);`));
+ assert.throws(()=>q(`set role service_role;select private.mb_wholesale_submit(${l(owner)},${l(key)},${l(buyer)},${l([{id:'900001',cantidad:5},{id:'900004',cantidad:5}])},null);`));
  const responses=await Promise.all(Array.from({length:3},()=>db.parallel('set role service_role;'+invoke())));
  for(const r of responses)assert.equal(JSON.parse(r).number,'MAY-0001');
  assert.equal(q('select count(*) from private.wholesale_request;'),'1');assert.equal(q('select count(*) from private.wholesale_event;'),'1');
@@ -51,7 +51,7 @@ try{
  assert.equal(read(`select public.mb_wholesale_quote(${l([{id:'900004',cantidad:5}])});`).units,10,'explicit combo equivalence counted once');
  q('update private.wholesale_settings set minimum_units=20;');
  assert.equal(read(`select public.mb_wholesale_quote(${l(items)});`).eligible,false,'minimum is server configuration');
- assert.throws(()=>q(`set role service_role;select public.mb_wholesale_submit(${l(owner)},'22222222-2222-4222-8222-222222222222',${l(buyer)},${l(items)},null);`));
+ assert.throws(()=>q(`set role service_role;select private.mb_wholesale_submit(${l(owner)},'22222222-2222-4222-8222-222222222222',${l(buyer)},${l(items)},null);`));
  assert.equal(q('select count(*) from private.wholesale_request;'),'1');
  console.log('PASS isolated 29-migration rehearsal; catalog/minimum/authoritative prices; 3 concurrent identical submissions = 1 lead/event; RLS/ACL/role denial; attribution immutable; transitions enforced; zero orders/payments/stock effects');
 }finally{db.close();}

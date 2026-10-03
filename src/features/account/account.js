@@ -1,3 +1,5 @@
+import {returnPath} from './return-path.mjs';
+const returnIntent=new URLSearchParams(location.search).get('volver');
 import {element,message,api,button,overview,setRequestScope} from './ui.mjs';
 const $=selector=>document.querySelector(selector);
 export {element,message,api,button,overview} from './ui.mjs';
@@ -22,6 +24,7 @@ async function load(){
   $('#signin').hidden=!!usuario;$('#signin-layout').hidden=!!usuario;$('#session-actions').hidden=!usuario;
   $('#account-title').replaceChildren(document.createTextNode(usuario?{cliente:'Tu espacio, tu ritual',vendedor:'Tus ventas, al día',administrador:'MateBreak, en orden'}[usuario.rol]||'Mi cuenta':'Tu próxima pausa'),element('span','.','accent'));
   if(!usuario)return true;
+  if(returnPath(returnIntent)==='/mayorista'){location.replace('/mayorista');return true;}
   $('#role').textContent={administrador:'Administrador',vendedor:'Vendedor',cliente:'Cliente'}[usuario.rol];
   if(usuario.rol==='administrador'){
    $('#admin-area').hidden=false;
@@ -37,7 +40,7 @@ async function load(){
 form('#signin',async(data,event)=>{
  const action=$('#signin').dataset.mode;
  if(action==='registro'&&data.password!==data.confirmacion)throw Error('Las contraseñas no coinciden. Revisalas antes de continuar.');
- const {confirmacion,...fields}=data;const result=await api('/auth/'+action,'POST',fields);$('#signin [name=password]').value='';$('#signin [name=confirmacion]').value='';
+ const {confirmacion,...fields}=data;const result=await api('/auth/'+action,'POST',{...fields,...(returnPath(returnIntent)?{volver:returnIntent}:{})});$('#signin [name=password]').value='';$('#signin [name=confirmacion]').value='';
  if(action==='registro'&&!result.sesion_iniciada){$('#signin').hidden=true;$('#register-success').hidden=false;$('#register-success-copy').textContent=result.mensaje;message('Revisá tu email para continuar.');return;}
  if(!await load())return;message('Ya ingresaste a tu cuenta.');
  if(currentUser?.rol==='cliente'&&new URLSearchParams(location.search).get('volver')==='carrito')location.assign('/carrito');
@@ -54,5 +57,6 @@ $('#new-address').onclick=()=>{$('#address-form').reset();$('#address-details').
 $('#login-tab').onclick=()=>authMode('login');$('#register-tab').onclick=()=>authMode('registro');
 $('#password-toggle').onclick=()=>{const input=$('#signin [name=password]'),visible=input.type==='password';input.type=visible?'text':'password';$('#password-toggle').textContent=visible?'Ocultar':'Ver';$('#password-toggle').setAttribute('aria-label',visible?'Ocultar contraseña':'Mostrar contraseña');$('#password-toggle').setAttribute('aria-pressed',String(visible));};
 window.addEventListener('pageshow',event=>{if(event.persisted)load();});
+if(returnPath(returnIntent)==='/mayorista')$('#signin-description').textContent='Ingresá o creá tu cuenta para continuar con tu pedido mayorista.';
 if(new URLSearchParams(location.search).get('auth')==='error')message('No pudimos confirmar el acceso. El enlace puede haber vencido. Si ya confirmaste tu email, intentá iniciar sesión.',true);
 load();

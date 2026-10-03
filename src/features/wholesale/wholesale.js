@@ -1,7 +1,8 @@
 const $=s=>document.querySelector(s),money=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
 const node=(tag,text)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
-async function api(path,data){const r=await fetch('/api/mayorista/'+path,{method:data?'POST':'GET',credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},...(data?{body:JSON.stringify(data)}:{})});const body=await r.json();if(!r.ok)throw Object.assign(Error(body.error||'No pudimos consultar el servidor'),{status:r.status});return body;}
+async function api(path,data){const r=await fetch('/api/mayorista/'+path,{method:data?'POST':'GET',credentials:'same-origin',headers:data?{'Content-Type':'application/json'}:{},...(data?{body:JSON.stringify(data)}:{})});const body=await r.json();if(r.status===401){invalidate();throw Object.assign(Error('Tu sesión venció. Volvé a ingresar.'),{status:401});}if(!r.ok)throw Object.assign(Error(body.error||'No pudimos consultar el servidor'),{status:r.status});return body;}
 let catalog,quote,revision=0,key,payload,saved=false,busy=false;const selected=new Map();
+function invalidate(){revision++;catalog=null;quote=null;selected.clear();$('#wholesale-private').hidden=true;$('#wholesale-catalog').replaceChildren();$('#wholesale-lines').replaceChildren();$('#wholesale-form').reset();$('#wholesale-message').value='';payload=null;location.replace('/mi-cuenta?volver=mayorista');}
 const status=text=>$('#wholesale-status').textContent=text;
 function controls(){const ready=!!quote?.eligible&&!!catalog?.contactReady&&!saved&&!busy;$('#wholesale-continue').disabled=!ready;$('#wholesale-submit').disabled=!ready;}
 function renderQuote(data){quote=data;$('#wholesale-tier-current').textContent='Tramo aplicado: '+(data.tier>=100?'100+':data.tier>=50?'50–99':'10–49')+' unidades · '+(data.benefit||'Grabado + packaging de regalo');$('#wholesale-lines').replaceChildren(...data.items.map(i=>{const p=node('p',`${i.quantity} × ${i.name} · ${money.format(i.unitPrice)} c/u · ${money.format(i.subtotal)}`);p.className='wholesale-line';return p;}));$('#wholesale-total').textContent=money.format(data.total);$('#wholesale-progress').max=data.minimum;$('#wholesale-progress').value=Math.min(data.units,data.minimum);$('#wholesale-minimum').textContent=`${data.units} unidades elegibles. ${data.remaining?'Faltan '+data.remaining+' para continuar.':'Mínimo alcanzado.'}`;controls();}
@@ -30,10 +31,10 @@ async function load(){try{
  catalog=await api('catalogo'+(new URL(location.href).searchParams.has('ref')?'?ref='+encodeURIComponent(new URL(location.href).searchParams.get('ref')):''));
  $('#minimum').textContent=catalog.minimum;$('#wholesale-progress').max=catalog.minimum;
  if(catalog.contactUrl){$('#wholesale-contact').href=catalog.contactUrl;$('#wholesale-contact').hidden=false;}
- renderCatalog();const province=$('[name=provincia]');province.replaceChildren(new Option('Seleccionar provincia',''),...catalog.provinces.map(p=>new Option(p.name,p.name)));
+ $('#wholesale-private').hidden=false;renderCatalog();const province=$('[name=provincia]');province.replaceChildren(new Option('Seleccionar provincia',''),...catalog.provinces.map(p=>new Option(p.name,p.name)));
  status(catalog.items.length?(catalog.contactReady?'Elegí productos para tu solicitud. Grabado y packaging de regalo incluidos.':'Contacto mayorista pendiente de configuración. Podés explorar el catálogo.'):'Todavía no hay ofertas mayoristas habilitadas.');
  $('#wholesale-retry').hidden=true;controls();
- }catch(e){status(e.message);$('#wholesale-retry').hidden=false;}}
+ }catch(e){if(e.status!==401){status(e.message);$('#wholesale-retry').hidden=false;}}}
 
 $('#wholesale-retry').onclick=load;
 $('#wholesale-continue').onclick=()=>{if(!quote?.eligible)return;$('#wholesale-buyer').hidden=false;$('#wholesale-buyer').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth'});$('[name=nombre]').focus({preventScroll:true});};
@@ -42,4 +43,6 @@ $('#wholesale-form').onsubmit=async e=>{e.preventDefault();if(busy||saved||!quot
 if(e.status===400){payload=null;for(const c of $('#wholesale-form').elements)c.disabled=false;for(const c of $('#wholesale-catalog').querySelectorAll('input,button'))c.disabled=false;}$('#wholesale-submit').disabled=false;}finally{busy=false;controls();}};
 $('#wholesale-copy').onclick=async()=>{try{await navigator.clipboard.writeText($('#wholesale-message').value);status('Mensaje copiado. La solicitud sigue guardada.');}catch{status('Seleccioná y copiá el mensaje preparado.');$('#wholesale-message').focus();$('#wholesale-message').select();}};
 $('#wholesale-new').onclick=()=>{sessionStorage.removeItem('mb_wholesale_request_key');location.assign('/mayorista');};
+window.addEventListener('pageshow',event=>{if(event.persisted){$('#wholesale-private').hidden=true;load();}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&catalog)load();});
 load();

@@ -20,7 +20,7 @@ try {
  assert.equal(mixed.units,50);assert.equal(mixed.total,350000);
  const owner='a'.repeat(64),key='11111111-1111-4111-8111-111111111111';
  const buyer={nombre:'Prueba local',email:'local@example.invalid',whatsapp:'1100000000',localidad:'Tandil',provincia:'Buenos Aires'};
- const invoke=`select public.mb_wholesale_submit(${l(owner)},${l(key)},${l(buyer)},${l([{id:'700006',cantidad:10,price:1}])},null);`;
+ const invoke=`select private.mb_wholesale_submit(${l(owner)},${l(key)},${l(buyer)},${l([{id:'700006',cantidad:10,price:1}])},null);`;
  const first=read(invoke);assert.equal(first.quote.total,50000);
  q('update private.wholesale_commercial_offer set price_10=4900 where id=700006;');
  assert.equal(read(invoke).quote.total,50000);
