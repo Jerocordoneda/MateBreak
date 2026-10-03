@@ -24,5 +24,5 @@ export function whatsappNumber(value){if(!/^[1-9]\d{9,14}$/.test(value||''))thro
 export function whatsappMessage(receipt){
  if(!/^MAY-\d{4,}$/.test(receipt.number)||!receipt.quote?.items?.length)throw Error('Respuesta comercial inválida');
  const lines=receipt.quote.items.map(i=>`${i.quantity} × ${String(i.name).replace(/[\r\n]/g,' ').slice(0,150)}`);
- return `Hola MateBreak, quiero consultar por mi solicitud mayorista ${receipt.number}.\n\nProductos:\n${lines.map(l=>'- '+l).join('\n')}\n\nImporte preliminar: ${new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(receipt.quote.total)}.\n\nPersonalización y entrega: a coordinar; dejé comentarios en la solicitud.\nQuiero conversar para confirmar el presupuesto y luego coordinar la seña del 50%.`;
+ return `Hola MateBreak, quiero consultar por mi solicitud mayorista ${receipt.number}.\n\nProductos:\n${lines.map(l=>'- '+l).join('\n')}\n\nImporte preliminar: ${new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(receipt.quote.total)}.\n\nPersonalización y entrega: a coordinar; dejé comentarios en la solicitud.\nQuiero conversar para confirmar el presupuesto y luego coordinar la seña correspondiente.`;
 }

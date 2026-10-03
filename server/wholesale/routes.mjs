@@ -16,8 +16,8 @@ export function wholesaleRoutes(app,{admin,config}){
   const catalog=await rpc('mb_wholesale_catalog',{p_ref:ref});if(!catalog.referenceValid)throw fail(400,'Referencia comercial no disponible');
   if(!/^[a-f0-9]{64}$/.test(cookie(req,ownerName)||''))setCookie(res,ownerName,randomBytes(32).toString('hex'));
   if(!existing)setCookie(res,refName,ref||'web');
-  const items=catalog.items.map(i=>{const {imagePath,...item}=i;return{...item,image:imagePath?admin.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl:null};});
-  res.json({items,minimum:catalog.minimum,provinces,contactReady:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||'')});
+  const items=catalog.items.map(i=>{const {imagePath,...item}=i;return{...item,image:item.image||(imagePath?admin.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl:null)};});
+  res.json({items,minimum:catalog.minimum,provinces,contactReady:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||''),contactUrl:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||'')?'https://wa.me/'+config.wholesaleWhatsapp:null});
  });
  app.post('/api/mayorista/cotizar',async(req,res)=>res.json(await rpc('mb_wholesale_quote',{p_items:selection(req.body?.items)})));
  app.post('/api/mayorista/solicitudes',async(req,res)=>{
