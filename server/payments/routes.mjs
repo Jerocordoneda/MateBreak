@@ -11,6 +11,8 @@ export function paymentRoutes(app,{admin,mercadoPago}) {
   }
   // Browser/body status are never evidence. SQL locks the order and reconciles
   // version/digest, confirmation and financial hold in one transaction.
+  const queued=await admin.rpc('mb_queue_payment_reconciliation',{p_payment_id:paymentId});
+  if(queued.error)throw fail(503,'No pudimos guardar la conciliación.');
   const outcome=await reconcilePayment({admin,provider:mercadoPago,paymentId});
   if(outcome?.review)securityEvent('PAYMENT_REVIEW',req,{status:409});
   res.sendStatus(200);

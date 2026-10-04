@@ -197,6 +197,21 @@
       "file": "20261004075948_immutable_email_delivery.sql",
       "status": "local-only-commercial-candidate",
       "sha256LF": "673f85060b05c443c2252f81c1935c66c0add54ade51e6cc4c565c0f8abec4cc"
+    },
+    {
+      "file": "20261004085004_preproduction_session_rate_guards.sql",
+      "status": "local-only-preproduction-candidate",
+      "sha256LF": "0335a63e0df3a5a89e3ef2a303a2c505a8d92c22ade31940e729d02c223fc921"
+    },
+    {
+      "file": "20261004085438_controlled_delivery_reconciliation_workers.sql",
+      "status": "local-only-preproduction-candidate",
+      "sha256LF": "8d03507715cb819bc7b3eef706941f4604a7c1fbd8f7d24f8ceee72eeecc24db"
+    },
+    {
+      "file": "20261004091411_atomic_sensitive_session_gate.sql",
+      "status": "local-only-preproduction-candidate",
+      "sha256LF": "3fede292e0585b1f10f699310b77b8cec6af534f93437680604f20f3b1b5044e"
     }
   ]
 }

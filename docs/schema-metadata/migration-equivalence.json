@@ -304,5 +304,32 @@
     "localTokenMd5": "c566fe17a21283175cc26421dbe973b0",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261004085004_preproduction_session_rate_guards.sql",
+    "version": "20261004085004",
+    "name": "preproduction_session_rate_guards",
+    "remoteVersion": null,
+    "localTokenMd5": "76c89e2dadfa04dc08c83164f81c3605",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261004085438_controlled_delivery_reconciliation_workers.sql",
+    "version": "20261004085438",
+    "name": "controlled_delivery_reconciliation_workers",
+    "remoteVersion": null,
+    "localTokenMd5": "e3688f1a92e114f3a03f9b927aaef3c6",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261004091411_atomic_sensitive_session_gate.sql",
+    "version": "20261004091411",
+    "name": "atomic_sensitive_session_gate",
+    "remoteVersion": null,
+    "localTokenMd5": "52f4293dd20944ba489107390037f377",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]

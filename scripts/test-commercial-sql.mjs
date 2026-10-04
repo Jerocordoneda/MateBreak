@@ -67,7 +67,7 @@ try{
  assert.match(q(receipt),/"matched": true/);assert.match(q(receipt),/"duplicate": true/);
  assert.throws(()=>q(receipt.replace("repeat('a',64)","repeat('c',64)")),/Receipt conflictivo/);
  // All adapters below have injected fake transports. No network provider calls.
- const g=create('8'.repeat(64)),rpcNames=new Set(['mb_reconcile_mp_payment','mb_claim_shipment','mb_finish_shipment','mb_record_verified_dispatch','mb_claim_order_email','mb_email_delivery_for_claim','mb_prepare_email_delivery','mb_finish_email_delivery','mb_finish_order_email']);
+ const g=create('8'.repeat(64)),rpcNames=new Set(['mb_reconcile_mp_payment','mb_claim_shipment','mb_finish_shipment','mb_record_verified_dispatch','mb_claim_order_email','mb_claim_order_email_controlled','mb_email_delivery_for_claim','mb_prepare_email_delivery','mb_finish_email_delivery','mb_finish_order_email']);
  const admin={rpc:async(name,args={})=>{
   assert.ok(rpcNames.has(name));assert.ok(Object.keys(args).every(k=>/^p_[a-z_]+$/.test(k)));
   const raw=q(`set role service_role;select public.${name}(${Object.entries(args).map(([k,v])=>k+'=>'+lit(v)).join(',')});`);return{data:raw?JSON.parse(raw):null,error:null};
@@ -89,13 +89,14 @@ try{
  const sent=[];const mail=createResend({enabled:true,apiKey:'synthetic'},async(url,options)=>{
   assert.equal(url,'https://api.resend.com/emails');sent.push({key:options.headers['Idempotency-Key'],payload:JSON.parse(options.body)});return{ok:true,json:async()=>({id:randomUUID()})};
  });
- const worker={admin,adapter:mail,allowReal:true,encryptionKey:'a'.repeat(64),from:'orders@example.test',origin:'https://matebreak.test'};
+ const worker={admin,adapter:mail,allowReal:true,rolloutAfter:'2000-01-01T00:00:00Z',encryptionKey:'a'.repeat(64),from:'orders@example.test',origin:'https://matebreak.test'};
  while(await deliverDurableOrderEmail(worker)){}
- assert.equal(sent.length,3);assert.equal(new Set(sent.map(s=>s.key)).size,3);
- assert.equal(q(`select count(*) from private.order_email_event where pedido_id=${lit(g.id)} and state='sent';`),'3');
+ assert.equal(sent.length,2);assert.equal(new Set(sent.map(s=>s.key)).size,2);
+ assert.equal(q(`select count(*) from private.order_email_event where pedido_id=${lit(g.id)} and state='sent';`),'2');
+ assert.equal(q(`select count(*) from private.order_email_event where pedido_id=${lit(g.id)} and state='superseded';`),'1');
  assert.equal(q(`select estado from public.pedido where id=${lit(g.id)}`),'enviado');
  assert.ok(sent.some(s=>s.payload.subject.includes('camino')));assert.ok(sent.every(s=>s.payload.html.includes('/src/pages/pedido.html#')));
- console.log('PASS isolated integrated chain: authoritative payment -> paid order -> one MiCorreo parcel import -> correlated dispatch -> three immutable Resend messages/private links; all transports injected');
+ console.log('PASS isolated integrated chain: authoritative payment -> paid order -> one MiCorreo parcel import -> correlated dispatch -> two distinct immutable Resend messages; redundant unsent receipt superseded; all transports injected');
  console.log('PASS isolated SQL: service-only/RLS, concurrent dedupe, late approval, refunds, partial refunds, chargeback, stale/conflicting versions, dispatch hold and unchanged stock');
  console.log('PASS isolated email SQL: concurrent claims, immutable encrypted envelope, one capability per event, atomic accepted provider id and no stale claim reuse');
 }finally{db.close();}

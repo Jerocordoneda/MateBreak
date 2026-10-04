@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {loadConfig} from '../server/config/environment.mjs';
 import {assertStagingConfig,PROTECTED_PRODUCTION_REF} from '../server/config/staging.mjs';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 const ref='abcdefghijklmnopqrst';
 const env={APP_ENV:'staging',NODE_ENV:'development',SUPABASE_STAGING_PROJECT_REF:ref,SUPABASE_URL:`https://${ref}.supabase.co`,SUPABASE_PUBLISHABLE_KEY:'synthetic',SUPABASE_SECRET_KEY:'synthetic',APP_ORIGIN:'https://stage.example.test',SHIPPING_MODE:'mock',PAYMENTS_MODE:'mock',MATEBREAK_STAGING_PERSIST_MOCK:'1'};
 test('staging validates before connections and requires exact isolated project, HTTPS and mocks',()=>{

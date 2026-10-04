@@ -6,7 +6,7 @@ const fail = (status, message) => Object.assign(new Error(message), { status });
 const integer = value => Number.isInteger(value) && value >= 0 && value <= 1000000;
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
-export function inventoryRoutes(app, { admin, authFactory }) {
+export function inventoryRoutes(app, { admin, authFactory, verifyLiveSession }) {
   const protect = async (req, res, next) => {
     res.set({ 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex, nofollow', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'" });
     // API identity is already verified by getUser(). HTML/assets require the
@@ -20,6 +20,7 @@ export function inventoryRoutes(app, { admin, authFactory }) {
       if (req.path === '/interno/inventario') return res.redirect('/mi-cuenta');
       throw fail(401, 'Iniciá sesión para continuar');
     }
+    await verifyLiveSession(req,admin);
     const { data, error } = await admin.rpc('mb_inventario_autorizado', { p_usuario_id: req.user.id });
     if (error) throw fail(503, 'No se pudo verificar el acceso. Reintentá.');
     if (data !== true) throw fail(403, 'Acceso exclusivo del equipo de inventario');

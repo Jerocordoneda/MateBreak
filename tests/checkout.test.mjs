@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHmac } from 'node:crypto';
-import { createApp, hashToken } from '../server/app.mjs';
+import { createApp, hashToken } from './helpers/business-app.mjs';
 import { shippingProgress, calculateTotals, validateRecipient } from '../server/checkout/policy.mjs';
 import { createCorreoArgentino } from '../server/shipping/correo-argentino.mjs';
 import { createMercadoPago, verifyMercadoPagoSignature } from '../server/payments/mercadopago.mjs';

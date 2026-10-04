@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createCorreoArgentino,numericPrice,MiCorreoError} from '../server/shipping/correo-argentino.mjs';
 import {runShipmentJob} from '../server/shipping/jobs.mjs';
 import {shippingSnapshot} from '../server/shipping/snapshot.mjs';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 const cfg={username:'fake-api-user',password:'fake-api-secret',customerId:'009fake',originPostalCode:'7000'};
 const parcel={weight:500,height:10,width:20,length:30};
 const request={destinationPostalCode:'1704',deliveryType:'D',dimensions:parcel};

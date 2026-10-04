@@ -44,7 +44,13 @@ export async function testCommerceRC({admin,a,b,actorId,variant,recipient,checke
   const refs=[],provider=createMockShipping(),importMock=provider.importShipment;
   provider.importShipment=async payload=>{refs.push(payload.extOrderId);assert.deepEqual(payload.shipping.deliveryType,'D');return importMock(payload);};
   const results=await Promise.all(dimensions.map(()=>runShipmentJob({admin,provider})));
-  assert.equal(results.filter(j=>j.processed).length,dimensions.length);
+  // Financial reconciliation serializes claims on the parent order. A worker
+  // may find no claim while that row is locked; the next bounded invocation
+  // can take an untouched pending parcel. Never retry an ambiguous import.
+  assert.ok(results.some(j=>j.processed));
+  for(let n=0;n<dimensions.length&&refs.length<dimensions.length;n++)
+    assert.equal((await runShipmentJob({admin,provider})).processed,true);
+  assert.equal(refs.length,dimensions.length);
   assert.equal(new Set(refs).size,dimensions.length);
   for(let i=1;i<=dimensions.length;i++)assert.ok(refs.includes(`MB-${order.id}-${i}`));
   assert.deepEqual(await runShipmentJob({admin,provider}),{processed:false});

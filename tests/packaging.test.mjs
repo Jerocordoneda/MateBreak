@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MATE_BOX, SET_BOX, planPackages, quotePackages } from '../server/shipping/packaging.mjs';
-import { createApp } from '../server/app.mjs';
+import { createApp } from './helpers/business-app.mjs';
 
 const products = [
   { id: '1', tipo: 'simple', categorias: ['mates-grabados'] },

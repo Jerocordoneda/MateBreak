@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../server/app.mjs';
+import { createApp } from './helpers/business-app.mjs';
 
 async function fixture(t, user = null, authorized = false, authError = null) {
  const calls = [];

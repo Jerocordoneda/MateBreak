@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp } from '../server/app.mjs';
+import { createApp } from './helpers/business-app.mjs';
 
 test('persisted mock checkout fails closed outside local Supabase and mock providers', () => {
   const config = { localPersistMock:true, url:'http://127.0.0.1:54321',

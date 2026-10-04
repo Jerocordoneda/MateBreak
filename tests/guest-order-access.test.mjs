@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 import {newCapability,digestCapability,isCapability} from '../server/orders/private-access.mjs';
 import {safeCardPresentation} from '../server/payments/card-presentation.mjs';
 const orderId='11111111-1111-4111-8111-111111111111';

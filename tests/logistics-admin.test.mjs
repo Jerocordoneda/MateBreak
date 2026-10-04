@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 const actor=randomUUID(),order=randomUUID();
 const body={action:'safe_retry',actionId:randomUUID(),expectedState:'revision',expectedAttempts:1,expectedClaimId:randomUUID(),confirmed:true,source:'portal',reference:'CASE-LOCAL'};
 async function fixture(t,{user={id:actor},role='administrador',error=null}={}){

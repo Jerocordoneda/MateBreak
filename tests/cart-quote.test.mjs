@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {quoteCart} from '../server/checkout/cart-quote.mjs';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 
 const selection = quantity => ({id:'cart-fixture',estado:'abierto',moneda:'ARS',total:10000*quantity,
   items:[{producto_id:'13',variante_id:'2',nombre:'Fixture',cantidad:quantity,precio:10000,subtotal:10000*quantity,activo:true}]});

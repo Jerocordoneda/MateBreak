@@ -96,8 +96,12 @@ try {
     where n.nspname in ('public','private') and p.prosecdef and
     (not (coalesce(p.proconfig,'{}') @> array['search_path=""'] or coalesce(p.proconfig,'{}') @> array['search_path=pg_catalog'])
      or (has_schema_privilege('anon',n.oid,'USAGE') and has_function_privilege('anon',p.oid,'EXECUTE'))
-     or (has_schema_privilege('authenticated',n.oid,'USAGE') and has_function_privilege('authenticated',p.oid,'EXECUTE')));`);
+     or (has_schema_privilege('authenticated',n.oid,'USAGE') and has_function_privilege('authenticated',p.oid,'EXECUTE')
+       and p.oid<>'private.mb_current_session_live()'::regprocedure));`);
   assert.equal(Number(unsafe),0,'Unsafe SECURITY DEFINER exposure');
+  assert.equal(await mustSql("select has_function_privilege('anon','private.mb_current_session_live()','execute');"),'f');
+  assert.equal(await mustSql("select has_function_privilege('authenticated','private.mb_lock_live_session(uuid,uuid)','execute');"),'f');
+  assert.equal(await mustSql("select has_table_privilege('authenticated','auth.sessions','select');"),'f');
   const forged=await fetch(status.API_URL+'/rest/v1/perfil?select=id',{headers:{apikey:status.ANON_KEY,Authorization:'Bearer invalid.signature.token'}});
   assert.equal(forged.status,401);
   console.log('PASS Auth/JWT, direct RLS A/B, anon, private schema, 11 service-only RPCs, SECURITY DEFINER');

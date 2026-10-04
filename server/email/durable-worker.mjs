@@ -13,16 +13,17 @@ export function openMail(box,{key,eventId}) {
  const cipher=createDecipheriv('aes-256-gcm',keyBytes(key),Buffer.from(iv,'base64url'));cipher.setAAD(Buffer.from(eventId));cipher.setAuthTag(Buffer.from(tag,'base64url'));
  return Buffer.concat([cipher.update(Buffer.from(body,'base64url')),cipher.final()]).toString('utf8');
 }
-export async function deliverDurableOrderEmail({admin,adapter,allowReal=false,encryptionKey,from,origin,contact,whatsapp,storageOrigin,now=Date.now}) {
+export async function deliverDurableOrderEmail({admin,adapter,allowReal=false,encryptionKey,from,replyTo,testRecipient,eventId,rolloutAfter,origin,contact,whatsapp,storageOrigin,now=Date.now}) {
  if(!adapter?.mock&&(!allowReal||!adapter?.ready))throw Error('Real email transport disabled');
  keyBytes(encryptionKey);
  const rpc=async(name,args={})=>{const r=await admin.rpc(name,args);if(r.error)throw Error('Email persistence failed');return r.data;};
- const event=await rpc('mb_claim_order_email');if(!event)return false;
+ if(!adapter.mock&&!eventId&&!rolloutAfter)throw Error('Explicit event or rollout cutoff required');
+ const event=await rpc(eventId||rolloutAfter?'mb_claim_order_email_controlled':'mb_claim_order_email',eventId||rolloutAfter?{p_event_id:eventId??null,p_after:rolloutAfter??null}:{});if(!event)return false;
  try{
   let envelope=await rpc('mb_email_delivery_for_claim',{p_claim_id:event.claim_id});
   if(!envelope){
    const token=newCapability(),message=renderOrderEmail({kind:event.kind,order:event.order,orderUrl:origin+'/src/pages/pedido.html#'+token,origin,contact,whatsapp,storageOrigin});
-   const payload=emailPayload({from,to:event.email,message});
+   const payload=emailPayload({from,to:testRecipient||event.email,replyTo,message});
    envelope=await rpc('mb_prepare_email_delivery',{p_claim_id:event.claim_id,p_ciphertext:sealMail(payload,{key:encryptionKey,eventId:event.id}),p_digest:mailDigest(payload),p_link_hash:digestCapability(token)});
   }
   // Margin below Resend's 24h retention; retries never refresh this timestamp.

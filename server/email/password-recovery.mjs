@@ -1,9 +1,9 @@
-// Prepared actions, deliberately not registered as HTTP routes. Auth emails
-// remain owned by Supabase SMTP; no alternative registration delivery channel.
+// Actions registered by server/auth/recovery.mjs with explicit opt-in. Auth
+// emails remain owned by Supabase SMTP; no alternative registration channel.
 const fail=(status,message)=>Object.assign(Error(message),{status});
-export async function requestPasswordRecovery({auth,email,origin,enabled=false,onProviderOutcome=()=>{}}) {
+export async function requestPasswordRecovery({auth,email,origin,enabled=false,allowLocal=false,onProviderOutcome=()=>{}}) {
  if(!enabled)throw fail(503,'Recuperación de contraseña no habilitada');
- const u=new URL(origin);if(u.protocol!=='https:'||u.origin!==origin||u.username||u.password)throw fail(400,'Origen inválido');
+ const u=new URL(origin);if((u.protocol!=='https:'&&!(allowLocal&&u.protocol==='http:'&&['localhost','127.0.0.1','[::1]'].includes(u.hostname)))||u.origin!==origin||u.username||u.password)throw fail(400,'Origen inválido');
  if(typeof email!=='string'||email.length>254||! /^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(email.trim()))throw fail(400,'Indicá un email válido');
  // The future callback is exact and requires independent allowlist approval.
  let accepted=false;try{const result=await auth.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:origin+'/auth/recuperar'});accepted=!result.error;}catch{}

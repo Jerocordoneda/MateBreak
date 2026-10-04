@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {buyer,selection,whatsappMessage,whatsappNumber} from '../server/wholesale/policy.mjs';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 const person={nombre:' Prueba Local ',email:'FIXTURE@EXAMPLE.INVALID',whatsapp:'1100000000',localidad:'Tandil',provincia:' BUENOS AIRES ',empresa:'',comentarios:'No divulgar secret-marker'};
 test('wholesale canonical buyer, province and selection strip browser prices/attribution',()=>{const b=buyer({...person,role:'admin'});assert.equal(b.provincia,'Buenos Aires');assert.equal(b.email,'fixture@example.invalid');assert.equal(b.role,undefined);assert.deepEqual(selection([{id:2,cantidad:10,precio:1,stock:999,ref:'forged'}]),[{id:'2',cantidad:10}]);});
 test('wholesale rejects invalid contact, quantities, duplicate variants and unavailable contact',()=>{for(const data of [{...person,email:'not-email'},{...person,provincia:'Atlantis'},{...person,whatsapp:'abc'},{...person,comentarios:'x'.repeat(1001)}])assert.throws(()=>buyer(data));for(const data of [[],[{id:'2',cantidad:0}],[{id:'2',cantidad:1.2}],[{id:'2',cantidad:1001}],[{id:'2',cantidad:1},{id:2,cantidad:2}],[{id:'1e2',cantidad:10}]])assert.throws(()=>selection(data));assert.throws(()=>whatsappNumber(''));});

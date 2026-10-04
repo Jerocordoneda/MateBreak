@@ -3,9 +3,10 @@ const mailbox=v=>typeof v==='string'&&v.length<=254&&/^[^\s@<>]+@[^\s@<>]+\.[^\s
 export class MailDeliveryError extends Error {
  constructor(type,{safeToRetry=false,status=null}={}){super('Email provider delivery failed');Object.assign(this,{type,safeToRetry,status});}
 }
-export function emailPayload({from,to,message}) {
- if(!mailbox(from)||!mailbox(to)||typeof message?.subject!=='string'||!message.subject||message.subject.length>200||/[\r\n]/.test(message.subject)||typeof message.html!=='string'||typeof message.text!=='string'||message.html.length>200000||message.text.length>100000)throw new MailDeliveryError('invalid_payload');
- return JSON.stringify({from,to:[to],subject:message.subject,html:message.html,text:message.text});
+export function emailPayload({from,to,replyTo,message}) {
+ const sender=typeof from==='string'?from.match(/^MateBreak <([^<>]+)>$/)?.[1]||from:null;
+ if(!mailbox(sender)||/@gmail\.com$/i.test(sender)||!mailbox(to)||(replyTo!==undefined&&!mailbox(replyTo))||typeof message?.subject!=='string'||!message.subject||message.subject.length>200||/[\r\n]/.test(message.subject)||typeof message.html!=='string'||typeof message.text!=='string'||message.html.length>200000||message.text.length>100000)throw new MailDeliveryError('invalid_payload');
+ return JSON.stringify({from,to:[to],subject:message.subject,html:message.html,text:message.text,...(replyTo?{reply_to:replyTo}:{})});
 }
 export const mailDigest=payload=>createHash('sha256').update(payload).digest('hex');
 // Never wired into createApp or a scheduler. Disabled unless explicitly opted in.
@@ -15,7 +16,7 @@ export function createResend({apiKey,enabled=false}={},fetcher=fetch) {
   if(!enabled||!apiKey)throw new MailDeliveryError('disabled');
   if(typeof idempotencyKey!=='string'||!/^[A-Za-z0-9/_-]{1,256}$/.test(idempotencyKey)||typeof payload!=='string'||mailDigest(payload)!==digest)throw new MailDeliveryError('invalid_envelope');
   let data;try{data=JSON.parse(payload);}catch{throw new MailDeliveryError('invalid_payload');}
-  if(emailPayload({from:data.from,to:data.to?.length===1?data.to[0]:null,message:data})!==payload)throw new MailDeliveryError('invalid_payload');
+  if(emailPayload({from:data.from,to:data.to?.length===1?data.to[0]:null,replyTo:data.reply_to,message:data})!==payload)throw new MailDeliveryError('invalid_payload');
   let response;try{response=await fetcher('https://api.resend.com/emails',{method:'POST',redirect:'error',signal:AbortSignal.timeout(10000),headers:{Authorization:`Bearer ${apiKey}`,'Content-Type':'application/json','Idempotency-Key':idempotencyKey},body:payload});}catch{throw new MailDeliveryError('ambiguous');}
   // A timeout/5xx/malformed success can follow provider acceptance. Review it.
   if(!response.ok)throw new MailDeliveryError(response.status===429?'rate_limit':response.status>=500?'ambiguous':response.status===409?'idempotency_conflict':'rejected',{status:response.status,safeToRetry:response.status===429});

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 async function fixture(t,user=null,role='cliente'){
  const calls=[],{app}=createApp({url:'https://example.supabase.co',publishable:'test',secret:'test',origin:'https://matebreak.test',production:true},{authFactory:()=>({auth:{getUser:async()=>({data:{user}})}}),admin:{rpc:async(name,args)=>{calls.push({name,args});return {data:name==='mb_rol'?role:name==='mb_carrito_cantidad'?5:name==='mb_inventario_autorizado'?false:[],error:null};}}});
  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>new Promise(r=>server.close(r)));return {calls,request:(route,options)=>fetch(`http://127.0.0.1:${server.address().port}${route}`,options)};

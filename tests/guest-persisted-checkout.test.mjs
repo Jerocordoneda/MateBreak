@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApp,hashToken} from '../server/app.mjs';
+import {createApp,hashToken} from './helpers/business-app.mjs';
 const origin='http://localhost:3000',id='11111111-1111-4111-8111-111111111111',paymentId='22222222-2222-4222-8222-222222222222';
 const recipient={nombre:'Ana',apellido:'Local',email:'local@example.test',telefono:'2494123456',codigo_postal:'7000',provincia:'Buenos Aires',ciudad:'Tandil',calle:'Local',numero:'1'};
 for(const status of ['approved','pending','rejected'])for(const authenticated of [false,true])test(`persistent ${authenticated?'authenticated':'guest'} checkout ${status} uses verified ownership, server total and stock lifecycle`,async t=>{

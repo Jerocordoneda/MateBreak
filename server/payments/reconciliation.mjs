@@ -15,8 +15,9 @@ export function paymentObservation(payment,{paymentId,collectorId,environment,ex
 }
 export async function reconcilePayment({admin,provider,paymentId}) {
  if(!provider?.ready)throw Error('Payment provider disabled');
- const observation=paymentObservation(await provider.getPayment(paymentId),{paymentId,collectorId:provider.collectorId,environment:provider.environment,expectedLiveMode:provider.expectedLiveMode});
+ const payment=await provider.getPayment(paymentId);let observation;
+ try{observation=paymentObservation(payment,{paymentId,collectorId:provider.collectorId,environment:provider.environment,expectedLiveMode:provider.expectedLiveMode});}catch(error){error.retryable=false;throw error;}
  const result=await admin.rpc('mb_reconcile_mp_payment',{p_observation:observation});
- if(result.error)throw Error('Payment reconciliation persistence failed');
+ if(result.error)throw Object.assign(Error('Payment reconciliation persistence failed'),{retryable:result.error.code!=='P0001'});
  return result.data;
 }

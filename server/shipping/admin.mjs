@@ -2,12 +2,13 @@ import path from 'node:path';
 import {accountRole} from '../modules/account/routes.mjs';
 const fail=(status,message)=>Object.assign(Error(message),{status});
 const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(v);
-export function logisticsAdminRoutes(app,{admin,authFactory}) {
+export function logisticsAdminRoutes(app,{admin,authFactory,verifyLiveSession}) {
  const protect=async(req,res,next)=>{
   res.set({'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow',
    'Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"});
   if(!req.auth){req.auth=authFactory(req,res);const r=await req.auth.auth.getUser();req.user=r.error?null:r.data?.user;}
   if(!req.user)throw fail(401,'Iniciá sesión para continuar');
+  await verifyLiveSession(req,admin);
   if(await accountRole(admin,req.user)!=='administrador')throw fail(403,'Acceso exclusivo de administradores');
   next();
  };

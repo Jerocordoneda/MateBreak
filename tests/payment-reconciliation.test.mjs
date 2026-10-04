@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createHmac} from 'node:crypto';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 import {paymentObservation,reconcilePayment} from '../server/payments/reconciliation.mjs';
 import {createMercadoPago,verifyMercadoPagoSignature} from '../server/payments/mercadopago.mjs';
 const id='11111111-1111-4111-8111-111111111111';
@@ -43,5 +43,5 @@ test('webhook denies unsigned input, ignores forged body and reconciles authorit
  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>new Promise(r=>server.close(r)));
  const send=signature=>fetch(`http://127.0.0.1:${server.address().port}/api/pagos/mercadopago/webhook?type=payment&data.id=123`,{method:'POST',headers:{'content-type':'application/json','x-signature':signature,'x-request-id':'req'},body:'{"status":"rejected","amount":1}'});
  assert.equal((await send('bad')).status,401);assert.equal(calls.length,0);
- assert.equal((await send('valid')).status,200);assert.equal(calls[1][0],'mb_reconcile_mp_payment');assert.equal(calls[1][1].p_observation.status,'approved');
+ assert.equal((await send('valid')).status,200);assert.equal(calls[0][0],'mb_queue_payment_reconciliation');assert.equal(calls[2][0],'mb_reconcile_mp_payment');assert.equal(calls[2][1].p_observation.status,'approved');
 });

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { createApp } from '../server/app.mjs';
+import { createApp } from './helpers/business-app.mjs';
 import { createMockCheckoutStore } from '../server/checkout/mock-store.mjs';
 
 const recipient = { nombre:'Ana',apellido:'Prueba',email:'ana@example.test',telefono:'2494123456',

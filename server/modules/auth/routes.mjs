@@ -4,7 +4,7 @@ import { accountRole } from '../account/routes.mjs';
 import {registration,persistRegistration} from '../../wholesale/profile.mjs';
 import {provinces} from '../../shipping/provinces.mjs';
 const fail = (status, message) => Object.assign(new Error(message), { status });
-export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart }) {
+export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, verifyLiveSession }) {
   const secure=config.origin.startsWith('https:'),returnCookie=(secure?'__Host-':'')+'mb_auth_return';
   const setReturn=(res,value,maxAge=3600)=>res.append('Set-Cookie',serializeCookieHeader(returnCookie,value,{httpOnly:true,secure,sameSite:'lax',path:'/',maxAge}));
   app.get('/api/provincias',(req,res)=>res.json(provinces));
@@ -14,7 +14,7 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart })
     if (typeof nombre !== 'string' || nombre.trim().length < 2 || nombre.length > 150) throw fail(400,'Indicá tu nombre y apellido');
     if (typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || typeof password !== 'string' || password.length < 10 || password.length > 128) throw fail(400, 'Indicá email y contraseña de al menos 10 caracteres');
     const volver=returnPath(req.body?.volver)?req.body.volver:null;
-    const commercial=volver==='mayorista'?registration(req.body):null;
+    const commercial=registration(req.body);
     setReturn(res,volver||'',volver?3600:0);
     // Only display data is accepted. No role or membership is created here.
     const { data, error } = await req.auth.auth.signUp({ email:email.trim().toLowerCase(), password, options: { data:{nombre:commercial?.nombre||nombre.trim(),...(commercial?{mayorista:commercial}:{})}, emailRedirectTo: config.origin + '/auth/callback'+returnQuery(volver) } });
@@ -28,6 +28,7 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart })
     const { data, error } = await req.auth.auth.signInWithPassword({ email, password });
     if (error) throw fail(401, 'Email o contraseña incorrectos');
     req.user = data.user;
+    await verifyLiveSession(req,admin);
     await persistRegistration(req.auth,data.user);
     // Keep the random guest-cart credential so the existing cart is attached.
     // Supabase Auth issues a fresh login session independently of this cookie.

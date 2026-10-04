@@ -10,10 +10,10 @@ try{
   const context=await browser.newContext({viewport:{width,height:900}}),page=await context.newPage();
   const check=name=>report.cases.push({width,name,status:'PASS'});
   await page.goto(runtime.base+'/mi-cuenta');await page.locator('#register-tab').click();
-  assert.equal(await page.locator('#register-commercial').isVisible(),false);
-  assert.equal(await page.locator('#register-commercial [name=whatsapp]').isDisabled(),true);check('Registro general conserva su formulario');
-  const response=await context.request.post(runtime.base+'/api/auth/registro',{headers:{origin:runtime.base},data:{nombre:'Cuenta Existente '+width,email:'incomplete-'+width+'@example.invalid',password:'fixture-password-only'}});
-  assert.equal(response.status(),200);await page.goto(runtime.lastConfirmation.url);await page.goto(runtime.base+'/mayorista');
+  assert.equal(await page.locator('#register-commercial').isVisible(),true);
+  assert.equal(await page.locator('#register-commercial [name=whatsapp]').isDisabled(),false);check('Registro general muestra el formulario ampliado');
+  runtime.createLegacyUser('incomplete-'+width+'@example.invalid','Cuenta Existente '+width);
+  const response=await context.request.post(runtime.base+'/api/auth/login',{headers:{origin:runtime.base},data:{email:'incomplete-'+width+'@example.invalid',password:'fixture-password-only'}});assert.equal(response.status(),200);await page.goto(runtime.base+'/mayorista');
   await page.locator('#wholesale-completion').waitFor();
   const fields=page.locator('#wholesale-completion-fields');
   assert.deepEqual((await fields.locator('[name]').evaluateAll(nodes=>nodes.map(n=>n.name))).sort(),['empresa','localidad','provincia','whatsapp']);

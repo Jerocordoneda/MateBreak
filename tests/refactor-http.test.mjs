@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 async function setup(t,quantity=6) {
  const selection={id:'11111111-1111-4111-8111-111111111111',items:[{producto_id:'2',cantidad:quantity}]};
  const counters={quote:0,persist:0};

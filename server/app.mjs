@@ -21,6 +21,11 @@ import { createProviders } from './providers.mjs';
 import { paymentRoutes } from './payments/routes.mjs';
 import { logisticsAdminRoutes } from './shipping/admin.mjs';
 import { securityMiddleware, securityEvent } from './security.mjs';
+import {requireLiveSession} from './auth/live-session.mjs';
+import {createSqlRateStore} from './security/rate-store.mjs';
+import {recoveryRoutes} from './auth/recovery.mjs';
+import {emailRuntime} from './email/runtime.mjs';
+import {sessionScopedAdmin}from'./auth/session-rpc.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -54,18 +59,31 @@ export function createApp(config, overrides = {}) {
       ||!['localhost','127.0.0.1','[::1]'].includes(parsedOrigin.hostname))throw Error('Mock pickup requires local Supabase, local origin and mock providers.');
   }
   const cookieOptions = { httpOnly: true, secure, sameSite: 'lax', path: '/', maxAge: 2592000 };
-  const admin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
+  const baseAdmin = overrides.admin ?? createClient(config.url, config.secret, { auth: { persistSession: false, autoRefreshToken: false } });
+  const scoped=sessionScopedAdmin(baseAdmin,{enabled:!overrides.verifyLiveSession}),admin=scoped.admin;
+  app.use(scoped.middleware);
   const providers = createProviders(config, overrides);
   if (config.staging && (!providers.shipping.mock || !providers.payment.mock)) throw Error('Staging overrides must also be mock');
   const mockCheckout = providers.mock && !persistedMock(config) ? createMockCheckoutStore(providers.payment) : null;
   const authFactory = overrides.authFactory ?? createAuthFactory(config, secure);
-  app.use(securityMiddleware({ ...config, production: config.production || config.staging }));
+  const rateStore=overrides.rateStore??(config.rateLimitKey?createSqlRateStore({admin,key:config.rateLimitKey}):null);
+  if(config.production&&!rateStore)throw Error('Production requires a persistent rate limiter');
+  if(config.trustedProxyAddresses?.length)app.set('trust proxy',config.trustedProxyAddresses);
+  app.use(securityMiddleware({ ...config, rateStore, production: config.production || config.staging }));
   app.get('/healthz', (req, res) => res.set('Cache-Control','no-store').json({status:'ok'}));
+  const workers=emailRuntime(app,{admin,config,adapter:overrides.emailAdapter});
   app.use('/api', express.json({ limit: '16kb' }));
   app.use('/api', async (req, res, next) => {
     req.auth = authFactory(req, res);
     const { data, error } = await req.auth.auth.getUser();
     req.user = !error ? data?.user : null;
+    // Logout must remain possible even for a session already revoked in SQL.
+    if(req.user&&!['/auth/login','/auth/registro','/auth/logout','/auth/recover'].includes(req.path))
+      await (overrides.verifyLiveSession??requireLiveSession)(req,admin);
+    if(req.user&&rateStore){
+      const quota=await rateStore.take({identity:'account:'+req.user.id,category:'account',limit:60});
+      if(!quota.allowed){res.set('Retry-After',String(quota.retry_after));return res.status(429).json({error:'Demasiadas solicitudes. Intentá en un minuto.'});}
+    }
     const existing = parseCookieHeader(req.headers.cookie ?? '').find(c => c.name === cookieName)?.value;
     req.cartToken = /^[a-f0-9]{64}$/.test(existing ?? '') ? existing : randomBytes(32).toString('hex');
     req.hasCart = req.cartToken === existing;
@@ -87,14 +105,15 @@ export function createApp(config, overrides = {}) {
     return result.data;
   };
   const checked = async query => { const { data, error } = await query; if (error) throw fail(400, 'No se pudo guardar o consultar los datos'); return data; };
-  authRoutes(app, { admin, config, authFactory, rpc, rotateCart });
+  authRoutes(app, { admin, config, authFactory, rpc, rotateCart,verifyLiveSession:overrides.verifyLiveSession??requireLiveSession });
+  recoveryRoutes(app,{admin,config,authFactory});
   catalogRoutes(app, { admin });
   checkoutRoutes(app, { admin, config, hashToken, correo: providers.shipping, payment: providers.payment, mockCheckout });
   paymentRoutes(app, { admin, mercadoPago: providers.webhook });
   cartRoutes(app, { admin, checked, hashToken, rpc, rotateCart });
   customerRoutes(app, { checked, requireUser, uuid, rpc });
-  inventoryRoutes(app, { admin, authFactory });
-  logisticsAdminRoutes(app, {admin,authFactory});
+  inventoryRoutes(app, { admin, authFactory, verifyLiveSession:overrides.verifyLiveSession??requireLiveSession });
+  logisticsAdminRoutes(app, {admin,authFactory,verifyLiveSession:overrides.verifyLiveSession??requireLiveSession});
   accountRoutes(app, { admin });
   privateOrderRoutes(app,{admin,config});
   wholesaleRoutes(app,{admin,config});
@@ -110,6 +129,7 @@ export function createApp(config, overrides = {}) {
   app.get('/checkout/resultado', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout-resultado.html'), { dotfiles: 'allow' }));
   app.get('/productos/:slug', (req,res)=>res.sendFile(path.join(root,'src/pages/producto.html'), { dotfiles: 'allow' }));
   app.get('/mi-cuenta', (req, res) => res.sendFile(path.join(root, 'src/pages/cuenta.html'), { dotfiles: 'allow' }));
+  app.get('/recuperar-cuenta',(req,res)=>res.sendFile(path.join(root,'src/pages/recuperar-cuenta.html'),{dotfiles:'allow'}));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error.name === 'MiCorreoError') {
@@ -120,5 +140,5 @@ export function createApp(config, overrides = {}) {
     if (!error.status || error.status >= 500) securityEvent('SERVER_ERROR', req, { status: error.status ?? 500 });
     res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor' });
   });
-  return { app, admin };
+  return { app, admin, workers, providers };
 }
