@@ -11,7 +11,7 @@ begin
  if u is null then raise exception 'Iniciá sesión' using errcode='42501'; end if;
  if p_data is null or jsonb_typeof(p_data)<>'object' or exists(select 1 from jsonb_object_keys(p_data) k where k not in ('nombre','whatsapp','provincia','localidad','empresa'))
  or exists(select 1 from jsonb_each(p_data) x where jsonb_typeof(x.value)<>'string') then raise exception 'Datos inválidos';end if;
- if p_data?'whatsapp' and (length(p_data->>'whatsapp')>40 or (p_data->>'whatsapp')!~ '^\+?[0-9 ()-]+$' or length(regexp_replace(p_data->>'whatsapp','[^0-9]','','g')) not between 7 and 15) then raise exception 'Teléfono inválido';end if;
+ if p_data?'whatsapp' and (length(p_data->>'whatsapp')>30 or (p_data->>'whatsapp')!~ '^\+?[0-9 ()-]+$' or length(regexp_replace(p_data->>'whatsapp','[^0-9]','','g')) not between 7 and 15) then raise exception 'Teléfono inválido';end if;
  if p_data?'provincia' and (p_data->>'provincia') not in ('Salta','Buenos Aires','Ciudad Autónoma de Buenos Aires','San Luis','Entre Ríos','La Rioja','Santiago del Estero','Chaco','San Juan','Catamarca','La Pampa','Mendoza','Misiones','Formosa','Neuquén','Río Negro','Santa Fe','Tucumán','Chubut','Tierra del Fuego','Corrientes','Córdoba','Jujuy','Santa Cruz') then raise exception 'Provincia inválida';end if;
  if exists(select 1 from jsonb_each_text(p_data) x where (x.key<>'empresa' and length(trim(x.value))=0) or length(x.value)>case when x.key='localidad' then 100 else 150 end) then raise exception 'Datos inválidos';end if;
  insert into public.perfil(id,nombre,telefono,provincia,localidad,empresa)

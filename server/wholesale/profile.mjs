@@ -1,7 +1,7 @@
 import {province} from '../shipping/provinces.mjs';
 const fail=message=>Object.assign(Error(message),{status:400});
 const text=(value,name,max,required=true)=>{if(typeof value!=='string'||value.length>max||(required&&!value.trim()))throw fail('Revisá '+name);return value.trim();};
-export function phone(value){const v=text(value,'el teléfono',40);if(!/^\+?[0-9 ()-]+$/.test(v)||!/^\d{7,15}$/.test(v.replace(/\D/g,'')))throw fail('Indicá un WhatsApp de 7 a 15 dígitos');return v;}
+export function phone(value){const v=text(value,'el teléfono',30);if(!/^\+?[0-9 ()-]+$/.test(v)||!/^\d{7,15}$/.test(v.replace(/\D/g,'')))throw fail('Indicá un WhatsApp de 7 a 15 dígitos');return v;}
 export function registration(body){
  const nombre=text(body.nombre,'el nombre',75),apellido=text(body.apellido,'el apellido',74);
  return {nombre:nombre+' '+apellido,whatsapp:phone(body.whatsapp),provincia:province(body.provincia).name,localidad:text(body.localidad,'la localidad',100),empresa:text(body.empresa??'','la empresa',150,false)};
