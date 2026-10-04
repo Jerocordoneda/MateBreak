@@ -33,7 +33,6 @@ async function load(){const epoch=++revision;try{
  catalog=await api('catalogo'+(new URL(location.href).searchParams.has('ref')?'?ref='+encodeURIComponent(new URL(location.href).searchParams.get('ref')):''));
  if(epoch!==revision)return;if(accountId&&accountId!==catalog.accountId){invalidate();return;}accountId=catalog.accountId;
  $('#minimum').textContent=catalog.minimum;$('#wholesale-progress').max=catalog.minimum;
- if(catalog.contactUrl){$('#wholesale-contact').href=catalog.contactUrl;$('#wholesale-contact').hidden=false;}
  $('#wholesale-private').hidden=false;renderCatalog();const province=$('[name=provincia]'),previousProvince=province.value;province.replaceChildren(new Option('Seleccionar provincia',''),...catalog.provinces.map(p=>new Option(p.name,p.name)));if(catalog.provinces.some(p=>p.name===previousProvince))province.value=previousProvince;
  status(catalog.items.length?(catalog.contactReady?'Elegí productos para tu solicitud. Grabado y packaging de regalo incluidos.':'Contacto mayorista pendiente de configuración. Podés explorar el catálogo.'):'Todavía no hay ofertas mayoristas habilitadas.');
  $('#wholesale-retry').hidden=true;controls();void profile();void history();
