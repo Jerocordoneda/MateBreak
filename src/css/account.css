@@ -8,3 +8,5 @@
 @media(max-width:520px){.admin-kpis{grid-template-columns:1fr 1fr;gap:9px}.dashboard-kpi{padding:15px 12px}.dashboard-kpi strong{font-size:22px}.dashboard-actions{align-items:stretch;flex-direction:column}.dashboard-actions button{width:100%}.dashboard-list-row{align-items:flex-start}.dashboard-list-row small{max-width:190px}.chart-column:not(:nth-last-child(-n+5)) small{display:none}.recent-sale{gap:10px}.dashboard-heading h2{font-size:26px}}
 
 .account-load{display:flex;align-items:center;gap:10px;color:#d8c3a5;font-size:13px;min-height:28px;flex-wrap:wrap}.account-spinner{display:inline-block;width:14px;height:14px;border:2px solid #d8c3a540;border-top-color:#d8c3a5;border-radius:50%;animation:account-spin .8s linear infinite;flex:none}@keyframes account-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.account-spinner{animation:none}}
+
+#register-commercial{border:0;padding:0;margin:0;display:grid;gap:1rem;min-width:0}#register-commercial[hidden]{display:none}#register-commercial legend{margin-bottom:1rem;color:var(--accent,#bba17d)}

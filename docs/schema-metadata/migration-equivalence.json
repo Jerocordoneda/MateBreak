@@ -277,5 +277,14 @@
     "localTokenMd5": "0cb8b25db63c62c94c192569608e36b0",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261004065346_wholesale_profile_details.sql",
+    "version": "20261004065346",
+    "name": "wholesale_profile_details",
+    "remoteVersion": null,
+    "localTokenMd5": "034ad61514488b0f28771cb6e5ad1356",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]

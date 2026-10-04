@@ -1,5 +1,6 @@
 import {verifiedWholesaleSession} from './access.mjs';
 import {commercialContext} from './context.mjs';
+import {completion} from './profile.mjs';
 import {parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
 import {provinces} from '../shipping/provinces.mjs';
 import {buyer,selection,whatsappMessage,whatsappNumber} from './policy.mjs';
@@ -22,9 +23,14 @@ export function wholesaleRoutes(app,{admin,config}){
  });
  app.get('/api/mayorista/acceso',(req,res)=>res.json({accountId:req.user.id}));
  app.get('/api/mayorista/perfil',async(req,res)=>{
-  const [profile,addresses]=await Promise.all([req.auth.from('perfil').select('nombre,telefono').eq('id',req.user.id).maybeSingle(),req.auth.from('direccion').select('id,destinatario,telefono,calle,ciudad,departamento,pais').eq('usuario_id',req.user.id).order('creado_en')]);
+  const [profile,addresses]=await Promise.all([req.auth.from('perfil').select('nombre,telefono,provincia,localidad,empresa').eq('id',req.user.id).maybeSingle(),req.auth.from('direccion').select('id,destinatario,telefono,calle,ciudad,departamento,pais').eq('usuario_id',req.user.id).order('creado_en')]);
   if(profile.error||addresses.error)throw fail(503,'No pudimos cargar tus datos. Podés completarlos manualmente.');
   res.json(commercialContext(req.user,profile.data,addresses.data||[]));
+ });
+ app.post('/api/mayorista/perfil/completar',async(req,res)=>{
+  const data=completion(req.body),result=await req.auth.rpc('mb_wholesale_profile_complete',{p_data:data});
+  if(result.error)throw fail(503,'No pudimos guardar tus datos. Reintentá.');
+  res.json({ok:true});
  });
  app.post('/api/mayorista/cotizar',async(req,res)=>res.json(await rpc('mb_wholesale_quote',{p_items:selection(req.body?.items)})));
  app.post('/api/mayorista/solicitudes',async(req,res)=>{
