@@ -4,6 +4,8 @@ const hosts={test:'https://apitest.correoargentino.com.ar/micorreo/v1',productio
 const provinces=new Set('ABCDEFGHJKLMNPQRSTUVWXYZ'.split(''));
 const text=v=>typeof v==='string' && v.trim().length>0;
 const postal=v=>text(v) && /^[A-Za-z0-9 -]{4,12}$/.test(v);
+const contactText=(v,max=120)=>text(v)&&v.length<=max&&!/[\r\n<>]/.test(v);
+const email=v=>contactText(v,254)&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 export class MiCorreoError extends Error {
  constructor(type,endpoint,status=null,requestId=randomUUID()) {
   super('No se pudo completar la operación de MiCorreo');
@@ -35,7 +37,7 @@ export function createCorreoArgentino(config={},fetcher=fetch,runtime={}) {
   const id=randomUUID();
   for(let i=0;;i++) {
    let r;
-   try {r=await fetcher(hosts[environment]+path,{...options,signal:AbortSignal.timeout(timeout)});}
+   try {r=await fetcher(hosts[environment]+path,{...options,redirect:'error',signal:AbortSignal.timeout(timeout)});}
    catch {throw new MiCorreoError(path==='/shipping/import'?'ambiguous':'transport',path,null,id);}
    if(!r.ok) {
     if(i<retries&&(r.status===429||r.status>=500)){await sleep(100*2**i);continue;}
@@ -85,7 +87,9 @@ export function createCorreoArgentino(config={},fetcher=fetch,runtime={}) {
    return d.filter(a=>a&&/^[A-Z0-9]{2,20}$/.test(a.code)&&text(a.name)&&a.status==='ACTIVE'&&a.services?.pickupAvailability===true&&a.location?.address?.provinceCode===provinceCode&&postal(a.location.address.postalCode));
   },
   async importShipment({extOrderId,orderNumber,sender,recipient,shipping}) {
-   if(!authReady||!text(customerId)||!/^[A-Za-z0-9-]{1,80}$/.test(extOrderId)||!text(recipient?.name)||!text(recipient?.email)||!['D','S'].includes(shipping?.deliveryType))throw new MiCorreoError('invalid_import','/shipping/import');
+   if(!authReady||!text(customerId)||!/^[A-Za-z0-9-]{1,80}$/.test(extOrderId)||!contactText(recipient?.name)||!email(recipient?.email)||!['D','S'].includes(shipping?.deliveryType))throw new MiCorreoError('invalid_import','/shipping/import');
+   if(sender&&(!contactText(sender.name)||!email(sender.email)||!contactText(sender.originAddress?.streetName)||!contactText(sender.originAddress?.streetNumber,12)||!contactText(sender.originAddress?.city)||!provinces.has(sender.originAddress?.provinceCode)||!postal(sender.originAddress?.postalCode)))throw new MiCorreoError('invalid_import','/shipping/import');
+   for(const person of [sender,recipient].filter(Boolean))for(const field of ['phone','cellPhone'])if(person[field]!=null&&person[field]!==''&&!/^[+\d ()-]{6,25}$/.test(person[field]))throw new MiCorreoError('invalid_import','/shipping/import');
    const parcel=dimensions(shipping);
    if(numericPrice(shipping.declaredValue)===null||(shipping.deliveryType==='S'?!/^[A-Z0-9]{2,20}$/.test(shipping.agency):!text(shipping.address?.streetName)||!text(shipping.address?.streetNumber)||!text(shipping.address?.city)||!provinces.has(shipping.address?.provinceCode)||!postal(shipping.address?.postalCode)))throw new MiCorreoError('invalid_import','/shipping/import');
    const d=await request('/shipping/import',{customerId,extOrderId,orderNumber,sender:sender?{name:sender.name,phone:sender.phone,cellPhone:sender.cellPhone,email:sender.email,originAddress:address(sender.originAddress)}:undefined,recipient:{name:recipient.name,email:recipient.email,phone:recipient.phone,cellPhone:recipient.cellPhone},shipping:{deliveryType:shipping.deliveryType,agency:shipping.deliveryType==='S'?shipping.agency:null,address:shipping.deliveryType==='D'?address(shipping.address):undefined,...parcel,declaredValue:numericPrice(shipping.declaredValue)}});
