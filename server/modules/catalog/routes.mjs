@@ -13,12 +13,17 @@ export function catalogRoutes(app, {admin}) {
     if(pending)return pending;
     pending=(async()=>{
       const rows=[];
+      const signal=AbortSignal.timeout(15000);
       for(let offset=0;;offset+=200){
-        const {data,error}=await admin.from('producto').select(selection).eq('catalogo_producto.publicado',true).order('id_producto').range(offset,offset+199);
+        let query=admin.from('producto').select(selection).eq('catalogo_producto.publicado',true).order('id_producto').range(offset,offset+199);
+        if(typeof query.abortSignal==='function')query=query.abortSignal(signal);
+        const {data,error}=await query;
         if(error)throw Object.assign(Error('No se pudo cargar el catálogo'),{status:503});
         rows.push(...data);if(data.length<200)break;
       }
-      const {data:availability,error:availabilityError}=await admin.rpc('mb_catalogo_disponibilidad');
+      let availabilityQuery=admin.rpc('mb_catalogo_disponibilidad');
+      if(typeof availabilityQuery.abortSignal==='function')availabilityQuery=availabilityQuery.abortSignal(signal);
+      const {data:availability,error:availabilityError}=await availabilityQuery;
       if(availabilityError)throw Object.assign(Error('No se pudo consultar la disponibilidad'),{status:503});
       const inventory=new Map(availability.map(v=>[String(v.variante_id),v]));
       cached=rows.map(row=>{

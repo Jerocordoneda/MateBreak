@@ -19,5 +19,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: node scripts/audit-baseline.mjs --check
+      - run: node scripts/check-commercial-migrations.mjs
       - run: npm run catalog:historical:check
+      - run: npm run build:staging && node scripts/audit-guest-artifact.mjs
+        env:
+          STAGING_BACKEND_ORIGIN: https://matebreak-api-staging.onrender.com
       - run: npm audit --omit=dev --audit-level=high

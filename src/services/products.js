@@ -1,7 +1,7 @@
 let pending;
 // One shared request per page. Failed requests can be retried.
 export async function getProducts() {
-  if(!pending)pending=fetch('/api/productos',{credentials:'same-origin'}).then(async r=>{if(!r.ok)throw Error('No pudimos cargar el catálogo. Intentá nuevamente.');return r.json();}).catch(e=>{pending=null;throw e;});
+  if(!pending)pending=fetch('/api/productos',{credentials:'same-origin',signal:AbortSignal.timeout(20000)}).then(async r=>{if(!r.ok)throw Error('No pudimos cargar el catálogo. Intentá nuevamente.');return r.json();}).catch(e=>{pending=null;if(e.name==='TimeoutError')throw Error('El catálogo está demorando. Volvé a intentar en unos segundos.');throw e;});
   return pending;
 }
 export const getFeaturedProducts=async()=> (await getProducts()).filter(p=>p.destacado);

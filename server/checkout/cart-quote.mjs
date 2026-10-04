@@ -19,12 +19,14 @@ export async function quoteCart(cart, admin) {
         !Number.isFinite(Number(originals.get(key(item)).precio)) || Number(originals.get(key(item)).precio) <= 0 ||
         !Number.isFinite(Number(item.precio_unitario)) || Number(item.precio_unitario) <= 0))
     return { ...cart, cotizacion: null, error_cotizacion: 'No pudimos confirmar el precio. Actualizá tu carrito antes de continuar.' };
-  if(Math.round(quote.items.reduce((sum,item)=>sum+Number(item.precio_unitario)*item.cantidad,0)*100)!==Math.round(Number(quote.subtotal)*100))
+  if(Math.round(quote.items.reduce((sum,item)=>sum+Number(item.precio_unitario)*item.cantidad,0)*100)!==Math.round(Number(quote.subtotal_original_productos??quote.subtotal)*100))
+    return { ...cart, cotizacion: null, error_cotizacion: 'No pudimos confirmar el precio. Actualizá tu carrito antes de continuar.' };
+  if(quote.subtotal_original_productos!=null&&(!Number.isFinite(Number(quote.descuento_promocional))||Number(quote.descuento_promocional)<0||Math.round((Number(quote.subtotal_original_productos)-Number(quote.descuento_promocional))*100)!==Math.round(Number(quote.subtotal)*100)))
     return { ...cart, cotizacion: null, error_cotizacion: 'No pudimos confirmar el precio. Actualizá tu carrito antes de continuar.' };
   const items = quote.items.map(item => {
     const original = originals.get(key(item));
     // A concurrent price rise must never show an original below the quote.
-    const price = Math.max(Number(original.precio), Number(item.precio_unitario));
+    const price = quote.subtotal_original_productos!=null?Number(item.precio_unitario):Math.max(Number(original.precio), Number(item.precio_unitario));
     return { ...item, precio_original: price, subtotal_original: Math.round(price * item.cantidad * 100) / 100,
       subtotal: Math.round(Number(item.precio_unitario) * item.cantidad * 100) / 100 };
   });

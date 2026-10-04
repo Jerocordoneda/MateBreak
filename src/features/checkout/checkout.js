@@ -1,3 +1,4 @@
+import {recipientForm} from './recipient-errors.mjs';
 import {populateProvinces} from './province-select.mjs';
 import { getProducts } from '../../services/products.js';
 
@@ -9,6 +10,7 @@ let context, recipient, delivery = 'retiro', shippingQuote = null, payment = '',
 let catalogImages = new Map();
 let agencies = [];
 let agencyRequest = 0;
+const recipientFields=recipientForm($('#recipient-form'),{mode:()=>delivery,provinces:()=>context?.provinces,notice:error});
 function renderPickup() {
   $('#pickup-selection').hidden = delivery !== 'correo_sucursal' || !context.pickupEnabled;
 }
@@ -32,7 +34,7 @@ async function api(path, options = {}) {
   const response = await fetch('/api' + path, { credentials: 'same-origin', ...options,
     headers: options.body ? { 'Content-Type': 'application/json' } : {} });
   const data = await response.json();
-  if (!response.ok) throw Error(data.error || 'No pudimos completar la operación');
+  if (!response.ok) throw Object.assign(Error(data.error || 'No pudimos completar la operación'),{fields:data.fields});
   return data;
 }
 function node(tag, text, className) {
@@ -42,18 +44,7 @@ function node(tag, text, className) {
   return element;
 }
 function error(message) { $('#checkout-error').textContent = message; $('#checkout-error').hidden = !message; }
-function selectedRecipient() {
-  const form = $('#recipient-form');
-  if (!form.reportValidity()) throw Error('Revisá los datos del destinatario');
-  const value = Object.fromEntries(new FormData(form));
-  for (const key of ['nombre','apellido','email','telefono','codigo_postal','provincia','ciudad','calle','numero']) {
-    if (!value[key]?.trim()) throw Error(`Falta ${key.replaceAll('_',' ')}`);
-  }
-  if (!/^[+0-9 ()-]+$/.test(value.telefono) || value.telefono.replace(/\D/g,'').length < 7) throw Error('Revisá el teléfono');
-  if (!/^[A-Za-z0-9 -]{4,12}$/.test(value.codigo_postal)) throw Error('Revisá el código postal');
-  if (!/^[0-9]+[A-Za-z]?$/.test(value.numero)) throw Error('Revisá el número de calle');
-  return Object.fromEntries(Object.entries(value).map(([key,text]) => [key,text.trim()]));
-}
+function selectedRecipient() { return recipientFields.read(); }
 function renderOrder() {
   const items = $('#order-items'); items.replaceChildren();
   for (const item of context.quote.items || []) {
@@ -68,7 +59,8 @@ function renderOrder() {
     items.append(row);
   }
   const subtotal = Number(context.quote.subtotal);
-  $('#merchandise-subtotal').textContent = money(subtotal);
+  $('#merchandise-subtotal').textContent = money(context.quote.subtotal_original_productos??subtotal);
+  $('#promotion-discount').textContent=Number(context.quote.descuento_promocional)>0?'− '+money(context.quote.descuento_promocional)+' · '+context.quote.mates_fisicos+' mates físicos':'—';
   const remaining = context.progress.remaining;
   $('#shipping-message').textContent = remaining > 0 ? `Te faltan ${money(remaining)} para tener envío gratis` : '¡Tenés envío gratis!';
   $('#shipping-progress').value = Math.min(80_000, subtotal);
@@ -85,7 +77,7 @@ function renderChoices() {
     input.type = 'radio'; input.name = 'delivery'; input.value = option.codigo;
     input.disabled = !option.activo || (option.codigo === 'correo_sucursal' && !context.pickupEnabled);
     input.checked = delivery === option.codigo && !input.disabled;
-    input.onchange = () => { delivery = option.codigo; shippingQuote = null; renderPickup(); renderOrder(); };
+    input.onchange = () => { delivery = option.codigo; shippingQuote = null; recipientFields.sync(); renderPickup(); renderOrder(); };
     label.append(input, node('span', option.nombre + (input.disabled ? ' · Próximamente' : ''))); deliveries.append(label);
   }
   $('#manual-quote').hidden = !context.manualQuoteAvailable;
@@ -116,7 +108,7 @@ function showStep(step) {
     const summary = $('#editable-summary'); summary.replaceChildren(
       summaryRow('Contacto', recipient.email),
       summaryRow('Destinatario', `${recipient.nombre} ${recipient.apellido} · ${recipient.telefono}`),
-      summaryRow('Dirección', `${recipient.calle} ${recipient.numero}, ${recipient.codigo_postal} · ${recipient.ciudad}, ${recipient.provincia}`),
+      ...(delivery==='correo_domicilio'?[summaryRow('Dirección', `${recipient.calle} ${recipient.numero}, ${recipient.codigo_postal} · ${recipient.ciudad}, ${recipient.provincia}`)]:[]),
       summaryRow('Entrega', context.deliveries.find(option => option.codigo === delivery)?.nombre || delivery),
     );
     if (delivery === 'correo_sucursal') {
@@ -141,7 +133,7 @@ async function prepareDelivery(event) {
       if (!shippingQuote) throw Error('No se pudo cotizar el envío');
     }
     renderOrder(); showStep('payment');
-  } catch (cause) { error(cause.message); }
+  } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
 }
 async function placeOrder() {
   if (busy || !payment) return;
@@ -157,7 +149,7 @@ async function placeOrder() {
     sessionStorage.removeItem(key);
     if (result.redirectUrl) { location.assign(result.redirectUrl); return; }
     location.assign(`/checkout/resultado?pedido=${encodeURIComponent(result.order.id)}`);
-  } catch (cause) { error(cause.message); }
+  } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
   finally { busy = false; $('#place-order').disabled = !payment; }
 }
 async function init() {
@@ -185,8 +177,8 @@ async function init() {
     }
     const firstActive = context.deliveries.find(option => option.activo && option.codigo !== 'correo_sucursal');
     delivery = firstActive?.codigo || '';
-    renderChoices(); renderOrder();
-  } catch (cause) { error(cause.message); }
+    renderChoices(); recipientFields.sync(); renderOrder();
+  } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
 }
 $('#recipient-form').addEventListener('submit', prepareDelivery);
 $('#pickup-province').addEventListener('change', loadPickupAgencies);
@@ -201,9 +193,9 @@ init();
 
 $('#download-manual-quote').addEventListener('click', async () => {
  try {
-  const request = await api('/checkout/cotizacion-manual',{method:'POST',body:JSON.stringify({destinatario:selectedRecipient(),directa:direct})});
+  const request = await api('/checkout/cotizacion-manual',{method:'POST',body:JSON.stringify({destinatario:selectedRecipient(),modalidad:delivery,directa:direct})});
   const url=URL.createObjectURL(new Blob([JSON.stringify(request,null,2)],{type:'application/json'}));
   const link=node('a');link.href=url;link.download='matebreak-cotizacion-manual.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   error(request.message);
- } catch (cause) { error(cause.message); }
+ } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
 });

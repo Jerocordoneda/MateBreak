@@ -17,7 +17,11 @@ const manifest={files:[],historicalMigrations:26,backend:process.env.STAGING_BAC
 for(const path of files(root+'/dist')){
  const name=relative(root+'/dist',path).replaceAll('\\','/');assert.ok(name==='index.html'||name.startsWith('src/'),'Unexpected artifact root');
  assert.ok(!/(^|\/)(server|supabase|deploy|diagnostics|node_modules|\.env|\.git)(\/|$)|\.(sql|log|toml)$/i.test(name),'Private artifact');
- const body=readFileSync(path);assert.equal(sha(body),sha(readFileSync(resolve(root,name))),'Build source mismatch: '+name);
+ const body=readFileSync(path),source=readFileSync(resolve(root,name));
+ // Match the explicit CRLF-to-LF transformation in build-frontend.mjs.
+ // Binary files still require exact source bytes.
+ const expected=/\.(html|css|js|mjs|json|svg|txt)$/.test(name)?Buffer.from(source.toString('utf8').replaceAll('\r\n','\n')):source;
+ assert.equal(sha(body),sha(expected),'Build source mismatch: '+name);
  if(/\.(html|js|mjs|css|json|txt|svg)$/i.test(name))assert.ok(!/(sb_secret_[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,})/.test(body.toString('utf8')),'Credential pattern in artifact');
  manifest.files.push({path:name,sha256:sha(body),bytes:body.length});
 }

@@ -11,7 +11,7 @@ import { provinces } from '../shipping/provinces.mjs';
 import { persistedSimulation } from './order-simulation.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
-const validateRecipient=value=>{try{return validateRecipientFields(value);}catch(error){throw fail(400,error.message);}};
+const validateRecipient=(value,mode)=>validateRecipientFields(value,mode,provinces);
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 export function checkoutRoutes(app, { admin, config, hashToken, correo, payment, mockCheckout }) {
@@ -68,7 +68,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
   });
 
   app.post('/api/checkout/cotizar-envio', async (req, res) => {
-    const userId = req.user?.id ?? null, recipient = validateRecipient(req.body?.destinatario);
+    const userId = req.user?.id ?? null, recipient = validateRecipient(req.body?.destinatario,req.body?.modalidad??req.body?.envio??'correo_domicilio');
     if (!correo.ready) throw fail(503, 'Correo Argentino todavía no está configurado');
     const mode = req.body?.modalidad;
     if (!['correo_domicilio','correo_sucursal'].includes(mode)) throw fail(400, 'Modalidad inválida');
@@ -125,7 +125,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
 
   // A downloadable handoff, without persisting PII, reserving stock or charging.
   app.post('/api/checkout/cotizacion-manual', async (req, res) => {
-    const recipient = validateRecipient(req.body?.destinatario);
+    const recipient = validateRecipient(req.body?.destinatario,req.body?.modalidad??req.body?.envio??'correo_domicilio');
     const selection = await cart(req);
     if (!selection.items?.length) throw fail(400, 'La selección está vacía');
     const quote = await baseQuote(selection.id);
@@ -143,7 +143,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
   });
 
   app.post('/api/checkout/pedidos', async (req, res) => {
-    const userId = req.user?.id ?? null, recipient = validateRecipient(req.body?.destinatario);
+    const userId = req.user?.id ?? null, recipient = validateRecipient(req.body?.destinatario,req.body?.envio??'correo_domicilio');
     const { idempotencia, pago, envio, cotizacion_id, directa = false } = req.body || {};
     if (!uuid(idempotencia) || !['transferencia','mercadopago'].includes(pago) ||
       !['retiro','correo_domicilio','correo_sucursal'].includes(envio) ||

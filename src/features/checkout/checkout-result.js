@@ -11,7 +11,7 @@ window.addEventListener('pagehide',stop);motion.addEventListener('change',stop);
 function summary(order){
  $('#result-items').replaceChildren(...(order.items||[]).map(i=>{const li=document.createElement('li');li.textContent=i.cantidad+' × '+i.nombre+' · '+money(i.precio_unitario*i.cantidad);return li;}));
  $('#result-totals').replaceChildren();
- for(const [label,value] of [['Productos',order.subtotal_mercaderia],['Descuentos',order.descuento_productos],['Envío',order.costo_envio],['Total',order.total]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=money(value);$('#result-totals').append(dt,dd);}
+ for(const [label,value] of [['Productos antes de promoción',order.subtotal_original_productos??order.subtotal_mercaderia],['Promoción desde 3 mates',order.descuento_promocional??0],['Productos',order.subtotal_mercaderia],['Descuentos',order.descuento_productos],['Envío',order.costo_envio],['Total',order.total]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=money(value);$('#result-totals').append(dt,dd);}
  $('#result-delivery').textContent='Entrega: '+deliveryText(order.direccion_entrega);
  $('#result-summary').hidden=false;
 }

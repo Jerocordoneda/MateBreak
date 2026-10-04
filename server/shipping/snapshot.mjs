@@ -7,6 +7,6 @@ export function shippingSnapshot({cart,recipient,deliveryType,pickupPoint,rate,e
  return {version:1,environment,customerId:customerId||null,sender:sender||null,cartItems,deliveryType,originPostalCode:originPostalCode||null,
   recipient:{name:recipient.nombre+' '+recipient.apellido,email:recipient.email,phone:recipient.telefono},
   address:{streetName:recipient.calle,streetNumber:recipient.numero,floor:recipient.piso||'',
-   apartment:recipient.departamento||'',city:recipient.ciudad,provinceCode:provinceCode(recipient.provincia),postalCode:recipient.codigo_postal},
+   apartment:recipient.departamento||'',city:recipient.ciudad,provinceCode:pickupPoint?.address?.provinceCode||provinceCode(recipient.provincia),postalCode:recipient.codigo_postal},
   agency:pickupPoint,parcels:rate.parcels};
 }

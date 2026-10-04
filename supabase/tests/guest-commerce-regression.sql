@@ -2,9 +2,9 @@ begin;
 do $$
 declare c jsonb; o jsonb; q integer; expected numeric; token text:=repeat('5',64);rec jsonb:='{"nombre":"Ana","apellido":"Local","email":"ana@example.test","telefono":"2494123456","codigo_postal":"7000","provincia":"Buenos Aires","ciudad":"Tandil","calle":"Prueba","numero":"123"}';
 begin
- foreach q in array array[1,2,8,10,2,1] loop
+ foreach q in array array[1,2,3,4,5,8,10,2,1] loop
   c:=public.mb_comercio(token,null,'variante',jsonb_build_object('variante_id',900001,'cantidad',q));
-  expected:=case q when 1 then 10000 when 2 then 16000 when 8 then 64000 when 10 then 80000 end;
+  expected:=case when q>=3 then q*8000 else q*10000 end;
   if (public.mb_cotizar_catalogo((c->>'id')::uuid,'mercadopago')->>'subtotal')::numeric<>expected then raise exception 'Guest promotional regression for %',q;end if;
  end loop;
  update public.catalogo_variante set precio=12000 where id=900001;
@@ -24,6 +24,6 @@ begin
  o:=public.mb_checkout_minorista(token,null,jsonb_build_object('idempotencia',gen_random_uuid(),'pago','transferencia','envio','retiro','destinatario',rec));
  if (o->>'total')::numeric<>2700 or (select precio_unitario from public.pedido_item where pedido_id=(o->>'id')::uuid)<>3000 then raise exception 'Legacy transfer double-discount or unsupported cart: total %, item %',o->>'total',(select precio_unitario from public.pedido_item where pedido_id=(o->>'id')::uuid);end if;
  if (select precio_original from public.pedido_item where pedido_id=(o->>'id')::uuid)<>3000 then raise exception 'Original price snapshot regressed';end if;
- raise notice 'PASS guest promotions 1/2/8/10/2/1, authoritative repricing, changed stock, legacy combo and single transfer discount';
+ raise notice 'PASS guest promotions 1/2/3/4/5/8/10/2/1, authoritative repricing, changed stock, legacy combo and single transfer discount';
 end $$;
 rollback;

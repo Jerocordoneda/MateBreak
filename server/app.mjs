@@ -129,6 +129,7 @@ export function createApp(config, overrides = {}) {
   app.get('/checkout/resultado', (req, res) => res.sendFile(path.join(root, 'src/pages/checkout-resultado.html'), { dotfiles: 'allow' }));
   app.get('/productos/:slug', (req,res)=>res.sendFile(path.join(root,'src/pages/producto.html'), { dotfiles: 'allow' }));
   app.get('/mi-cuenta', (req, res) => res.sendFile(path.join(root, 'src/pages/cuenta.html'), { dotfiles: 'allow' }));
+  app.get('/auth/confirmar',(req,res)=>res.sendFile(path.join(root,'src/pages/confirmar-cuenta.html'),{dotfiles:'allow'}));
   app.get('/recuperar-cuenta',(req,res)=>res.sendFile(path.join(root,'src/pages/recuperar-cuenta.html'),{dotfiles:'allow'}));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
@@ -138,7 +139,7 @@ export function createApp(config, overrides = {}) {
       return res.status(503).json({error:'No pudimos consultar Correo Argentino. Intentá nuevamente.'});
     }
     if (!error.status || error.status >= 500) securityEvent('SERVER_ERROR', req, { status: error.status ?? 500 });
-    res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor' });
+    res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor', ...(error.code==='INVALID_RECIPIENT'?{code:error.code,fields:error.fields}:{}) });
   });
   return { app, admin, workers, providers };
 }

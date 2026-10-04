@@ -331,5 +331,14 @@
     "localTokenMd5": "52f4293dd20944ba489107390037f377",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261004184020_manual_review_checkout_policy.sql",
+    "version": "20261004184020",
+    "name": "manual_review_checkout_policy",
+    "remoteVersion": null,
+    "localTokenMd5": "61d640f36848b45ba7cd3d64ab544e43",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]

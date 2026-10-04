@@ -18,7 +18,10 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, v
     setReturn(res,volver||'',volver?3600:0);
     // Only display data is accepted. No role or membership is created here.
     const { data, error } = await req.auth.auth.signUp({ email:email.trim().toLowerCase(), password, options: { data:{nombre:commercial?.nombre||nombre.trim(),...(commercial?{mayorista:commercial}:{})}, emailRedirectTo: config.origin + '/auth/callback'+returnQuery(volver) } });
-    if (error) throw fail(400, 'No se pudo registrar. Revisá los datos o intentá más tarde.');
+    if (error) {
+      if(error.code==='email_address_not_authorized'||error.code==='over_email_send_rate_limit'||error.status===429)throw fail(503,'La confirmación por correo no está disponible en este momento. Esperá antes de reintentar o contactá a MateBreak.');
+      throw fail(400, 'No se pudo registrar. Revisá los datos o intentá más tarde.');
+    }
     if(data?.session)await persistRegistration(req.auth,data.user);
     res.json({ sesion_iniciada:!!data?.session, mensaje: 'Si el email puede registrarse, recibirás un enlace para confirmar tu cuenta. Si ya tenés una cuenta, ingresá con tu contraseña.' });
   });
@@ -44,11 +47,25 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, v
     if (error) throw fail(503, 'No se pudo cerrar la sesión. Reintentá.');
     rotateCart(req, res); res.json({ ok: true });
   });
+  // Future branded template: user-initiated POST avoids link scanner consumption
+  // and token-hash verification also works without a PKCE verifier cookie.
+  app.post('/api/auth/confirmar', async (req,res)=>{
+    const {token_hash,type,volver}=req.body??{};
+    if(typeof token_hash!=='string'||!/^[a-zA-Z0-9_-]{20,256}$/.test(token_hash)||type!=='email')throw fail(400,'El enlace de confirmación es inválido.');
+    const result=await req.auth.auth.verifyOtp({token_hash,type:'email'});
+    if(result.error)throw fail(400,'El enlace de confirmación venció o ya fue utilizado. Si ya confirmaste tu correo, iniciá sesión.');
+    const verified=await req.auth.auth.getUser();
+    if(verified.error||!verified.data?.user||verified.data.user.is_anonymous)throw fail(400,'No pudimos verificar la confirmación de tu cuenta.');
+    await persistRegistration(req.auth,verified.data.user);
+    setReturn(res,'',0);
+    res.json({next:'/mi-cuenta'+returnQuery(volver)+(returnPath(volver)?'&':'?')+'auth=confirmed'});
+  });
   app.get('/auth/callback', async (req, res) => {
     res.set({'Cache-Control':'private, no-store','Referrer-Policy':'no-referrer'});
     const cookie=parseCookieHeader(req.headers.cookie??'').find(c=>c.name===returnCookie)?.value;
     const volver=returnPath(req.query.volver)?req.query.volver:returnPath(cookie)?cookie:null;
     const failure='/mi-cuenta'+returnQuery(volver)+(volver?'&':'?')+'auth=error';
+    if(req.query.error || req.query.error_code)return res.redirect(failure);
     const auth=authFactory(req,res);let result;
     if(typeof req.query.code==='string')result=await auth.auth.exchangeCodeForSession(req.query.code);
     else if(typeof req.query.token_hash==='string'&&['email','signup'].includes(req.query.type))result=await auth.auth.verifyOtp({token_hash:req.query.token_hash,type:req.query.type});
@@ -57,6 +74,6 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, v
     const verified=await auth.auth.getUser();
     if(verified.error||!verified.data?.user||verified.data.user.is_anonymous)return res.redirect(failure);
     try{await persistRegistration(auth,verified.data.user);}catch{return res.redirect(failure);}
-    setReturn(res,'',0);res.redirect(returnPath(volver)||'/mi-cuenta');
+    setReturn(res,'',0);res.redirect('/mi-cuenta'+returnQuery(volver)+(volver?'&':'?')+'auth=confirmed');
   });
 }

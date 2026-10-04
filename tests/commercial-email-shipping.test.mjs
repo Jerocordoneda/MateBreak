@@ -54,8 +54,8 @@ test('signed email receipts persist only minimized fields; forged body denied',a
  await recordResendReceipt(args);assert.equal(calls[0][0],'mb_record_email_receipt');assert.ok(!JSON.stringify(calls).includes('private@example.test'));
  await assert.rejects(recordResendReceipt({...args,rawBody:Buffer.from('{}')}),e=>e.status===401);assert.equal(calls.length,1);
 });
-test('Auth templates preserve Supabase confirmation/recovery URL and HTTPS brand origin',()=>{
- for(const kind of ['confirmation','recovery']){const template=renderAuthTemplate({kind,origin:'https://matebreak.test'});assert.match(template.html,/href="{{ \.ConfirmationURL }}"/);assert.match(template.subject,/MateBreak/);assert.doesNotMatch(template.html,/TokenHash|RedirectTo|script/);}
+test('Auth templates preserve one-use confirmation and recovery protocols with HTTPS brand origin',()=>{
+ for(const kind of ['confirmation','recovery']){const template=renderAuthTemplate({kind,origin:'https://matebreak.test'});if(kind==='recovery'){assert.match(template.html,/href="{{ \.ConfirmationURL }}"/);assert.doesNotMatch(template.html,/TokenHash|RedirectTo/);}else{assert.match(template.html,/https:\/\/matebreak.test\/auth\/confirmar#token_hash={{ \.TokenHash }}/);assert.match(template.html,/type=email/);assert.match(template.html,/if eq \.RedirectTo/);}assert.match(template.subject,/MateBreak/);assert.doesNotMatch(template.html,/<script/);}
  assert.throws(()=>renderAuthTemplate({kind:'recovery',origin:'https://matebreak.test/path'}));
 });
 test('operator wholesale measurements allocate exact cents with stable bulto IDs',()=>{

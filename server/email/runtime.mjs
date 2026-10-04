@@ -14,7 +14,7 @@ export function emailRuntime(app,{admin,config,adapter}){
  });
  return {async runEmailOnce(){
   if(!mail.workerEnabled)throw Error('Email worker disabled');
-  if(mail.testRecipient&&mail.testRecipient.toLowerCase()!=='mate.break32@gmail.com')throw Error('Unauthorized test recipient');
+  if(mail.testRecipient&&!['mate.break32@gmail.com','jerocordoneda@gmail.com'].includes(mail.testRecipient.toLowerCase()))throw Error('Unauthorized test recipient');
   return deliverDurableOrderEmail({admin,adapter:provider,allowReal:mail.enabled===true,encryptionKey:mail.encryptionKey,from:mail.from,replyTo:mail.replyTo,testRecipient:mail.testRecipient,eventId:mail.eventId,rolloutAfter:mail.rolloutAfter,origin:config.origin,contact:mail.replyTo});
  }};
 }

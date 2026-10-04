@@ -31,10 +31,10 @@ async function init(){
       const v=selectedVariant(),price=v?.precio??p.precio,original=v?.precio_original??p.precio_original;
       pricing.replaceChildren();if(original>price)pricing.append(node('del',money(original,p.moneda),'catalog-old'),node('span',`${Math.round((1-price/original)*100)}% OFF`,'catalog-discount'));
       pricing.append(node('strong',money(price,p.moneda),'catalog-price'));
-      pricing.append(node('p','10% de descuento por transferencia en checkout','catalog-transfer'));
+      pricing.append(node('p','Desde 3 mates físicos: 20% sobre productos. Transferencia: 10% adicional sobre el importe descontado.','catalog-transfer'));
       pricing.append(node('p','Cuotas según disponibilidad de Mercado Pago'));
       pricing.append(node('p','Envío gratis desde $80.000','catalog-shipping'));
-      for(const promotion of p.promociones)if(promotion!=='Envío gratis'&&!/transferencia|cuotas/i.test(promotion))pricing.append(node('p',promotion,'catalog-transfer'));
+      for(const promotion of p.promociones)if(promotion!=='Envío gratis'&&!/transferencia|cuotas|20% OFF Comprando 2 o más/i.test(promotion))pricing.append(node('p',promotion,'catalog-transfer'));
       availability.textContent=!v?'Elegí las opciones para ver disponibilidad.':!v.comprable?'Disponible por consulta: estamos vinculando su stock.':v.con_stock?'Disponible':'Sin stock';
       button.disabled=!v||!v.comprable||!v.con_stock||v.precio==null;
       buyNow.disabled=button.disabled;

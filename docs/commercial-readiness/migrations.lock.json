@@ -212,6 +212,11 @@
       "file": "20261004091411_atomic_sensitive_session_gate.sql",
       "status": "local-only-preproduction-candidate",
       "sha256LF": "3fede292e0585b1f10f699310b77b8cec6af534f93437680604f20f3b1b5044e"
+    },
+    {
+      "file": "20261004184020_manual_review_checkout_policy.sql",
+      "status": "local-manual-review-not-deployed",
+      "sha256LF": "017d702dcaa877840df35fcc4a7648be5376fc9eb05a08c84d35ebd1dee01d24"
     }
   ]
 }

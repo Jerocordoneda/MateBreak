@@ -24,7 +24,8 @@ async function load(){
   $('#signin').hidden=!!usuario;$('#signin-layout').hidden=!!usuario;$('#session-actions').hidden=!usuario;
   $('#account-title').replaceChildren(document.createTextNode(usuario?{cliente:'Tu espacio, tu ritual',vendedor:'Tus ventas, al día',administrador:'MateBreak, en orden'}[usuario.rol]||'Mi cuenta':'Tu próxima pausa'),element('span','.','accent'));
   if(!usuario)return true;
-  if(returnPath(returnIntent)==='/mayorista'){location.replace('/mayorista');return true;}
+  if(returnPath(returnIntent)==='/mayorista'&&new URLSearchParams(location.search).get('auth')!=='confirmed'){location.replace('/mayorista');return true;}
+  if(new URLSearchParams(location.search).get('auth')==='confirmed'){message('Tu correo quedó confirmado. Ya podés usar tu cuenta MateBreak.');const next=returnPath(returnIntent);if(next){const link=element('a',returnIntent==='mayorista'?'Continuar con Compra Mayorista →':'Volver a mi carrito →');link.href=next;$('#identity').append(document.createTextNode(' · '),link);}}
   $('#role').textContent={administrador:'Administrador',vendedor:'Vendedor',cliente:'Cliente'}[usuario.rol];
   if(usuario.rol==='administrador'){
    $('#admin-area').hidden=false;

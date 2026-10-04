@@ -12,4 +12,4 @@ for(const row of lock.rows){
  assert.equal(createHash('sha256').update(source).digest('hex'),row.sha256LF,'Unexpected migration content: '+row.file);
  if(row.historicalSha256)assert.equal(before.migrations['supabase/migrations/'+row.file],row.historicalSha256,'Historical baseline changed');
 }
-console.log('PASS 26 historical hashes preserved; exact 37-file candidate lock; only CRLF/LF normalized, all SQL/comments/ACL/RLS statements pinned');
+console.log(`PASS 26 historical hashes preserved; exact ${lock.rows.length}-file candidate lock; only CRLF/LF normalized, all SQL/comments/ACL/RLS statements pinned`);

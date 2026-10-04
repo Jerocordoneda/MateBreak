@@ -32,8 +32,8 @@ export function renderOrderEmail({kind='received',order,orderUrl,origin,contact,
   return `<tr><td style="padding:18px 0;border-bottom:1px solid #ddd8cf;width:80px;vertical-align:top">${image?`<img src="${escape(image)}" width="64" height="64" alt="${escape(i.nombre)}" style="display:block;border:0;border-radius:4px">`:'<span style="font-size:12px;color:#6b665f">Foto pendiente</span>'}</td><td style="padding:18px 0;border-bottom:1px solid #ddd8cf"><strong>${escape(i.nombre)}</strong><br><span style="font-size:13px;color:#6b665f">${escape(Object.entries(i.opciones||{}).filter(([,v])=>typeof v==='string').map(([key,value])=>key+': '+value).join(' · '))}${i.personalizacion?'<br>'+escape(i.personalizacion):''}<br>Cantidad: ${escape(i.cantidad)}</span>${promotion?`<br><del style="color:#6b665f">${escape(money(original))}</del><br>Promoción aplicada`:''}</td><td style="padding:18px 0;border-bottom:1px solid #ddd8cf;text-align:right;white-space:nowrap">${escape(money(unit*Number(i.cantidad)))}</td></tr>`;
  }).join('');
  const subtotal=Number(order.subtotal_mercaderia??order.subtotal??0),discount=Number(order.descuento_productos||0);
- const originalSubtotal=Math.max(subtotal,(order.items||[]).reduce((sum,i)=>sum+Math.max(Number(i.precio_original)||0,Number(i.precio_unitario)||0)*Number(i.cantidad),0));
- const promotionalDiscount=Math.max(0,originalSubtotal-subtotal);
+ const originalSubtotal=Number(order.subtotal_original_productos??Math.max(subtotal,(order.items||[]).reduce((sum,i)=>sum+Math.max(Number(i.precio_original)||0,Number(i.precio_unitario)||0)*Number(i.cantidad),0)));
+ const promotionalDiscount=Number(order.descuento_promocional??Math.max(0,originalSubtotal-subtotal));
  const paid=(order.pagos||order.pago||[]).map(paymentPresentation).join(' · ');
  const mpLogo=(order.pagos||order.pago||[]).some(p=>p.metodo==='mercadopago'&&!p.simulado&&!p.mock)?`<img src="${escape(origin)}/src/assets/email/mercadopago-official.png" width="130" alt="Mercado Pago" style="display:block;border:0;height:auto;margin:12px 0">`:'';
  const buttonUrl=shipped?OFFICIAL_TRACKING_URL:privateUrl,label=shipped?'SEGUIR MI ENVÍO':'VER MI PEDIDO';

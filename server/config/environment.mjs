@@ -18,7 +18,7 @@ const config = {
   production,
   authRecoveryEnabled:env.AUTH_RECOVERY_ENABLED==='1',
   reconciliationEnabled:env.PAYMENT_RECONCILIATION_ENABLED==='1',
-  email:{enabled:env.EMAILS_ENABLED==='1',workerEnabled:env.EMAIL_WORKER_ENABLED==='1',receiptsEnabled:env.EMAIL_RECEIPTS_ENABLED==='1',apiKey:env.RESEND_API_KEY,webhookSecret:env.RESEND_WEBHOOK_SECRET,encryptionKey:env.EMAIL_ENVELOPE_KEY,from:env.RESEND_FROM_EMAIL||'MateBreak <pedidos@matebreak.com.ar>',replyTo:env.RESEND_REPLY_TO||'Mate.break32@gmail.com',testRecipient:env.EMAIL_TEST_RECIPIENT||'',eventId:env.EMAIL_TEST_EVENT_ID||null,rolloutAfter:env.EMAIL_ROLLOUT_AFTER||null},
+  email:{enabled:env.EMAILS_ENABLED==='1',workerEnabled:env.EMAIL_WORKER_ENABLED==='1',receiptsEnabled:env.EMAIL_RECEIPTS_ENABLED==='1',apiKey:env.RESEND_API_KEY,webhookSecret:env.RESEND_WEBHOOK_SECRET,encryptionKey:env.EMAIL_ENVELOPE_KEY,from:env.RESEND_FROM_EMAIL||'MateBreak <contacto@matebreak.com.ar>',replyTo:env.RESEND_REPLY_TO||'Mate.break32@gmail.com',testRecipient:env.EMAIL_TEST_RECIPIENT||'',eventId:env.EMAIL_TEST_EVENT_ID||null,rolloutAfter:env.EMAIL_ROLLOUT_AFTER||null},
   rateLimitKey:env.RATE_LIMIT_KEY||'',
   trustedProxyAddresses:env.TRUSTED_PROXY_ADDRESSES?env.TRUSTED_PROXY_ADDRESSES.split(','):[],
   staging: env.APP_ENV === 'staging',
@@ -52,7 +52,7 @@ const config = {
 for (const key of ['url','publishable','secret','origin']) if (!config[key]) throw Error(`Falta configuración ${key}. Completá .env siguiendo .env.example.`);
 for(const address of config.trustedProxyAddresses){const [ip,bits,...extra]=address.split('/'),family=isIP(ip);if(!family||extra.length||(bits!==undefined&&(!/^\d+$/.test(bits)||Number(bits)<1||Number(bits)>(family===4?32:128))))throw Error('Trusted proxies must be explicit IP addresses or non-global CIDRs');}
 if(config.email.rolloutAfter&&!Number.isFinite(Date.parse(config.email.rolloutAfter)))throw Error('Invalid email rollout cutoff');
-if(config.email.testRecipient&&config.email.testRecipient.toLowerCase()!=='mate.break32@gmail.com')throw Error('Unauthorized email test recipient');
+if(config.email.testRecipient&&!['mate.break32@gmail.com','jerocordoneda@gmail.com'].includes(config.email.testRecipient.toLowerCase()))throw Error('Unauthorized email test recipient');
 if (config.localPersistMock && env.MATEBREAK_LOCAL_ONLY !== '1')
   throw Error('MATEBREAK_LOCAL_PERSIST_MOCK requires MATEBREAK_LOCAL_ONLY=1.');
 if(config.localPickupMock && env.MATEBREAK_LOCAL_ONLY!=='1')throw Error('MATEBREAK_LOCAL_PICKUP_MOCK requires MATEBREAK_LOCAL_ONLY=1.');
