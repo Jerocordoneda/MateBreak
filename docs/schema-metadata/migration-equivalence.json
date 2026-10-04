@@ -286,5 +286,23 @@
     "localTokenMd5": "787d4b388eb170a7a6135f63f2537c27",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261004075339_payment_reconciliation_guard.sql",
+    "version": "20261004075339",
+    "name": "payment_reconciliation_guard",
+    "remoteVersion": null,
+    "localTokenMd5": "e378d76c19961d1ecbacd05818437316",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261004075948_immutable_email_delivery.sql",
+    "version": "20261004075948",
+    "name": "immutable_email_delivery",
+    "remoteVersion": null,
+    "localTokenMd5": "c566fe17a21283175cc26421dbe973b0",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]

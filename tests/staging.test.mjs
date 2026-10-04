@@ -9,7 +9,7 @@ test('staging validates before connections and requires exact isolated project, 
  const {config}=loadConfig(env);assert.equal(config.stagingPersistMock,true);assertStagingConfig(config);
  for(const patch of [{SUPABASE_STAGING_PROJECT_REF:PROTECTED_PRODUCTION_REF,SUPABASE_URL:`https://${PROTECTED_PRODUCTION_REF}.supabase.co`},
  {SUPABASE_URL:'https://other.supabase.co'},{APP_ORIGIN:'http://stage.example.test'},{NODE_ENV:'production'},{SHIPPING_MODE:'real'},{PAYMENTS_MODE:'real'},
- {MP_ACCESS_TOKEN:'must-not-use'},{CORREO_MICORREO_PASSWORD:'must-not-use'},{MATEBREAK_LOCAL_PERSIST_MOCK:'1'},{APP_ENV:'local'},{MATEBREAK_STAGING_PERSIST_MOCK:'0'}])assert.throws(()=>loadConfig({...env,...patch}));
+ {MP_ACCESS_TOKEN:'must-not-use'},{RESEND_API_KEY:'must-not-use'},{RESEND_WEBHOOK_SECRET:'must-not-use'},{EMAIL_ENVELOPE_KEY:'must-not-use'},{EMAILS_ENABLED:'1'},{CORREO_MICORREO_PASSWORD:'must-not-use'},{MATEBREAK_LOCAL_PERSIST_MOCK:'1'},{APP_ENV:'local'},{MATEBREAK_STAGING_PERSIST_MOCK:'0'}])assert.throws(()=>loadConfig({...env,...patch}));
  assert.throws(()=>createApp({...config,staging:false}));
 });
 test('staging keeps secure host cookies, HSTS and same-origin rejection',async t=>{

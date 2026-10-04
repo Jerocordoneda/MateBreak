@@ -1,0 +1,202 @@
+{
+  "approvedStagingHead": "223076738cb35fbb97abbd4bcbf3eb1889f17591",
+  "normalization": "CRLF to LF only; no SQL or comment tokens omitted",
+  "rows": [
+    {
+      "file": "20260907203437_bootstrap_legacy_catalog.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "ca0c0ae8a09ef3a2f02464010880cec6af9f28dd5c20ed25465101b782e67d28",
+      "historicalSha256": "c983798cccc76f98c8843dad75fd8889b3d278a046ab94947087af7718e938ea"
+    },
+    {
+      "file": "20260907203438_commerce.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "f7e61cdbeee6fed73161299cb022fd414a2f9feb297f53c9dc901a18acd1cc13",
+      "historicalSha256": "59953ab62a3be591152b07d9c37d46089f26ef599cf0402126e29445416da19f"
+    },
+    {
+      "file": "20260907205528_restrict_rls_event_function.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "a616d83f6574347113be0e7f6b220b1d06a80931b206f5fe1aba7f0e479bb87f",
+      "historicalSha256": "be330fbfd4db089308b9daea11e16b97ab256a20b5b484c0fd36feaa34562a3c"
+    },
+    {
+      "file": "20260908093541_inventory_admin.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "a24db164d80b2b91b942257c378c5d058f1c97e4b955a92c9d0a2d4361e668ff",
+      "historicalSha256": "b35a4943321bb7d469f209e5970c231bbe3723f15a1357e805fd09042e22a65e"
+    },
+    {
+      "file": "20260908094753_inventory_query_aliases.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "9ae0932f849057f69c14f04b232e487edda41aba1726ccb7d39c9411ee232baf",
+      "historicalSha256": "896ad8213d160f786c81f1129cd8d8c36ca838f57977f6130136a230c259587a"
+    },
+    {
+      "file": "20260908103049_account_roles_sales.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "1eace21b3caa4a940a5493fc6bfe8df8b4f5f275029e54d7dbab845c8d2483c1",
+      "historicalSha256": "a3fc3999d231734343b7348c1102d999b833c0e5d118dc6de9c3f7b5573ff172"
+    },
+    {
+      "file": "20260909000858_account_admin_roles.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "1ae199acfe7ea993e206134ec8872f67ffb8ad34a65efad486ab25049de1f4e7",
+      "historicalSha256": "7dcded862e3f6cf89dd8282f9d25a55f7f41fcea7b84147d036bc2d8559d68c7"
+    },
+    {
+      "file": "20260909234040_admin_commercial_dashboard.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "b0c6b38bdc9f9d10761c15a2ba890475d674bac03aaf6ea6e5e3421dfa3ef8af",
+      "historicalSha256": "b756c19555664e3382522e77cd901c21e9e1693b9723c8ea21b27a2656e609da"
+    },
+    {
+      "file": "20260928160916_catalog_import.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "5518b3019aeb9f7d592481c6b595c53c7ebe9253c727373de65d40bad35da82c",
+      "historicalSha256": "ca263db61f1888307d3ce90c190fe0b04138b9d4d2f0f883e68d3d27cc3701f9"
+    },
+    {
+      "file": "20260928162849_catalog_reconcile_metadata.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "432e81c7c9e2751600ad54e674a0b1f54d50ec5c941ae69c48c374c768e95c41",
+      "historicalSha256": "8dfefc811de54e4faaa933532c3c1c74c8f750932e52b5633fd4fc4724984e3d"
+    },
+    {
+      "file": "20260928162850_restore_historical_public_catalog.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "d9b08671f76a21dfd587be1156119cb33e65acf8482c84427034bad5cb348640",
+      "historicalSha256": "13d2f2e2b8372d6c9dfe2822b44fb9b068a5f61c1c5b788771447a8c5e2bd324"
+    },
+    {
+      "file": "20260928210316_ars_variant_checkout.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "daf9c0be06641de6f01bba96a488b25f5ef75d324170fdfd0081bf0340546a0c",
+      "historicalSha256": "7fb3571abf76fd3c49d34fb10f4483d117208721bb01d0a1795ae40f79a1e608"
+    },
+    {
+      "file": "20260928232227_reconcile_camionero_algarrobo.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "b2e507de9c6014ea27a9b9c4ba3b611b1761de4b5287131b11c01e3f5f7d3849",
+      "historicalSha256": "f693d545838e6e78dc3df198626f34e4f250cd12a1d86b641aec998b16166dd9"
+    },
+    {
+      "file": "20260929000621_physical_base_reconciliation.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "783266ae1eda350c43a23905b6d5e631c1ebfff4779a01244d64765a2dc44ecf",
+      "historicalSha256": "d8af75892d4b7636301b0c249f5252d48a5aa1ce782023bede1e56f13852de76"
+    },
+    {
+      "file": "20260929000841_on_demand_and_preparation.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "5cbd0a209d4b26c9a856990822c73767d29896130551ca1f850dacf78c9090d8",
+      "historicalSha256": "ed9ddd1ca6257cdc2ec5f8678afe65bdf35c8aa28efa5b748da67b4907738866"
+    },
+    {
+      "file": "20260929001114_receiving_and_engraving_operations.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "195b547e887df4f459e7f78cb3c67e996862ea9561d2f6a80ca67c18a6a941e1",
+      "historicalSha256": "2e1cdd007da1892699d544bec7e3118dabc697110861d26c4a5a77cf764b4e2d"
+    },
+    {
+      "file": "20260929001306_align_board_procurement.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "0a1c320c16ba2c2c6bdcc2cf5351c9008de3e4e4fa017f22c80c2845ee2b8787",
+      "historicalSha256": "963bc44b2f169c4b94921345149f3753d188e2c78999158e2da9ed9f0172f93d"
+    },
+    {
+      "file": "20260929122500_reconcile_thermo_publications.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "136bd9fc7697155feeb8fbc74c7a4e62728158ca60e895d92e2679d1d8ea9f19",
+      "historicalSha256": "69a31ba6b6491e073d64e56a14b3d571cbe1cf527ed7666aec1c850d1558821d"
+    },
+    {
+      "file": "20260929130000_box_per_mate_and_combo_mapping.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "21a745c40e3d0568b857d86a3074b6eaf1909e5f9d2e641a7a6a11ce7517f933",
+      "historicalSha256": "024a0fc3e3cd1e7619448d164589522731762b9325ce2d0d20ff5dc8ba4d9706"
+    },
+    {
+      "file": "20260929131500_box_for_manual_sales.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "1c9a1e7d625303c0332a13842d9f3c461d7e8827df9482ac73478a293983c749",
+      "historicalSha256": "f896a9c10a4e3e5b51b68cfe9d1e6db3f47ff612d42d44743ffc483067fbdf1d"
+    },
+    {
+      "file": "20260929133000_map_premium_personalized_knife_sheath.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "343f244e9feb07fb558ea6f7ae620935fccdcb1db2d2557904ae4df3e11b06b5",
+      "historicalSha256": "2a312346cdd3ec0c36d9cc3b23c2b8e763194685a765c50424ac5e2280c6ad34"
+    },
+    {
+      "file": "20260929144308_checkout_minorista_preparacion.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "102aed40b6cc4568d0b61805d2b131951682473669f660ef80103405fdf0c3a9",
+      "historicalSha256": "7d237713af60851ff18230cc561e6dd1c31737db371d5e1993f321deef61d453"
+    },
+    {
+      "file": "20260929204150_fix_minorista_checkout_lifecycle.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "53242779dfa9325a8f4e133b92cdcb115ea3f541ee3f89ae1ca516bc0fca1b04",
+      "historicalSha256": "17981494c569d705acd27bf38052b34f1d4881b371a4a74f1f519934c651c98b"
+    },
+    {
+      "file": "20260929214717_harden_default_privileges.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "09ef909c51c64b611c5a1252aed1d8d9561c5263e9158baf5ad14b7a1e5b226f",
+      "historicalSha256": "2e6c4391ac6f88ad7bf4895e6ec51c759e0db645ea9355f1129258aa49f0f5c5"
+    },
+    {
+      "file": "20261001003824_micorreo_logistics_snapshots.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "b74314a36788fbd66179dbcb35a34a98a49cbf9ba6aadf25bdd261a45c4ed874",
+      "historicalSha256": "00bca3f50c9b0064c21319fa6950f8df44d037249ceba04fffe2d5252d1a4297"
+    },
+    {
+      "file": "20261001112820_logistics_admin_recovery.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "430d3fa2b6811a9303af4923a7156fc3fecfd199c24bf12febc5e89fe1934c04",
+      "historicalSha256": "d1e7e6940b7c92551c84f9f022434f8cd1a1bcfbfca5dc67f17ff1c3c2306939"
+    },
+    {
+      "file": "20261003001216_guest_checkout_ownership.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "e80fd3374c502c19801017f643c26da135a490bec662a92b09c7299dcb30c3a0"
+    },
+    {
+      "file": "20261003001218_private_order_access_and_notifications.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "cb55d54c5a7b7c620acb375d301316d275355d8ac306f811d9651a62a7742f43"
+    },
+    {
+      "file": "20261003202124_wholesale_requests.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "01765352c86d307ef7da79fbd39524a5af2dbd7f998cb988a59a6cdcd6013032"
+    },
+    {
+      "file": "20261003221931_wholesale_volume_catalog.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "3a6c96ab0b44143dabd0eff005fb75f7344eaf16522d3bc54b3dbbd35519351e"
+    },
+    {
+      "file": "20261003230752_wholesale_account_access.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "d84e3c627019fd4bcf596c36dbf25d04099708139e7463bb6556d118a3aa2dea"
+    },
+    {
+      "file": "20261004065346_wholesale_profile_details.sql",
+      "status": "published-staging-2230767",
+      "sha256LF": "b9b62c0e7a74415596f7e89335e46680d95da959beb6ed64953e919b1847bb68"
+    },
+    {
+      "file": "20261004075339_payment_reconciliation_guard.sql",
+      "status": "local-only-commercial-candidate",
+      "sha256LF": "ac9285fc785b23f960418c9b6279c5f470a1f42f23fee3513a82b9297359dd11"
+    },
+    {
+      "file": "20261004075948_immutable_email_delivery.sql",
+      "status": "local-only-commercial-candidate",
+      "sha256LF": "673f85060b05c443c2252f81c1935c66c0add54ade51e6cc4c565c0f8abec4cc"
+    }
+  ]
+}

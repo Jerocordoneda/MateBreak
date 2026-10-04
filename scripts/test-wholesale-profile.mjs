@@ -10,6 +10,6 @@ for(const data of [{id:b},{rol:'administrador'},{whatsapp:'1e10'},{provincia:'fa
 assert.throws(()=>q('set role anon;select public.mb_wholesale_profile_complete(\'{}\');'));
 q('set role authenticated;set request.jwt.claim.sub='+l(a)+';update public.perfil set nombre=\'Ana permanente\',telefono=\'00012345678\' where id='+l(a)+';');const same=JSON.parse(q(execute(a,{localidad:'Other'})));assert.equal(same.nombre,'Ana permanente');assert.equal(same.whatsapp,'00012345678');assert.equal(same.localidad,'Tandil');
 q('reset role;');assert.equal(q('select count(*) from public.pedido;'),'0');assert.equal(q('select count(*) from public.pago;'),'0');assert.equal(q('select count(*) from private.wholesale_request;'),'0');
-console.log('PASS 32 migrations; profile RPC concurrency, fill-only, canonical phone/province, RLS ownership, spoof rejection, general profile preservation, no commercial writes');
+console.log('PASS complete local migration replay; profile RPC concurrency, fill-only, canonical phone/province, RLS ownership, spoof rejection, general profile preservation, no commercial writes');
 }finally{db.close();}
 

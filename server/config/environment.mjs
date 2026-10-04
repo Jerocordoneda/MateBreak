@@ -7,7 +7,8 @@ if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('PORT debe 
 const { shippingMode, paymentsMode } = resolveProviderModes(env);
 if (env.APP_ENV && !['local','staging','production'].includes(env.APP_ENV)) throw Error('APP_ENV inválido');
 if (env.MATEBREAK_STAGING_PERSIST_MOCK === '1' && env.APP_ENV !== 'staging') throw Error('Staging persistence requires APP_ENV=staging');
-if (env.APP_ENV === 'staging' && Object.entries(env).some(([name,value]) => value && /^(MP_|MERCADOPAGO_|CORREO_MICORREO_(USER|PASSWORD|CUSTOMER_ID)$|SUPABASE_ACCESS_TOKEN$|DATABASE_URL$|POSTGRES_URL$)/.test(name))) throw Error('Staging runtime refuses provider/management/database credentials');
+if (env.APP_ENV === 'staging' && Object.entries(env).some(([name,value]) => value && /^(MP_|MERCADOPAGO_|RESEND_(API_KEY|WEBHOOK_SECRET)$|EMAIL_ENVELOPE_KEY$|CORREO_MICORREO_(USER|PASSWORD|CUSTOMER_ID)$|SUPABASE_ACCESS_TOKEN$|DATABASE_URL$|POSTGRES_URL$)/.test(name))) throw Error('Staging runtime refuses provider/management/database credentials');
+if(env.APP_ENV==='staging'&&env.EMAILS_ENABLED==='1')throw Error('Real email transport forbidden in staging');
 const config = {
   url: env.SUPABASE_URL,
   publishable: env.SUPABASE_PUBLISHABLE_KEY || env.SUPABASE_ANON_KEY,
@@ -27,6 +28,9 @@ const config = {
   mercadoPago: {
     accessToken: env.MP_ACCESS_TOKEN || env.MERCADOPAGO_ACCESS_TOKEN,
     webhookSecret: env.MERCADOPAGO_WEBHOOK_SECRET,
+    collectorId: env.MP_COLLECTOR_ID,
+    environment: env.MP_ENVIRONMENT || 'test',
+    expectedLiveMode: env.MP_EXPECTED_LIVE_MODE==='true'?true:env.MP_EXPECTED_LIVE_MODE==='false'?false:undefined,
     origin: env.APP_ORIGIN || (!production ? `http://localhost:${port}` : ''),
   },
   correo: {

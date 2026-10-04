@@ -32,5 +32,5 @@ try{
  q('update auth.sessions set not_after=now()-interval \'1 minute\' where id='+l(sb)+';');assert.equal(read('select public.mb_wholesale_access('+l(bob)+','+l(sb)+');'),false);
  assert.equal(q('select count(*) from private.wholesale_request;'),'4');assert.equal(q('select count(*) from public.pedido;'),'0');assert.equal(q('select count(*) from public.pago;'),'0');
  assert.equal(q("select count(*) from pg_proc where proname like 'mb_wholesale_%' and prosecdef;"),'0');
- console.log('PASS 31 migrations; MAY-0001/0002 + event hashes preserved; account/session isolation; 3 concurrent submits=1; per-account idempotency; prices/snapshots; immutable ownership; revoked/expired session; invoker/RLS/ACL; no retail writes');
+ console.log('PASS complete local migration replay; MAY-0001/0002 + event hashes preserved; account/session isolation; 3 concurrent submits=1; per-account idempotency; prices/snapshots; immutable ownership; revoked/expired session; invoker/RLS/ACL; no retail writes');
 }finally{db.close();}
