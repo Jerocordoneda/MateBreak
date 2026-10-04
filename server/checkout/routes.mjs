@@ -205,11 +205,11 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
       if (savedError) throw Error('No se pudo guardar la preferencia');
       return res.status(201).json({ order, redirectUrl: preference.redirectUrl });
     } catch (error) {
-      // Provider errors release the whole reservation through the existing
-      // cancellation RPC. A network crash still has the one-hour expiry job.
+      // A lost response can hide an already-created preference. Never recreate
+      // it or cancel the order automatically; preserve the reservation until
+      // reconciliation/operator review or the normal expiry worker.
       await admin.from('mercadopago_intento').update({ estado: 'fallido' }).eq('pedido_id', order.id);
-      await rpc('mb_cancelar_pedido_servicio', {p_pedido_id:order.id});
-      throw fail(503, 'No se pudo iniciar Mercado Pago; liberamos la reserva');
+      throw fail(503, 'No se pudo verificar Mercado Pago; el intento requiere revisión');
     }
   });
 

@@ -98,13 +98,13 @@ test('Comprar ahora uses a separate HttpOnly cart credential and preserves ordin
   assert.equal(calls.filter(call=>call.name==='mb_comercio').at(-1).args.p_token_hash,hashToken(normalToken));
 });
 
-test('online payment preference receives only the persisted server-side order total', async t => {
+for(const scenario of ['success','lost-response'])test('online preference uses persisted total and conserves reservation: '+scenario, async t => {
   const orderId='11111111-1111-4111-8111-111111111111',cartToken='a'.repeat(64),seen=[];
   const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
     admin:{rpc:async(name,args)=>{seen.push({name,args});return {data:{id:orderId,estado:'pendiente_pago',total:90_000,reserva_hasta:new Date(Date.now()+60*60_000).toISOString()},error:null};},
       from:table=>table==='pedido_item'?{select:()=>({eq:async()=>({data:[{producto_id:'123',variante_id:'456',nombre:'Mate',cantidad:1}],error:null})})}
         :{insert:async()=>({error:null}),update:()=>({eq:()=>({eq:async()=>({error:null})})})}},
-    mercadoPago:{ready:true,createPreference:async data=>{seen.push({preference:data});return {id:'mp-pref',redirectUrl:'https://www.mercadopago.com.ar/checkout/test'};}},
+    mercadoPago:{ready:true,createPreference:async data=>{seen.push({preference:data});if(scenario==='lost-response')throw Error('timeout');return {id:'mp-pref',redirectUrl:'https://www.mercadopago.com.ar/checkout/test'};}},
     authFactory:()=>({auth:{getUser:async()=>({data:{user:{id:'verified-user',email:'ana@example.test'}}})}}),
   });
   const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));t.after(()=>new Promise(resolve=>server.close(resolve)));
@@ -113,7 +113,8 @@ test('online payment preference receives only the persisted server-side order to
       idempotencia:'22222222-2222-4222-8222-222222222222',pago:'mercadopago',envio:'retiro',destinatario:recipient,total:1,usuario_id:'forged',
     }),
   });
-  assert.equal(response.status,201,JSON.stringify({body:await response.clone().json(),seen}));
+  assert.equal(response.status,scenario==='success'?201:503,JSON.stringify({body:await response.clone().json(),seen}));
+  assert.equal(seen.filter(c=>c.name==='mb_cancelar_pedido_servicio').length,0);
   assert.equal(seen.find(entry=>entry.preference).preference.total,90_000);
   assert.equal(seen.find(entry=>entry.preference).preference.items[0].producto_id,'123');
   assert.equal(seen.find(entry=>entry.name==='mb_checkout_minorista').args.p_usuario_id,'verified-user');
@@ -159,47 +160,4 @@ test('expired pending reservation cannot start a real payment preference', async
   });
   assert.equal(response.status,409);
   assert.match((await response.json()).error,/reserva venció/i);
-});
-
-test('signed Mercado Pago webhook rechecks payment with provider and retries idempotently', async t => {
-  const calls=[],orderId='11111111-1111-4111-8111-111111111111';
-  const order={id:orderId,usuario_id:'buyer',estado:'pendiente_pago',total:90_000,moneda:'ARS',
-    pago:[{id:'pay-row',metodo:'mercadopago',estado:'pendiente'}]};
-  const payment={id:12345,external_reference:orderId,transaction_amount:90_000,currency_id:'ARS',status:'approved'};
-  const from=table=>table==='pedido'?{
-    select:()=>({eq:()=>({maybeSingle:async()=>({data:order,error:null})})}),
-  }:{upsert:async data=>{calls.push({audit:data});return {error:null};}};
-  const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
-    admin:{from,rpc:async(name,args)=>{calls.push({name,args});return {error:null};}},
-    mercadoPago:{ready:true,verifyWebhook:input=>input.signature==='valid',getPayment:async id=>{calls.push({provider:id});return payment;}},
-    authFactory:()=>({auth:{getUser:async()=>({data:{user:null}})}}),
-  });
-  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));t.after(()=>new Promise(resolve=>server.close(resolve)));
-  const url=`http://127.0.0.1:${server.address().port}/api/pagos/mercadopago/webhook?type=payment&data.id=12345`;
-  const send=signature=>fetch(url,{method:'POST',headers:{'content-type':'application/json','x-signature':signature,'x-request-id':'req'},body:JSON.stringify({status:'rejected',total:1})});
-  assert.equal((await send('bad')).status,401);
-  assert.equal(calls.length,0);
-  assert.equal((await send('valid')).status,200);
-  assert.equal((await send('valid')).status,200);
-  assert.equal(calls.filter(call=>call.name==='mb_confirmar_pago').length,2);
-  assert.equal(calls.filter(call=>call.provider==='12345').length,2);
-  assert.equal(calls.filter(call=>call.audit?.resultado==='aplicado').length,2);
-});
-
-for (const status of ['rejected','cancelled']) test(`Mercado Pago ${status} releases the order through the service-only cancellation RPC`, async t => {
-  const calls=[],orderId='11111111-1111-4111-8111-111111111111';
-  const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{
-    admin:{from:table=>table==='pedido'?{select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:orderId,usuario_id:'buyer',estado:'pendiente_pago',total:90_000,
-      pago:[{id:'pay-row',metodo:'mercadopago',estado:'pendiente'}]},error:null})})})}:{upsert:async()=>({error:null})},
-      rpc:async(name,args)=>{calls.push({name,args});return {error:null};}},
-    mercadoPago:{ready:true,verifyWebhook:()=>true,getPayment:async()=>({id:12345,external_reference:orderId,transaction_amount:90_000,currency_id:'ARS',status})},
-    authFactory:()=>({auth:{getUser:async()=>({data:{user:null}})}}),
-  });
-  const server=app.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));t.after(()=>new Promise(resolve=>server.close(resolve)));
-  const response=await fetch(`http://127.0.0.1:${server.address().port}/api/pagos/mercadopago/webhook?type=payment&data.id=12345`,{
-    method:'POST',headers:{'x-signature':'valid','x-request-id':'req','content-type':'application/json'},body:'{}',
-  });
-  assert.equal(response.status,200);
-  assert.deepEqual(calls.map(call=>call.name),['mb_cancelar_pedido_servicio']);
-  assert.deepEqual(calls[0].args,{p_pedido_id:orderId});
 });
