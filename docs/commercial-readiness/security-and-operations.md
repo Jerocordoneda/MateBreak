@@ -1,5 +1,7 @@
 # Correcciones preproducción y operación — 4/10/2026
 
+Lista histórica de la fase `d660f14`. La guardia de sesión/RLS, limitador SQL, workers manuales, recibos HTTP, Auth PKCE y CSP ya se implementaron y ensayaron en el candidato posterior. Consultar [cierre local de preproducción](../preproduction-completion-20261004.md) para estado, evidencias y bloqueos actuales; no hay activación Cloud.
+
 El candidato local contiene mejoras financieras y del outbox; los demás puntos son un plan concreto. Ninguna recomendación se ejecutó contra Cloud. La aprobación de Staging mock no equivale a autorización de producción.
 
 | Severidad/prioridad | Estado y siguiente corrección | Criterio de aceptación | ¿Bloquea producción? |

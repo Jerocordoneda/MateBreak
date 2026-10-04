@@ -3,18 +3,41 @@
     ".env.example",
     ".github/workflows/security.yml",
     ".gitignore",
+    ".vercelignore",
     "README.md",
+    "deploy/staging/backend.env.example",
+    "deploy/staging/fixtures.sql",
+    "deploy/staging/render-worker.yaml",
+    "deploy/staging/render.yaml",
+    "deploy/staging/vercel.template.json",
+    "deploy/staging/wholesale-auth-return.json",
+    "deploy/staging/wholesale-commercial.sql",
+    "docs/account-progressive-local.md",
     "docs/architecture.md",
     "docs/auditoria-prepagos.md",
     "docs/baseline-adoption.md",
     "docs/baseline-rehearsal-validation.md",
     "docs/checkout-pagos.md",
+    "docs/checkout-provinces-local.md",
+    "docs/checkout-result-local.md",
     "docs/ciclo-pedido-real.md",
     "docs/comercio.md",
+    "docs/commercial-integration-status.md",
+    "docs/commercial-readiness/credentials-and-dns.md",
+    "docs/commercial-readiness/migrations.lock.json",
+    "docs/commercial-readiness/security-and-operations.md",
     "docs/concurrencia-stock-aislada.md",
     "docs/diff-classification.md",
+    "docs/email-templates/confirmation-subject.txt",
+    "docs/email-templates/confirmation.html",
+    "docs/email-templates/recovery-subject.txt",
+    "docs/email-templates/recovery.html",
     "docs/flows.md",
+    "docs/frontend-initialization-audit.md",
+    "docs/guest-checkout-local-report.md",
+    "docs/header-initialization-fix.md",
     "docs/hosting.md",
+    "docs/integration-main-plan.md",
     "docs/interfaz.md",
     "docs/iteration-validation.md",
     "docs/learning-guide.md",
@@ -23,6 +46,8 @@
     "docs/micorreo-architecture.md",
     "docs/migracion-catalogo.md",
     "docs/packaging.md",
+    "docs/preproduction-completion-20261004.md",
+    "docs/preproduction-security-20261004.md",
     "docs/production-release-runbook.md",
     "docs/production-secrets.md",
     "docs/reconciliacion-inventario.md",
@@ -61,23 +86,79 @@
     "docs/security-architecture.md",
     "docs/security-production-checklist.md",
     "docs/security-threat-model.md",
+    "docs/staging-cart-quotation-contract.md",
+    "docs/staging-deployment.md",
+    "docs/staging-evidence/architecture.json",
+    "docs/staging-evidence/audit.json",
+    "docs/staging-evidence/consolidation.json",
+    "docs/staging-evidence/final-frontend-static-build.log",
+    "docs/staging-evidence/final-predeploy-architecture.json",
+    "docs/staging-evidence/final-predeploy-audit.json",
+    "docs/staging-evidence/final-predeploy-node-tests.log",
+    "docs/staging-evidence/final-predeploy-validation.json",
+    "docs/staging-evidence/final-publication-scan.json",
+    "docs/staging-evidence/final-staging-build-gate.log",
+    "docs/staging-evidence/fixtures-local.log",
+    "docs/staging-evidence/full-local-suite.log",
+    "docs/staging-evidence/local-start.log",
+    "docs/staging-evidence/local-stop.log",
+    "docs/staging-evidence/node-tests.log",
+    "docs/staging-evidence/offline-verification.json",
+    "docs/staging-evidence/postmerge-consolidated-node-tests.log",
+    "docs/staging-evidence/postmerge-staging-node-tests.log",
+    "docs/staging-evidence/pr3-postmerge-review.json",
+    "docs/staging-evidence/pr3-premerge-review.json",
+    "docs/staging-evidence/premerge-node-tests.log",
+    "docs/staging-evidence/staging-cloud-schema-comparison.json",
+    "docs/staging-evidence/validation.json",
+    "docs/staging-first-deploy.md",
+    "docs/staging-fixtures-plan.md",
+    "docs/staging-fixtures-result.md",
+    "docs/staging-functional-fixes-report.md",
+    "docs/staging-idempotency-procedure.md",
+    "docs/staging-migration-plan.md",
+    "docs/staging-migration-result.md",
+    "docs/staging-render-smoke.md",
+    "docs/staging-vercel-build-guard-investigation.md",
+    "docs/staging-vercel-first-deploy.md",
+    "docs/staging-vercel-name-version-investigation.md",
+    "docs/transactional-email-plan.md",
+    "docs/wholesale-account-release.md",
+    "docs/wholesale-architecture-local.md",
+    "docs/wholesale-commercial-release.md",
+    "docs/wholesale-registration-release.md",
     "index.html",
     "package-lock.json",
     "package.json",
     "scripts/audit-architecture.mjs",
     "scripts/audit-baseline.mjs",
+    "scripts/audit-guest-artifact.mjs",
+    "scripts/audit-wholesale-local.mjs",
     "scripts/build-frontend.mjs",
     "scripts/build-historical-catalog.mjs",
+    "scripts/build-staging.mjs",
+    "scripts/build-utilities.mjs",
     "scripts/catalog-source.mjs",
+    "scripts/check-commercial-migrations.mjs",
     "scripts/compare-schema.mjs",
+    "scripts/configure-staging-frontend.mjs",
+    "scripts/guest-local-runtime.mjs",
     "scripts/import-matebreak-products.mjs",
     "scripts/inspect-schema.mjs",
     "scripts/local-supabase.mjs",
     "scripts/local-test-runtime.mjs",
+    "scripts/preview-guest-local.mjs",
+    "scripts/preview-order-emails.mjs",
     "scripts/reconcile-inventory.mjs",
+    "scripts/render-auth-email-templates.mjs",
     "scripts/schema-comparison.mjs",
     "scripts/sql/schema-metadata.sql",
+    "scripts/staging-config.mjs",
     "scripts/test-baseline-rehearsal.mjs",
+    "scripts/test-cart-pricing-local.mjs",
+    "scripts/test-commercial-sql.mjs",
+    "scripts/test-email-demo.mjs",
+    "scripts/test-guest-sql.mjs",
     "scripts/test-local-auth.mjs",
     "scripts/test-local-commerce-rc.mjs",
     "scripts/test-local-logistics.mjs",
@@ -85,29 +166,62 @@
     "scripts/test-local-sql.mjs",
     "scripts/test-local.mjs",
     "scripts/test-order-lifecycle.mjs",
+    "scripts/test-preproduction-auth-browser.mjs",
+    "scripts/test-preproduction-sql.mjs",
+    "scripts/test-staging-fixtures-local.mjs",
     "scripts/test-stock-concurrency.mjs",
+    "scripts/test-wholesale-account.mjs",
+    "scripts/test-wholesale-commercial.mjs",
+    "scripts/test-wholesale-local.mjs",
+    "scripts/test-wholesale-profile.mjs",
+    "scripts/themes/13bef4f761b9.mjs",
+    "scripts/themes/5f00f0fce391.mjs",
+    "scripts/themes/index.json",
+    "scripts/wholesale-local-runtime.mjs",
+    "scripts/wholesale-preview-runtime.mjs",
     "scripts/wire-catalog-pages.mjs",
     "server/account.mjs",
     "server/app.mjs",
+    "server/auth/live-session.mjs",
+    "server/auth/recovery.mjs",
+    "server/auth/session-rpc.mjs",
     "server/catalog.mjs",
+    "server/checkout/cart-identity.mjs",
+    "server/checkout/cart-quote.mjs",
     "server/checkout/mock-store.mjs",
+    "server/checkout/order-simulation.mjs",
     "server/checkout/packaging-service.mjs",
     "server/checkout/policy.mjs",
     "server/checkout/routes.mjs",
     "server/config/environment.mjs",
+    "server/config/staging.mjs",
+    "server/email/auth-templates.mjs",
+    "server/email/durable-worker.mjs",
+    "server/email/password-recovery.mjs",
+    "server/email/receipts.mjs",
+    "server/email/resend.mjs",
+    "server/email/runtime.mjs",
+    "server/email/templates.mjs",
+    "server/email/worker.mjs",
     "server/index.mjs",
     "server/integrations/supabase/auth.mjs",
     "server/inventory.mjs",
     "server/jobs/expire-reservations.mjs",
+    "server/jobs/monitor.mjs",
+    "server/jobs/reconcile-payments.mjs",
+    "server/manual-worker.mjs",
     "server/modules/account/customer-routes.mjs",
     "server/modules/account/routes.mjs",
     "server/modules/auth/routes.mjs",
     "server/modules/cart/routes.mjs",
     "server/modules/catalog/routes.mjs",
     "server/modules/inventory/routes.mjs",
+    "server/orders/private-access.mjs",
     "server/payments/admin-routes.mjs",
+    "server/payments/card-presentation.mjs",
     "server/payments/mercadopago.mjs",
     "server/payments/mock.mjs",
+    "server/payments/reconciliation.mjs",
     "server/payments/routes.mjs",
     "server/payments/transferencia.mjs",
     "server/private-ui/inventory.css",
@@ -118,13 +232,26 @@
     "server/private-ui/logistics.js",
     "server/providers.mjs",
     "server/security.mjs",
+    "server/security/public-policy.mjs",
+    "server/security/rate-store.mjs",
     "server/shipping/admin.mjs",
     "server/shipping/carrier-limits.mjs",
     "server/shipping/correo-argentino.mjs",
     "server/shipping/jobs.mjs",
     "server/shipping/mock.mjs",
     "server/shipping/packaging.mjs",
+    "server/shipping/provinces.mjs",
     "server/shipping/snapshot.mjs",
+    "server/shipping/tracking.mjs",
+    "server/shipping/wholesale-parcels.mjs",
+    "server/staging-worker.mjs",
+    "server/wholesale/access.mjs",
+    "server/wholesale/context.mjs",
+    "server/wholesale/policy.mjs",
+    "server/wholesale/profile.mjs",
+    "server/wholesale/routes.mjs",
+    "src/assets/email/matebreak-logo.png",
+    "src/assets/email/mercadopago-official.png",
     "src/assets/imagenes/MATEBREAK & TU EMPRESA.png",
     "src/assets/imagenes/recortes/foto-1.png",
     "src/assets/imagenes/recortes/foto-2.png",
@@ -196,19 +323,38 @@
     "src/assets/videos/Download (2).mp4",
     "src/assets/videos/Download (3).mp4",
     "src/assets/videos/Download.mp4",
+    "src/assets/wholesale/camionero-algarrobo.jpg",
+    "src/assets/wholesale/imperial-algarrobo.jpg",
+    "src/assets/wholesale/imperial-calabaza.jpg",
+    "src/assets/wholesale/mate-acero.jpg",
+    "src/assets/wholesale/set-parrillero.jpg",
+    "src/assets/wholesale/termo-media-manija.jpg",
+    "src/assets/wholesale/vaso-quencher.jpg",
+    "src/assets/wholesale/vaso-termico.jpg",
+    "src/assets/wholesale/yerbero-cuero.jpg",
     "src/css/account.css",
     "src/css/catalog.css",
+    "src/css/checkout-result.css",
     "src/css/checkout.css",
     "src/css/commerce.css",
     "src/css/header-account.css",
+    "src/css/private-order.css",
     "src/css/site-brand.css",
     "src/css/style.css",
+    "src/css/utilities-13bef4f761b9.css",
+    "src/css/utilities-5f00f0fce391.css",
+    "src/css/wholesale-presentation.css",
+    "src/css/wholesale.css",
     "src/data/gen-data.json",
     "src/features/account/account-admin.js",
     "src/features/account/account-data.js",
     "src/features/account/account-orders.js",
     "src/features/account/account-team.js",
+    "src/features/account/account-wholesale.js",
     "src/features/account/account.js",
+    "src/features/account/customer-panel.js",
+    "src/features/account/recovery.js",
+    "src/features/account/return-path.mjs",
     "src/features/account/sales.js",
     "src/features/account/ui.mjs",
     "src/features/cart/commerce.js",
@@ -217,6 +363,15 @@
     "src/features/catalog/product-detail.js",
     "src/features/checkout/checkout-result.js",
     "src/features/checkout/checkout.js",
+    "src/features/checkout/order-presentation.mjs",
+    "src/features/checkout/province-select.mjs",
+    "src/features/checkout/result-state.mjs",
+    "src/features/orders/home-order.js",
+    "src/features/orders/private-order.js",
+    "src/features/orders/recent-order.mjs",
+    "src/features/wholesale/autofill.mjs",
+    "src/features/wholesale/presentation.js",
+    "src/features/wholesale/wholesale.js",
     "src/i18n/es-source.json",
     "src/js/account-admin.js",
     "src/js/account-data.js",
@@ -235,6 +390,8 @@
     "src/js/script.js",
     "src/js/scroll-sequence.js",
     "src/js/site-brand.js",
+    "src/js/static/6b03fe29e2cb3568.js",
+    "src/js/static/fb46e909f87edf7f.js",
     "src/js/video-carousel.js",
     "src/pages/accesorios.html",
     "src/pages/algarrobo-clasico.html",
@@ -248,8 +405,11 @@
     "src/pages/cuenta.html",
     "src/pages/faqs.html",
     "src/pages/mates-personalizados.html",
+    "src/pages/mayorista.html",
     "src/pages/nosotros.html",
+    "src/pages/pedido.html",
     "src/pages/producto.html",
+    "src/pages/recuperar-cuenta.html",
     "src/pages/regalos-empresariales.html",
     "src/pages/sets-materos.html",
     "src/pages/sets-parrilleros.html",
@@ -290,6 +450,17 @@
     "supabase/migrations/20260929214717_harden_default_privileges.sql",
     "supabase/migrations/20261001003824_micorreo_logistics_snapshots.sql",
     "supabase/migrations/20261001112820_logistics_admin_recovery.sql",
+    "supabase/migrations/20261003001216_guest_checkout_ownership.sql",
+    "supabase/migrations/20261003001218_private_order_access_and_notifications.sql",
+    "supabase/migrations/20261003202124_wholesale_requests.sql",
+    "supabase/migrations/20261003221931_wholesale_volume_catalog.sql",
+    "supabase/migrations/20261003230752_wholesale_account_access.sql",
+    "supabase/migrations/20261004065346_wholesale_profile_details.sql",
+    "supabase/migrations/20261004075339_payment_reconciliation_guard.sql",
+    "supabase/migrations/20261004075948_immutable_email_delivery.sql",
+    "supabase/migrations/20261004085004_preproduction_session_rate_guards.sql",
+    "supabase/migrations/20261004085438_controlled_delivery_reconciliation_workers.sql",
+    "supabase/migrations/20261004091411_atomic_sensitive_session_gate.sql",
     "supabase/platform/harden-admin-defaults.sql",
     "supabase/tests/account-sales.sql",
     "supabase/tests/admin-dashboard.sql",
@@ -300,6 +471,9 @@
     "supabase/tests/checkout-minorista.sql",
     "supabase/tests/commerce.sql",
     "supabase/tests/fixtures/local-members.sql",
+    "supabase/tests/guest-checkout.sql",
+    "supabase/tests/guest-commerce-regression.sql",
+    "supabase/tests/guest-fixture.sql",
     "supabase/tests/inventory.sql",
     "supabase/tests/logistics/snapshots.sql",
     "supabase/tests/physical-operations.sql",
@@ -313,14 +487,27 @@
     "supabase/tests/variant-checkout.sql",
     "tests/account-data.test.mjs",
     "tests/account-preview.mjs",
+    "tests/account-progressive.test.mjs",
     "tests/account.test.mjs",
     "tests/baseline-guards.test.mjs",
+    "tests/cart-quote.test.mjs",
     "tests/catalog-api.test.mjs",
     "tests/catalog-source.test.mjs",
+    "tests/catalog-visual-browser.mjs",
     "tests/checkout.test.mjs",
+    "tests/commercial-email-shipping.test.mjs",
+    "tests/concurrency/cart-pricing.sql",
     "tests/concurrency/isolated-schema.sql",
     "tests/concurrency/minorista-lifecycle.sql",
     "tests/concurrency/minorista-schema.sql",
+    "tests/enterprise-entry-browser.mjs",
+    "tests/guest-order-access.test.mjs",
+    "tests/guest-persisted-checkout.test.mjs",
+    "tests/guest-private-page.test.mjs",
+    "tests/guest-ux-browser.mjs",
+    "tests/header-initialization.test.mjs",
+    "tests/helpers/business-app.mjs",
+    "tests/idempotency-replay.test.mjs",
     "tests/integration.mjs",
     "tests/inventory-preview.mjs",
     "tests/inventory.test.mjs",
@@ -330,15 +517,35 @@
     "tests/logistics-admin.test.mjs",
     "tests/micorreo.test.mjs",
     "tests/mock-checkout.test.mjs",
+    "tests/order-email.test.mjs",
+    "tests/order-presentation.test.mjs",
     "tests/packaging-dynamic.test.mjs",
     "tests/packaging.test.mjs",
+    "tests/payment-reconciliation.test.mjs",
+    "tests/preproduction-security.test.mjs",
     "tests/preview.mjs",
     "tests/providers.test.mjs",
+    "tests/provinces.test.mjs",
     "tests/refactor-http.test.mjs",
     "tests/registration-roles.test.mjs",
+    "tests/result-state.test.mjs",
     "tests/security-privileges.sql",
     "tests/server.test.mjs",
-    "tools/extract-strings.mjs"
+    "tests/staging-hosting.test.mjs",
+    "tests/staging-ux-preview.mjs",
+    "tests/staging.test.mjs",
+    "tests/wholesale-access.test.mjs",
+    "tests/wholesale-account-browser.mjs",
+    "tests/wholesale-browser.mjs",
+    "tests/wholesale-commercial-browser.mjs",
+    "tests/wholesale-completion-browser.mjs",
+    "tests/wholesale-context.test.mjs",
+    "tests/wholesale-profile.test.mjs",
+    "tests/wholesale.test.mjs",
+    "tests/worker-monitor.test.mjs",
+    "tools/extract-strings.mjs",
+    "tools/staging-idempotency-replay.js",
+    "vercel.json"
   ],
   "largeFiles": [
     {
@@ -347,48 +554,66 @@
     },
     {
       "file": "server/checkout/routes.mjs",
-      "lines": 239
-    },
-    {
-      "file": "src/features/checkout/checkout.js",
-      "lines": 216
+      "lines": 253
     },
     {
       "file": "scripts/test-local-auth.mjs",
-      "lines": 211
+      "lines": 215
+    },
+    {
+      "file": "src/features/checkout/checkout.js",
+      "lines": 210
     },
     {
       "file": "tests/micorreo.test.mjs",
       "lines": 206
     },
     {
-      "file": "tests/checkout.test.mjs",
-      "lines": 201
-    },
-    {
       "file": "scripts/test-baseline-rehearsal.mjs",
       "lines": 197
     },
     {
-      "file": "server/private-ui/inventory.js",
-      "lines": 184
+      "file": "src/features/cart/commerce.js",
+      "lines": 195
     },
     {
-      "file": "src/features/cart/commerce.js",
+      "file": "tests/staging-hosting.test.mjs",
+      "lines": 195
+    },
+    {
+      "file": "server/private-ui/inventory.js",
       "lines": 184
     }
   ],
   "dependencies": {
-    "scripts/audit-architecture.mjs": [],
+    "scripts/audit-architecture.mjs": [
+      "scripts/check-commercial-migrations.mjs"
+    ],
     "scripts/audit-baseline.mjs": [],
-    "scripts/build-frontend.mjs": [],
+    "scripts/audit-guest-artifact.mjs": [
+      "scripts/staging-config.mjs"
+    ],
+    "scripts/audit-wholesale-local.mjs": [],
+    "scripts/build-frontend.mjs": [
+      "scripts/build-utilities.mjs"
+    ],
     "scripts/build-historical-catalog.mjs": [
       "scripts/catalog-source.mjs"
     ],
+    "scripts/build-staging.mjs": [
+      "scripts/staging-config.mjs",
+      "scripts/build-frontend.mjs"
+    ],
+    "scripts/build-utilities.mjs": [],
     "scripts/catalog-source.mjs": [],
+    "scripts/check-commercial-migrations.mjs": [],
     "scripts/compare-schema.mjs": [
       "scripts/local-test-runtime.mjs"
     ],
+    "scripts/configure-staging-frontend.mjs": [
+      "scripts/staging-config.mjs"
+    ],
+    "scripts/guest-local-runtime.mjs": [],
     "scripts/import-matebreak-products.mjs": [
       "scripts/catalog-source.mjs"
     ],
@@ -399,11 +624,47 @@
     "scripts/local-test-runtime.mjs": [
       "scripts/local-supabase.mjs"
     ],
+    "scripts/preview-guest-local.mjs": [
+      "server/app.mjs",
+      "scripts/guest-local-runtime.mjs"
+    ],
+    "scripts/preview-order-emails.mjs": [
+      "server/email/templates.mjs"
+    ],
     "scripts/reconcile-inventory.mjs": [],
+    "scripts/render-auth-email-templates.mjs": [
+      "server/email/auth-templates.mjs"
+    ],
     "scripts/schema-comparison.mjs": [],
+    "scripts/staging-config.mjs": [
+      "server/security/public-policy.mjs"
+    ],
     "scripts/test-baseline-rehearsal.mjs": [
       "scripts/local-test-runtime.mjs",
       "scripts/schema-comparison.mjs"
+    ],
+    "scripts/test-cart-pricing-local.mjs": [
+      "scripts/local-test-runtime.mjs"
+    ],
+    "scripts/test-commercial-sql.mjs": [
+      "scripts/wholesale-local-runtime.mjs",
+      "server/payments/reconciliation.mjs",
+      "server/email/durable-worker.mjs",
+      "server/email/durable-worker.mjs",
+      "server/email/resend.mjs",
+      "server/shipping/correo-argentino.mjs",
+      "server/shipping/jobs.mjs",
+      "server/shipping/tracking.mjs",
+      "server/payments/reconciliation.mjs"
+    ],
+    "scripts/test-email-demo.mjs": [
+      "scripts/wholesale-local-runtime.mjs",
+      "server/app.mjs",
+      "server/email/resend.mjs",
+      "server/email/durable-worker.mjs"
+    ],
+    "scripts/test-guest-sql.mjs": [
+      "scripts/guest-local-runtime.mjs"
     ],
     "scripts/test-local-auth.mjs": [
       "server/app.mjs",
@@ -432,50 +693,128 @@
     "scripts/test-order-lifecycle.mjs": [
       "scripts/local-test-runtime.mjs"
     ],
+    "scripts/test-preproduction-auth-browser.mjs": [
+      "server/app.mjs",
+      "scripts/local-test-runtime.mjs"
+    ],
+    "scripts/test-preproduction-sql.mjs": [
+      "scripts/wholesale-local-runtime.mjs"
+    ],
+    "scripts/test-staging-fixtures-local.mjs": [
+      "scripts/local-test-runtime.mjs"
+    ],
     "scripts/test-stock-concurrency.mjs": [
       "scripts/local-test-runtime.mjs"
+    ],
+    "scripts/test-wholesale-account.mjs": [
+      "scripts/wholesale-local-runtime.mjs"
+    ],
+    "scripts/test-wholesale-commercial.mjs": [
+      "scripts/wholesale-local-runtime.mjs"
+    ],
+    "scripts/test-wholesale-local.mjs": [
+      "scripts/wholesale-local-runtime.mjs"
+    ],
+    "scripts/test-wholesale-profile.mjs": [
+      "scripts/wholesale-local-runtime.mjs"
+    ],
+    "scripts/themes/13bef4f761b9.mjs": [],
+    "scripts/themes/5f00f0fce391.mjs": [],
+    "scripts/wholesale-local-runtime.mjs": [],
+    "scripts/wholesale-preview-runtime.mjs": [
+      "server/app.mjs",
+      "scripts/wholesale-local-runtime.mjs"
     ],
     "scripts/wire-catalog-pages.mjs": [],
     "server/account.mjs": [
       "server/modules/account/routes.mjs"
     ],
     "server/app.mjs": [
+      "server/config/staging.mjs",
       "server/integrations/supabase/auth.mjs",
       "server/modules/account/customer-routes.mjs",
+      "server/checkout/cart-identity.mjs",
+      "server/orders/private-access.mjs",
       "server/modules/cart/routes.mjs",
       "server/modules/auth/routes.mjs",
       "server/modules/inventory/routes.mjs",
       "server/modules/account/routes.mjs",
+      "server/wholesale/routes.mjs",
       "server/modules/catalog/routes.mjs",
       "server/checkout/routes.mjs",
       "server/checkout/mock-store.mjs",
       "server/providers.mjs",
       "server/payments/routes.mjs",
       "server/shipping/admin.mjs",
-      "server/security.mjs"
+      "server/security.mjs",
+      "server/auth/live-session.mjs",
+      "server/security/rate-store.mjs",
+      "server/auth/recovery.mjs",
+      "server/email/runtime.mjs",
+      "server/auth/session-rpc.mjs"
     ],
+    "server/auth/live-session.mjs": [],
+    "server/auth/recovery.mjs": [
+      "server/email/password-recovery.mjs",
+      "server/auth/live-session.mjs"
+    ],
+    "server/auth/session-rpc.mjs": [],
     "server/catalog.mjs": [
       "server/modules/catalog/routes.mjs"
+    ],
+    "server/checkout/cart-identity.mjs": [],
+    "server/checkout/cart-quote.mjs": [
+      "server/checkout/policy.mjs"
     ],
     "server/checkout/mock-store.mjs": [
       "server/checkout/policy.mjs"
     ],
+    "server/checkout/order-simulation.mjs": [],
     "server/checkout/packaging-service.mjs": [
       "server/shipping/packaging.mjs"
     ],
-    "server/checkout/policy.mjs": [],
+    "server/checkout/policy.mjs": [
+      "server/shipping/provinces.mjs"
+    ],
     "server/checkout/routes.mjs": [
+      "server/config/staging.mjs",
       "server/checkout/policy.mjs",
       "server/payments/transferencia.mjs",
       "server/payments/admin-routes.mjs",
       "server/checkout/packaging-service.mjs",
       "server/shipping/packaging.mjs",
-      "server/shipping/snapshot.mjs"
+      "server/shipping/snapshot.mjs",
+      "server/shipping/provinces.mjs",
+      "server/checkout/order-simulation.mjs"
     ],
     "server/config/environment.mjs": [
+      "server/config/staging.mjs",
       "server/providers.mjs"
     ],
+    "server/config/staging.mjs": [],
+    "server/email/auth-templates.mjs": [],
+    "server/email/durable-worker.mjs": [
+      "server/orders/private-access.mjs",
+      "server/email/templates.mjs",
+      "server/email/resend.mjs"
+    ],
+    "server/email/password-recovery.mjs": [],
+    "server/email/receipts.mjs": [
+      "server/email/resend.mjs"
+    ],
+    "server/email/resend.mjs": [],
+    "server/email/runtime.mjs": [
+      "server/email/resend.mjs",
+      "server/email/receipts.mjs",
+      "server/email/durable-worker.mjs"
+    ],
+    "server/email/templates.mjs": [],
+    "server/email/worker.mjs": [
+      "server/orders/private-access.mjs",
+      "server/email/templates.mjs"
+    ],
     "server/index.mjs": [
+      "server/config/staging.mjs",
       "server/jobs/expire-reservations.mjs",
       "server/app.mjs",
       "server/config/environment.mjs"
@@ -485,21 +824,42 @@
       "server/modules/inventory/routes.mjs"
     ],
     "server/jobs/expire-reservations.mjs": [],
+    "server/jobs/monitor.mjs": [],
+    "server/jobs/reconcile-payments.mjs": [
+      "server/payments/reconciliation.mjs"
+    ],
+    "server/manual-worker.mjs": [
+      "server/config/environment.mjs",
+      "server/app.mjs",
+      "server/jobs/reconcile-payments.mjs",
+      "server/jobs/monitor.mjs"
+    ],
     "server/modules/account/customer-routes.mjs": [],
     "server/modules/account/routes.mjs": [],
     "server/modules/auth/routes.mjs": [
-      "server/modules/account/routes.mjs"
+      "src/features/account/return-path.mjs",
+      "server/modules/account/routes.mjs",
+      "server/wholesale/profile.mjs",
+      "server/shipping/provinces.mjs"
     ],
-    "server/modules/cart/routes.mjs": [],
+    "server/modules/cart/routes.mjs": [
+      "server/checkout/cart-quote.mjs"
+    ],
     "server/modules/catalog/routes.mjs": [],
     "server/modules/inventory/routes.mjs": [],
+    "server/orders/private-access.mjs": [],
     "server/payments/admin-routes.mjs": [
       "server/modules/account/routes.mjs"
     ],
+    "server/payments/card-presentation.mjs": [],
     "server/payments/mercadopago.mjs": [],
     "server/payments/mock.mjs": [],
+    "server/payments/reconciliation.mjs": [
+      "server/payments/card-presentation.mjs"
+    ],
     "server/payments/routes.mjs": [
-      "server/security.mjs"
+      "server/security.mjs",
+      "server/payments/reconciliation.mjs"
     ],
     "server/payments/transferencia.mjs": [],
     "server/private-ui/inventory.js": [],
@@ -510,7 +870,11 @@
       "server/payments/mercadopago.mjs",
       "server/payments/mock.mjs"
     ],
-    "server/security.mjs": [],
+    "server/security.mjs": [
+      "server/security/public-policy.mjs"
+    ],
+    "server/security/public-policy.mjs": [],
+    "server/security/rate-store.mjs": [],
     "server/shipping/admin.mjs": [
       "server/modules/account/routes.mjs"
     ],
@@ -522,37 +886,79 @@
       "server/shipping/carrier-limits.mjs",
       "server/shipping/correo-argentino.mjs"
     ],
-    "server/shipping/snapshot.mjs": [],
+    "server/shipping/provinces.mjs": [],
+    "server/shipping/snapshot.mjs": [
+      "server/shipping/provinces.mjs",
+      "server/shipping/provinces.mjs"
+    ],
+    "server/shipping/tracking.mjs": [
+      "server/email/templates.mjs"
+    ],
+    "server/shipping/wholesale-parcels.mjs": [
+      "server/shipping/correo-argentino.mjs"
+    ],
+    "server/staging-worker.mjs": [
+      "server/config/environment.mjs",
+      "server/shipping/mock.mjs",
+      "server/shipping/jobs.mjs"
+    ],
+    "server/wholesale/access.mjs": [],
+    "server/wholesale/context.mjs": [
+      "server/shipping/provinces.mjs"
+    ],
+    "server/wholesale/policy.mjs": [
+      "server/shipping/provinces.mjs"
+    ],
+    "server/wholesale/profile.mjs": [
+      "server/shipping/provinces.mjs"
+    ],
+    "server/wholesale/routes.mjs": [
+      "server/wholesale/access.mjs",
+      "server/wholesale/context.mjs",
+      "server/wholesale/profile.mjs",
+      "server/shipping/provinces.mjs",
+      "server/wholesale/policy.mjs"
+    ],
     "src/features/account/account-admin.js": [
       "src/features/account/ui.mjs",
       "src/features/account/account-data.js",
-      "src/features/account/account-team.js"
+      "src/features/account/account-team.js",
+      "src/features/account/account-wholesale.js"
     ],
     "src/features/account/account-data.js": [],
     "src/features/account/account-orders.js": [
       "src/features/account/ui.mjs",
-      "src/features/account/account-data.js"
+      "src/features/account/account-data.js",
+      "src/features/checkout/order-presentation.mjs"
     ],
     "src/features/account/account-team.js": [
       "src/features/account/ui.mjs",
       "src/features/account/account-data.js"
     ],
-    "src/features/account/account.js": [
-      "src/features/account/ui.mjs",
-      "src/features/account/ui.mjs",
-      "src/features/account/account-orders.js",
-      "src/features/account/account-admin.js",
-      "src/features/account/sales.js",
-      "src/js/header-account.js"
+    "src/features/account/account-wholesale.js": [
+      "src/features/account/ui.mjs"
     ],
+    "src/features/account/account.js": [
+      "src/features/account/return-path.mjs",
+      "src/features/account/ui.mjs",
+      "src/features/account/ui.mjs",
+      "src/features/account/customer-panel.js",
+      "src/features/account/account-admin.js",
+      "src/features/account/sales.js"
+    ],
+    "src/features/account/customer-panel.js": [
+      "src/features/account/ui.mjs",
+      "src/features/account/account-orders.js"
+    ],
+    "src/features/account/recovery.js": [],
+    "src/features/account/return-path.mjs": [],
     "src/features/account/sales.js": [
       "src/features/account/ui.mjs",
       "src/features/account/account-data.js"
     ],
     "src/features/account/ui.mjs": [],
     "src/features/cart/commerce.js": [
-      "src/services/products.js",
-      "src/js/header-account.js"
+      "src/services/products.js"
     ],
     "src/features/catalog/catalog-pages.js": [
       "src/features/catalog/catalog-ui.js"
@@ -564,9 +970,29 @@
       "src/services/products.js",
       "src/features/catalog/catalog-ui.js"
     ],
-    "src/features/checkout/checkout-result.js": [],
+    "src/features/checkout/checkout-result.js": [
+      "src/features/checkout/order-presentation.mjs",
+      "src/features/checkout/result-state.mjs",
+      "src/features/orders/recent-order.mjs"
+    ],
     "src/features/checkout/checkout.js": [
+      "src/features/checkout/province-select.mjs",
       "src/services/products.js"
+    ],
+    "src/features/checkout/order-presentation.mjs": [],
+    "src/features/checkout/province-select.mjs": [],
+    "src/features/checkout/result-state.mjs": [],
+    "src/features/orders/home-order.js": [
+      "src/features/orders/recent-order.mjs"
+    ],
+    "src/features/orders/private-order.js": [],
+    "src/features/orders/recent-order.mjs": [
+      "src/features/checkout/result-state.mjs"
+    ],
+    "src/features/wholesale/autofill.mjs": [],
+    "src/features/wholesale/presentation.js": [],
+    "src/features/wholesale/wholesale.js": [
+      "src/features/wholesale/autofill.mjs"
     ],
     "src/js/account-admin.js": [
       "src/features/account/account-admin.js"
@@ -598,9 +1024,7 @@
     "src/js/commerce.js": [
       "src/features/cart/commerce.js"
     ],
-    "src/js/header-account.js": [
-      "src/js/site-brand.js"
-    ],
+    "src/js/header-account.js": [],
     "src/js/header-fade.js": [],
     "src/js/product-detail.js": [
       "src/features/catalog/product-detail.js"
@@ -611,6 +1035,8 @@
     "src/js/script.js": [],
     "src/js/scroll-sequence.js": [],
     "src/js/site-brand.js": [],
+    "src/js/static/6b03fe29e2cb3568.js": [],
+    "src/js/static/fb46e909f87edf7f.js": [],
     "src/js/video-carousel.js": [],
     "src/services/products.js": [],
     "tests/account-data.test.mjs": [
@@ -618,22 +1044,60 @@
       "src/js/site-brand.js"
     ],
     "tests/account-preview.mjs": [],
+    "tests/account-progressive.test.mjs": [
+      "src/features/account/customer-panel.js"
+    ],
     "tests/account.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
     "tests/baseline-guards.test.mjs": [],
+    "tests/cart-quote.test.mjs": [
+      "server/checkout/cart-quote.mjs",
+      "tests/helpers/business-app.mjs"
+    ],
     "tests/catalog-api.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
     "tests/catalog-source.test.mjs": [
       "scripts/catalog-source.mjs"
     ],
+    "tests/catalog-visual-browser.mjs": [],
     "tests/checkout.test.mjs": [
-      "server/app.mjs",
+      "tests/helpers/business-app.mjs",
       "server/checkout/policy.mjs",
       "server/shipping/correo-argentino.mjs",
       "server/payments/mercadopago.mjs"
     ],
+    "tests/commercial-email-shipping.test.mjs": [
+      "server/email/resend.mjs",
+      "server/email/durable-worker.mjs",
+      "server/email/auth-templates.mjs",
+      "server/shipping/wholesale-parcels.mjs",
+      "server/shipping/correo-argentino.mjs",
+      "server/email/password-recovery.mjs",
+      "server/email/receipts.mjs"
+    ],
+    "tests/enterprise-entry-browser.mjs": [
+      "server/shipping/provinces.mjs"
+    ],
+    "tests/guest-order-access.test.mjs": [
+      "tests/helpers/business-app.mjs",
+      "server/orders/private-access.mjs",
+      "server/payments/card-presentation.mjs"
+    ],
+    "tests/guest-persisted-checkout.test.mjs": [
+      "tests/helpers/business-app.mjs"
+    ],
+    "tests/guest-private-page.test.mjs": [],
+    "tests/guest-ux-browser.mjs": [
+      "server/shipping/provinces.mjs"
+    ],
+    "tests/header-initialization.test.mjs": [],
+    "tests/helpers/business-app.mjs": [
+      "server/app.mjs",
+      "server/app.mjs"
+    ],
+    "tests/idempotency-replay.test.mjs": [],
     "tests/integration.mjs": [
       "scripts/local-test-runtime.mjs"
     ],
@@ -641,10 +1105,10 @@
       "server/app.mjs"
     ],
     "tests/inventory.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
     "tests/local-persist-mock.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
     "tests/local-supabase.test.mjs": [
       "scripts/local-supabase.mjs"
@@ -653,25 +1117,48 @@
       "scripts/local-test-runtime.mjs"
     ],
     "tests/logistics-admin.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
     "tests/micorreo.test.mjs": [
       "server/shipping/correo-argentino.mjs",
       "server/shipping/jobs.mjs",
       "server/shipping/snapshot.mjs",
-      "server/app.mjs",
+      "tests/helpers/business-app.mjs",
       "server/shipping/packaging.mjs"
     ],
     "tests/mock-checkout.test.mjs": [
-      "server/app.mjs",
+      "tests/helpers/business-app.mjs",
       "server/checkout/mock-store.mjs"
+    ],
+    "tests/order-email.test.mjs": [
+      "server/email/templates.mjs",
+      "server/email/worker.mjs",
+      "server/shipping/tracking.mjs"
+    ],
+    "tests/order-presentation.test.mjs": [
+      "src/features/checkout/order-presentation.mjs",
+      "server/checkout/order-simulation.mjs",
+      "server/checkout/routes.mjs"
     ],
     "tests/packaging-dynamic.test.mjs": [
       "server/shipping/packaging.mjs"
     ],
     "tests/packaging.test.mjs": [
       "server/shipping/packaging.mjs",
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
+    ],
+    "tests/payment-reconciliation.test.mjs": [
+      "tests/helpers/business-app.mjs",
+      "server/payments/reconciliation.mjs",
+      "server/payments/mercadopago.mjs"
+    ],
+    "tests/preproduction-security.test.mjs": [
+      "server/auth/live-session.mjs",
+      "server/security/rate-store.mjs",
+      "server/app.mjs",
+      "server/email/resend.mjs",
+      "server/jobs/reconcile-payments.mjs",
+      "server/auth/session-rpc.mjs"
     ],
     "tests/preview.mjs": [],
     "tests/providers.test.mjs": [
@@ -680,21 +1167,81 @@
       "server/shipping/packaging.mjs",
       "server/payments/mock.mjs"
     ],
+    "tests/provinces.test.mjs": [
+      "server/shipping/provinces.mjs",
+      "server/checkout/policy.mjs",
+      "server/checkout/routes.mjs"
+    ],
     "tests/refactor-http.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
     "tests/registration-roles.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
+    ],
+    "tests/result-state.test.mjs": [
+      "src/features/checkout/result-state.mjs",
+      "src/features/orders/recent-order.mjs"
     ],
     "tests/server.test.mjs": [
-      "server/app.mjs"
+      "tests/helpers/business-app.mjs"
     ],
-    "tools/extract-strings.mjs": []
+    "tests/staging-hosting.test.mjs": [
+      "server/security/public-policy.mjs",
+      "scripts/staging-config.mjs"
+    ],
+    "tests/staging-ux-preview.mjs": [
+      "server/checkout/cart-quote.mjs",
+      "server/checkout/policy.mjs"
+    ],
+    "tests/staging.test.mjs": [
+      "server/config/environment.mjs",
+      "server/config/staging.mjs",
+      "tests/helpers/business-app.mjs"
+    ],
+    "tests/wholesale-access.test.mjs": [
+      "server/app.mjs",
+      "src/features/account/return-path.mjs"
+    ],
+    "tests/wholesale-account-browser.mjs": [
+      "scripts/wholesale-preview-runtime.mjs"
+    ],
+    "tests/wholesale-browser.mjs": [
+      "scripts/wholesale-preview-runtime.mjs"
+    ],
+    "tests/wholesale-commercial-browser.mjs": [
+      "scripts/wholesale-preview-runtime.mjs"
+    ],
+    "tests/wholesale-completion-browser.mjs": [
+      "scripts/wholesale-preview-runtime.mjs"
+    ],
+    "tests/wholesale-context.test.mjs": [
+      "server/wholesale/context.mjs",
+      "src/features/wholesale/autofill.mjs"
+    ],
+    "tests/wholesale-profile.test.mjs": [
+      "server/wholesale/profile.mjs",
+      "server/wholesale/context.mjs"
+    ],
+    "tests/wholesale.test.mjs": [
+      "server/wholesale/policy.mjs",
+      "tests/helpers/business-app.mjs"
+    ],
+    "tests/worker-monitor.test.mjs": [
+      "server/jobs/monitor.mjs",
+      "server/security/public-policy.mjs"
+    ],
+    "tools/extract-strings.mjs": [],
+    "tools/staging-idempotency-replay.js": []
   },
   "cycles": [],
   "missing": [],
   "missingAssets": [],
   "routes": [
+    {
+      "file": "scripts/preview-guest-local.mjs",
+      "method": "get",
+      "path": "/preview/authenticated"
+    },
     {
       "file": "server/app.mjs",
       "method": "get",
@@ -728,6 +1275,16 @@
     {
       "file": "server/app.mjs",
       "method": "get",
+      "path": "/regalos-empresariales"
+    },
+    {
+      "file": "server/app.mjs",
+      "method": "get",
+      "path": "/mayorista"
+    },
+    {
+      "file": "server/app.mjs",
+      "method": "get",
       "path": "/carrito"
     },
     {
@@ -749,6 +1306,31 @@
       "file": "server/app.mjs",
       "method": "get",
       "path": "/mi-cuenta"
+    },
+    {
+      "file": "server/app.mjs",
+      "method": "get",
+      "path": "/recuperar-cuenta"
+    },
+    {
+      "file": "server/auth/recovery.mjs",
+      "method": "post",
+      "path": "/api/auth/recover"
+    },
+    {
+      "file": "server/auth/recovery.mjs",
+      "method": "get",
+      "path": "/auth/recuperar"
+    },
+    {
+      "file": "server/auth/recovery.mjs",
+      "method": "get",
+      "path": "/api/auth/recovery-status"
+    },
+    {
+      "file": "server/auth/recovery.mjs",
+      "method": "post",
+      "path": "/api/auth/password"
     },
     {
       "file": "server/checkout/routes.mjs",
@@ -784,6 +1366,11 @@
       "file": "server/checkout/routes.mjs",
       "method": "get",
       "path": "/api/checkout/pedidos/:id"
+    },
+    {
+      "file": "server/email/runtime.mjs",
+      "method": "post",
+      "path": "/api/emails/resend/recibos"
     },
     {
       "file": "server/modules/account/customer-routes.mjs",
@@ -884,6 +1471,11 @@
       "file": "server/modules/account/routes.mjs",
       "method": "post",
       "path": "/api/ventas/:id/estado"
+    },
+    {
+      "file": "server/modules/auth/routes.mjs",
+      "method": "get",
+      "path": "/api/provincias"
     },
     {
       "file": "server/modules/auth/routes.mjs",
@@ -996,6 +1588,26 @@
       "path": "/api/admin/inventario/:id/configuracion"
     },
     {
+      "file": "server/orders/private-access.mjs",
+      "method": "use",
+      "path": "/api/seguimiento"
+    },
+    {
+      "file": "server/orders/private-access.mjs",
+      "method": "post",
+      "path": "/api/seguimiento/intercambiar"
+    },
+    {
+      "file": "server/orders/private-access.mjs",
+      "method": "get",
+      "path": "/api/seguimiento/:id"
+    },
+    {
+      "file": "server/orders/private-access.mjs",
+      "method": "post",
+      "path": "/api/seguimiento/renovar"
+    },
+    {
       "file": "server/payments/admin-routes.mjs",
       "method": "post",
       "path": "/api/admin/transferencias/:id/confirmar"
@@ -1029,6 +1641,61 @@
       "file": "server/shipping/admin.mjs",
       "method": "post",
       "path": "/api/admin/logistica/:order/:parcel/acciones"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "use",
+      "path": "/api/mayorista"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "get",
+      "path": "/api/mayorista/catalogo"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "get",
+      "path": "/api/mayorista/acceso"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "get",
+      "path": "/api/mayorista/perfil"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "post",
+      "path": "/api/mayorista/perfil/completar"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "post",
+      "path": "/api/mayorista/cotizar"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "post",
+      "path": "/api/mayorista/solicitudes"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "get",
+      "path": "/api/mayorista/solicitudes"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "get",
+      "path": "/api/mayorista/solicitudes/:id"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "get",
+      "path": "/api/admin/mayorista"
+    },
+    {
+      "file": "server/wholesale/routes.mjs",
+      "method": "post",
+      "path": "/api/admin/mayorista/estado"
     },
     {
       "file": "tests/account-preview.mjs",
@@ -1144,6 +1811,81 @@
       "file": "tests/preview.mjs",
       "method": "get",
       "path": "/tienda"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/carrito"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "put",
+      "path": "/api/carrito/variantes/2"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/carrito/resumen"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/sesion"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/perfil"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/pedidos"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/metodos"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/checkout/pedidos/:id"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/api/checkout/contexto"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "post",
+      "path": "/api/checkout/cotizar-envio"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "post",
+      "path": "/api/checkout/pedidos"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/audit/state"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/audit/replay.js"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "get",
+      "path": "/audit/replay"
+    },
+    {
+      "file": "tests/staging-ux-preview.mjs",
+      "method": "use",
+      "path": "/api"
     }
   ],
   "scripts": {
@@ -1165,7 +1907,14 @@
     "catalog:import": "node --env-file-if-exists=.env scripts/import-matebreak-products.mjs --apply",
     "catalog:reconcile": "node --env-file-if-exists=.env scripts/reconcile-inventory.mjs --out=docs/reconciliacion-variantes.csv",
     "build:frontend": "node scripts/build-frontend.mjs",
-    "test:architecture": "node scripts/audit-architecture.mjs after"
+    "build": "npm run build:staging",
+    "test:architecture": "node scripts/audit-architecture.mjs after",
+    "build:staging": "node scripts/build-staging.mjs",
+    "start:staging:worker": "node server/staging-worker.mjs",
+    "test:staging:fixtures:local": "node scripts/test-staging-fixtures-local.mjs",
+    "configure:staging:frontend": "node scripts/configure-staging-frontend.mjs",
+    "test:wholesale:account": "node scripts/test-wholesale-account.mjs",
+    "test:wholesale:account:browser": "node tests/wholesale-account-browser.mjs"
   },
   "migrations": {
     "supabase/migrations/20260907203437_bootstrap_legacy_catalog.sql": "c983798cccc76f98c8843dad75fd8889b3d278a046ab94947087af7718e938ea",
@@ -1193,6 +1942,17 @@
     "supabase/migrations/20260929204150_fix_minorista_checkout_lifecycle.sql": "17981494c569d705acd27bf38052b34f1d4881b371a4a74f1f519934c651c98b",
     "supabase/migrations/20260929214717_harden_default_privileges.sql": "2e6c4391ac6f88ad7bf4895e6ec51c759e0db645ea9355f1129258aa49f0f5c5",
     "supabase/migrations/20261001003824_micorreo_logistics_snapshots.sql": "00bca3f50c9b0064c21319fa6950f8df44d037249ceba04fffe2d5252d1a4297",
-    "supabase/migrations/20261001112820_logistics_admin_recovery.sql": "d1e7e6940b7c92551c84f9f022434f8cd1a1bcfbfca5dc67f17ff1c3c2306939"
+    "supabase/migrations/20261001112820_logistics_admin_recovery.sql": "d1e7e6940b7c92551c84f9f022434f8cd1a1bcfbfca5dc67f17ff1c3c2306939",
+    "supabase/migrations/20261003001216_guest_checkout_ownership.sql": "083766c3d8783c8d5aeb4a6222c33c74b8bbf31eb426b94e73c19d579827eda1",
+    "supabase/migrations/20261003001218_private_order_access_and_notifications.sql": "064a07041b32c75fed09ba23ceb673175d87c5d4d8a7fe362755125dccf1a026",
+    "supabase/migrations/20261003202124_wholesale_requests.sql": "01765352c86d307ef7da79fbd39524a5af2dbd7f998cb988a59a6cdcd6013032",
+    "supabase/migrations/20261003221931_wholesale_volume_catalog.sql": "3a6c96ab0b44143dabd0eff005fb75f7344eaf16522d3bc54b3dbbd35519351e",
+    "supabase/migrations/20261003230752_wholesale_account_access.sql": "d84e3c627019fd4bcf596c36dbf25d04099708139e7463bb6556d118a3aa2dea",
+    "supabase/migrations/20261004065346_wholesale_profile_details.sql": "b9b62c0e7a74415596f7e89335e46680d95da959beb6ed64953e919b1847bb68",
+    "supabase/migrations/20261004075339_payment_reconciliation_guard.sql": "472ba7e3c55a9b363bd604e6292194fe626af481cc3c317da4483ee3b50c220e",
+    "supabase/migrations/20261004075948_immutable_email_delivery.sql": "ae7e8f8f2bd56093b7abf2062d27341c319c58dc73ff28f6e857e16fd1759c99",
+    "supabase/migrations/20261004085004_preproduction_session_rate_guards.sql": "0335a63e0df3a5a89e3ef2a303a2c505a8d92c22ade31940e729d02c223fc921",
+    "supabase/migrations/20261004085438_controlled_delivery_reconciliation_workers.sql": "8d03507715cb819bc7b3eef706941f4604a7c1fbd8f7d24f8ceee72eeecc24db",
+    "supabase/migrations/20261004091411_atomic_sensitive_session_gate.sql": "3fede292e0585b1f10f699310b77b8cec6af534f93437680604f20f3b1b5044e"
   }
 }

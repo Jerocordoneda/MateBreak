@@ -1,5 +1,7 @@
 # Revisión de seguridad preproducción — 4 de octubre de 2026
 
+Este documento conserva los hallazgos de la fase `d660f14`. Su estado posterior, correcciones, riesgos residuales y procedimiento están en [Cierre local de preproducción](preproduction-completion-20261004.md); no interpretar la lista histórica de pendientes como el estado final del candidato.
+
 Revisión de código, dependencias, ensayos SQL con roles reales y Chrome local. No constituye una auditoría exhaustiva ni una prueba de penetración de Cloud. No se explotaron cuentas reales. Los controles comprobados y los riesgos pendientes se distinguen a continuación.
 
 ## Hallazgos y plan

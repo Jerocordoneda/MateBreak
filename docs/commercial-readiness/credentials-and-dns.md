@@ -52,25 +52,25 @@ Resend encaja con el diseño: REST para outbox, idempotencia y recibos firmados;
 
 | Dato necesario | Destino preparado |
 | --- | --- |
-| Dominio/subdominio que posee MateBreak y acceso al DNS | Resend Domains; todavía no se eligió ni modificó un dominio |
-| Remitente autorizado y dirección de respuestas | `RESEND_FROM_EMAIL`; argumento `from` del worker; contacto comercial en plantilla |
+| Dominio remitente previsto `matebreak.com.ar`; acceso pendiente a DonWeb | NS actuales `ns1.donweb.com` / `ns2.donweb.com`; conservar Tiendanube y zona existente |
+| Remitente autorizado y dirección de respuestas | `RESEND_FROM_EMAIL=MateBreak <pedidos@matebreak.com.ar>` y `RESEND_REPLY_TO=Mate.break32@gmail.com`; no activar antes de verificar dominio |
 | API key con permiso de envío para ese dominio | `RESEND_API_KEY`, solo backend/worker; `createResend` requiere opt-in explícito |
-| Secreto `whsec_…` del webhook | `RESEND_WEBHOOK_SECRET`; handler de recibos preparado, sin endpoint registrado |
+| Secreto `whsec_…` del webhook | `RESEND_WEBHOOK_SECRET`; endpoint raw firmado `/api/emails/resend/recibos`, deshabilitado por defecto |
 | Clave aleatoria de cifrado AES-256-GCM, 32 bytes/64 hex minúsculas | `EMAIL_ENVELOPE_KEY`, gestor de secretos del worker; generar fuera de Git y mantenerla recuperable |
 | Plan, volumen y responsable de alertas/rebotes | Decisión comercial previa a activar; verificar cuotas de la cuenta |
 | SMTP de Auth | En Supabase Auth: host `smtp.resend.com`, puerto `465` TLS implícito o `587` STARTTLS, usuario `resend`, contraseña API key, remitente de dominio verificado |
 
 Los parámetros SMTP proceden de [Resend SMTP](https://resend.com/docs/send-with-smtp). Cargar las plantillas locales `docs/email-templates/confirmation.html` y `recovery.html` y sus asuntos en Supabase solamente tras autorización. Mantienen `{{ .ConfirmationURL }}` y la identidad visual de MateBreak. Desactivar click/open tracking de Auth para no alterar enlaces de un solo uso. Supabase conserva su canal de envío; no se habilitó un mecanismo alternativo para eludir el SMTP predeterminado.
 
-`requestPasswordRecovery` y `completePasswordRecovery` están preparados y probados como acciones deshabilitadas por defecto, con retorno exacto, respuesta genérica y sesión viva obligatoria para cambiar contraseña. **Falta conectar la UI/rutas y homologar la recuperación PKCE** antes de activarlas. El callback futuro `/auth/recuperar` no está agregado a Cloud; requiere aprobación del destino exacto. No se presenta la recuperación pública actual como funcional.
+La UI/rutas y callback PKCE de recuperación están conectados localmente y probados con Supabase Auth real aislado y Mailpit; `AUTH_RECOVERY_ENABLED=0` por defecto. Requieren proof de recovery ligado a sesión viva; un callback de signup no habilita cambio de contraseña. El callback `/auth/recuperar` no está agregado a Cloud; requiere aprobación del destino exacto y configuración SMTP. No se presenta la recuperación pública publicada como funcional.
 
-El outbox existente genera confirmación, pago, cancelación y despacho verificado. El nuevo worker congela destinatario, HTML/texto, remitente y capacidad privada en un envelope cifrado autenticado por evento. Solo guarda hashes para validar enlaces privados y no registra cuerpos/PII en logs. `sent` significa aceptación del proveedor, **no entrega al buzón**. Los recibos firmados de Resend registran hechos mínimos, con dedupe, incluso si llegan antes del acknowledgement. La integración HTTP y alertas de rebotes/supresiones todavía deben conectarse bajo revisión.
+El outbox existente genera confirmación, pago, cancelación y despacho verificado. El worker conectado a createApp congela destinatario, HTML/texto, remitente, Reply-To y capacidad privada en un envelope cifrado autenticado por evento. Solo guarda hashes para validar enlaces privados y no registra cuerpos/PII en logs. `sent` significa aceptación del proveedor, **no entrega al buzón**. El endpoint integrado persiste recibos firmados mínimos con dedupe, incluso antes del acknowledgement. El comando manual status entrega contadores de backlog; canal externo de alertas y ejecución persistente requieren autorización.
 
 No perder/rotar destructivamente la clave de cifrado mientras existan eventos pendientes. Respaldar el secreto con acceso restringido; retención/eliminación y rotación por versión requieren procedimiento aprobado. Error 429: retry acotado. Timeout/5xx/409/respuesta incompleta: revisión. No hay resend automático de una aceptación dudosa ni reenvío después de 24 h.
 
 ### Plan DNS listo para completar con los valores de la cuenta
 
-Sin dominio y registro de Resend, **no es posible calcular la clave DKIM ni los valores exactos de SPF/MX**. Obtener/exportar los registros desde Resend Domains para el dominio y región elegidos; no usar claves de ejemplo ni inventar el DNS comercial.
+Sin registrar el dominio en la cuenta Resend, **no es posible calcular la clave DKIM ni los valores exactos de SPF/MX**. Obtener/exportar los registros desde Resend Domains para el dominio y región aprobados; no usar claves de ejemplo ni inventar el DNS comercial. Ver el procedimiento actualizado de [cierre local](../preproduction-completion-20261004.md), que preserva @, www, MX y Tiendanube y no depende del subdominio Staging pendiente.
 
 | Registro | Nombre/valor a cargar posteriormente | Control previo |
 | --- | --- | --- |

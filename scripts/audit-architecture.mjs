@@ -71,8 +71,8 @@ if (stage === 'before' && existsSync('docs/refactor/before.json'))
   throw Error('Before snapshot already exists; preserve the original audit');
 if (stage === 'after') {
   const before = JSON.parse(readFileSync('docs/refactor/before.json'));
-  if (JSON.stringify(before.migrations) !== JSON.stringify(migrations))
-    throw Error('Historical migration hashes changed');
+  for(const [file,hash]of Object.entries(before.migrations))if(migrations[file]!==hash)throw Error('Historical migration hash changed: '+file);
+  await import('./check-commercial-migrations.mjs');
   const key = route => route.method + ' ' + route.path;
   const lost = before.routes.filter(route => !routes.some(current => key(current) === key(route)));
   if (lost.length) throw Error('Missing routes: ' + JSON.stringify(lost));
