@@ -1,3 +1,4 @@
+import {publicCsp} from '../server/security/public-policy.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,mkdtempSync,mkdirSync,writeFileSync,copyFileSync,rmSync} from 'node:fs';
@@ -14,6 +15,7 @@ test('staging headers protect root explicitly and preserve non-root coverage und
  for(const rule of prepared.headers)assert.deepEqual(rule.headers,[
   {key:'X-Robots-Tag',value:'noindex, nofollow'},
   {key:'Cache-Control',value:'no-store'},
+  {key:'Content-Security-Policy',value:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'},
  ]);
  const root=JSON.parse(readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
  assert.equal(assertStagingVercelReady(root,'https://matebreak-api-staging.onrender.com'),'https://matebreak-api-staging.onrender.com');
@@ -139,7 +141,7 @@ test('name/version never exempt changes to any of the seven protected root field
 test('build reads only root vercel.json and never substitutes or merges the generated example',t=>{
  const prefix=join(tmpdir(),'matebreak-config-diagnostic-'),root=mkdtempSync(prefix);
  t.after(()=>{assert.ok(root.startsWith(prefix));rmSync(root,{recursive:true,force:true});});
- mkdirSync(join(root,'scripts'));mkdirSync(join(root,'src'));
+ mkdirSync(join(root,'scripts'));mkdirSync(join(root,'src'));mkdirSync(join(root,'server/security'),{recursive:true});copyFileSync(new URL('../server/security/public-policy.mjs',import.meta.url),join(root,'server/security/public-policy.mjs'));
  for(const name of ['build-staging.mjs','staging-config.mjs','build-frontend.mjs'])
   copyFileSync(new URL('../scripts/'+name,import.meta.url),join(root,'scripts',name));
  writeFileSync(join(root,'index.html'),'<html>synthetic offline fixture</html>');

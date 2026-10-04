@@ -38,7 +38,9 @@
     "mathjs": "^15.2.0"
   },
   "devDependencies": {
-    "supabase": "2.118.0"
+    "@tailwindcss/node": "4.3.3",
+    "supabase": "2.118.0",
+    "tailwindcss": "4.3.3"
   },
   "type": "module"
 }
