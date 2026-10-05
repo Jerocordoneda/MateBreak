@@ -27,3 +27,5 @@ Build con Node 22, auditor público de 181 archivos, locks/migraciones históric
 ## Traspaso
 
 Actualizar sólo Staging tras CI/gates y reconstruir artefacto desde el SHA final. Registrar deployment y baseline antes/después. Fotografías del catálogo comercial y su capacidad siguen pendientes, pero no causan inmovilidad de esta secuencia. Detener al completar validación; no encadenar producción ni activaciones comerciales.
+
+La comprobación de consola identificó el favicon predeterminado ausente (404 preexistente). Podcast declara ahora el logo PNG local existente como favicon, sin agregar assets ni dominios. YouTube puede emitir una advertencia propia por compute-pressure denegado; ese permiso continúa bloqueado y no se amplía Permissions-Policy.
