@@ -17,13 +17,16 @@ las 39 migraciones ni el cálculo financiero de PostgreSQL. Los pedidos históri
 | MP_ENVIRONMENT | sin credenciales MP | test |
 | MP_EXPECTED_LIVE_MODE | sin credenciales MP | false, literal en minúsculas |
 
-El segundo circuito exige además el collector ID numérico, credencial de prueba
-TEST- y secreto del webhook configurados sólo en Render. No se permite una
-credencial APP_USR en esta excepción: la documentación actual también utiliza
-APP_USR para vendedores de prueba, pero admitirla requiere comprobar un contrato
-de cuenta distinto. No se puede aceptar el prefijo como prueba de identidad ni
-activar una cuenta productiva con envío simulado. Confirmar el tipo de credencial
-es un punto de control previo al deployment, sin compartirla.
+El segundo circuito exige el vendedor TEST aprobado `3741487042`, credencial
+TEST- o APP_USR y secreto del webhook configurados sólo en Render. Estos prefijos
+permiten intentar la verificación; nunca certifican identidad. El adaptador
+autentica `GET https://api.mercadolibre.com/users/me`, el endpoint indicado por
+Mercado Pago en su guía de credenciales: HTTP 200, URL exacta, JSON válido,
+id numérico igual al vendedor aprobado y `tags` con `test_user`. Ausencias,
+errores, timeout, redirects o esquema desconocido impiden el arranque/checkout.
+No existe flag `verified` que pueda sustituir esta consulta. No se imprime el
+token ni el cuerpo de usuario. Una cuenta real sin esa señal no se habilita
+aunque todas sus variables declaren test. Persist mock debe ser literalmente 0.
 
 Mantener `MATEBREAK_LOCAL_ONLY`, `MATEBREAK_LOCAL_PERSIST_MOCK` y
 `MATEBREAK_LOCAL_PICKUP_MOCK` apagados, Supabase Staging con su referencia exacta,
@@ -47,7 +50,14 @@ configuración y no cambia el host de la API. Una URL de Checkout Pro tampoco
 demuestra que el payment sea TEST. Este contrato no autoriza aceptar `true` con
 shipping mock, aunque exista otra modalidad de cuentas ficticias.
 
-La configuración valida estos datos antes de crear clientes. El adaptador exige
+La configuración valida estos datos antes de crear clientes. Antes de abrir el
+listener o iniciar jobs, el runtime autentica la cuenta TEST y sólo emite el ID
+aprobado y la señal test_user. Cada Preference vuelve a verificar la identidad;
+no se reutiliza un booleano de un chequeo anterior. Su collector_id debe ser
+numérico e igual a 3741487042 antes de devolver el redirect. Preference no
+documenta live_mode: no se exige ni fabrica ese campo. Payment sí mantiene la
+comparación estricta de su señal live_mode con false; ausente/string/true falla.
+El adaptador exige
 token, secreto, origen HTTPS, collector numérico y booleano explícito. La
 reconciliación compara estrictamente `payment.collector_id`, `payment.live_mode`
 y `payment.id` con el contrato configurado, UUID de external_reference, ARS,
@@ -86,8 +96,9 @@ scripts de esta publicación.
 Sólo publicar el SHA exacto aprobado por pruebas y CI en Render Staging. Verificar
 deployment/commit Live, healthcheck 200 y el log sin secretos:
 `Shipping mock · Payments real/test · Mercado Pago ready`.
-Ready acredita configuración del adaptador, no aceptación de la credencial por
-la API ni éxito de una compra. Tras modificar variables, es necesario reiniciar
+El runtime también debe emitir `Mercado Pago TEST identity verified · seller
+3741487042 · test_user` antes de ese arranque. Ready y la identidad autenticada
+no acreditan una compra ni el futuro payment. Tras modificar variables, es necesario reiniciar
 o redesplegar Render; el deploy del nuevo SHA ya realiza ese reinicio.
 
 Para volver al circuito mock se requiere una operación manual coordinada:
@@ -100,6 +111,9 @@ mock compatible; el código anterior no acepta credenciales MP en Staging.
 ## Fuentes y reproducción
 
 - [Cuentas de prueba oficiales](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-preferences/test-accounts).
+- [Credenciales y /users/me oficial](https://www.mercadopago.com.ar/developers/es/docs/your-integrations/credentials).
+- [Recurso de usuarios y test_user](https://developers.mercadolibre.com.ar/es_ar/administra-proyectos-aplicaciones/servicios-consulta-usuarios).
+- [Contrato de Preference](https://www.mercadopago.com.ar/developers/es/reference/online-payments/checkout-pro-preferences/create-preference/post).
 - [Notificaciones oficiales](https://www.mercadopago.com.ar/developers/es/docs/checkout-pro-preferences/additional-content/notifications/webhooks).
 - `node --test tests/staging-mp-test.test.mjs tests/providers.test.mjs tests/staging.test.mjs tests/payment-reconciliation.test.mjs`.
 - `npm test`, `npm run test:full` exclusivamente en el stack local descartable.

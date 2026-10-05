@@ -6,13 +6,13 @@ import {createApp} from './helpers/business-app.mjs';
 const ref='abcdefghijklmnopqrst',env={APP_ENV:'staging',NODE_ENV:'development',APP_ORIGIN:'https://stage.example.test',
  SUPABASE_URL:`https://${ref}.supabase.co`,SUPABASE_STAGING_PROJECT_REF:ref,SUPABASE_PUBLISHABLE_KEY:'synthetic',SUPABASE_SECRET_KEY:'synthetic',
  SHIPPING_MODE:'mock',PAYMENTS_MODE:'real',MATEBREAK_STAGING_MP_TEST:'1',MATEBREAK_STAGING_PERSIST_MOCK:'0',
- MP_ENVIRONMENT:'test',MP_EXPECTED_LIVE_MODE:'false',MP_COLLECTOR_ID:'456',MP_ACCESS_TOKEN:'TEST-synthetic-only',MERCADOPAGO_WEBHOOK_SECRET:'synthetic-only'};
+ MP_ENVIRONMENT:'test',MP_EXPECTED_LIVE_MODE:'false',MP_COLLECTOR_ID:'3741487042',MP_ACCESS_TOKEN:'TEST-synthetic-only',MERCADOPAGO_WEBHOOK_SECRET:'synthetic-only'};
 test('Staging real transport with mock shipping requires every explicit TEST guard before any network',()=>{
  const {config}=loadConfig(env);assertStagingConfig(config);assert.equal(persistedMock(config),false);
  const p=createProviders(config);assert.equal(p.shipping.mock,true);assert.equal(p.payment.mock,false);assert.equal(p.webhook.ready,true);assert.equal(p.webhook.expectedLiveMode,false);
  for(const patch of [{APP_ENV:'local'},{APP_ENV:'production'},{NODE_ENV:'production'},{MATEBREAK_STAGING_MP_TEST:'0'},
  {MATEBREAK_STAGING_PERSIST_MOCK:'1'},{MATEBREAK_LOCAL_PERSIST_MOCK:'1'},{MATEBREAK_LOCAL_PICKUP_MOCK:'1'},
- {MP_ACCESS_TOKEN:'APP_USR-synthetic'},{MP_ACCESS_TOKEN:''},{MERCADOPAGO_WEBHOOK_SECRET:''},{MP_COLLECTOR_ID:''},{MP_COLLECTOR_ID:'invalid'},
+ {MP_ACCESS_TOKEN:''},{MERCADOPAGO_WEBHOOK_SECRET:''},{MP_COLLECTOR_ID:''},{MP_COLLECTOR_ID:'invalid'},
  {MP_EXPECTED_LIVE_MODE:'true'},{MP_EXPECTED_LIVE_MODE:''},{MP_EXPECTED_LIVE_MODE:'FALSE'},{MP_ENVIRONMENT:'production'},{MP_ENVIRONMENT:''},
  {SUPABASE_STAGING_PROJECT_REF:PROTECTED_PRODUCTION_REF,SUPABASE_URL:`https://${PROTECTED_PRODUCTION_REF}.supabase.co`},
  {APP_ORIGIN:'http://stage.example.test'},{CORREO_MICORREO_PASSWORD:'synthetic'},{RESEND_API_KEY:'synthetic'},{EMAILS_ENABLED:'1'},
@@ -30,7 +30,7 @@ test('all shipping/payment combinations retain production prohibition and explic
 });
 test('TEST provider injection cannot bypass environment or seller contract',()=>{
  const {config}=loadConfig(env);
- for(const patch of [{environment:'production'},{expectedLiveMode:true},{collectorId:'999'}])assert.throws(()=>createProviders(config,{mercadoPago:{ready:true,environment:'test',expectedLiveMode:false,collectorId:'456',...patch}}),/contract mismatch/);
+ for(const patch of [{environment:'production'},{expectedLiveMode:true},{collectorId:'999'}])assert.throws(()=>createProviders(config,{mercadoPago:{ready:true,environment:'test',expectedLiveMode:false,collectorId:'3741487042',verifyTestIdentity:async()=>({sellerId:'3741487042',testUser:true}),...patch}}),/contract mismatch/);
 });
 test('TEST checkout creates preference and never marks, confirms or returns TEST-LOCAL',async t=>{
  const {config}=loadConfig(env),calls=[],id='11111111-1111-4111-8111-111111111111';
@@ -41,7 +41,7 @@ test('TEST checkout creates preference and never marks, confirms or returns TEST
   if(table==='pedido_item')return {select:()=>({eq:async()=>({data:[{producto_id:1,cantidad:1}]})})};
   throw Error('Unexpected TEST DB path');
  }};
- const mp={ready:true,environment:'test',collectorId:'456',expectedLiveMode:false,createPreference:async value=>{assert.equal(value.total,10000);calls.push('preference');return {id:'synthetic-preference',redirectUrl:'https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=synthetic'};}};
+ const mp={ready:true,environment:'test',collectorId:'3741487042',expectedLiveMode:false,verifyTestIdentity:async()=>({sellerId:'3741487042',testUser:true}),createPreference:async value=>{assert.equal(value.total,10000);calls.push('preference');return {id:'synthetic-preference',redirectUrl:'https://www.mercadopago.com.ar/checkout/v1/redirect?pref_id=synthetic'};}};
  const {app}=createApp(config,{admin,mercadoPago:mp,authFactory:()=>({auth:{getUser:async()=>({data:{user:null}})}})});
  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>new Promise(r=>server.close(r)));
  const r=await fetch(`http://127.0.0.1:${server.address().port}/api/checkout/pedidos`,{method:'POST',headers:{origin:config.origin,'content-type':'application/json'},body:JSON.stringify({idempotencia:'22222222-2222-4222-8222-222222222222',pago:'mercadopago',envio:'retiro',destinatario:{nombre:'Fixture',apellido:'Synthetic',email:'fixture@example.invalid',telefono:'2494123456',codigo_postal:'7000',provincia:'Buenos Aires',ciudad:'Fixture',calle:'Fixture',numero:'1'}})});

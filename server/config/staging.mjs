@@ -4,6 +4,8 @@ export const PROTECTED_PRODUCTION_REF = 'nwpdfqwqxrkokluqqqfs';
 export function assertStagingConfig(config) {
   if (!config.staging && !config.stagingPersistMock && !config.stagingMpTestEnabled) return;
   const test=stagingMpTestAllowed(config);
+  if(test && (config.authRecoveryEnabled || config.reconciliationEnabled || config.email?.enabled || config.email?.workerEnabled || config.email?.receiptsEnabled))
+    throw Error('Staging TEST requires recovery, reconciliation and email flags off');
   const ref = config.stagingProjectRef;
   if (!config.staging || !(test||config.stagingPersistMock) || config.production || !/^[a-z]{20}$/.test(ref || '') || ref === PROTECTED_PRODUCTION_REF)
     throw Error('Staging requires a separate approved Supabase project reference');
