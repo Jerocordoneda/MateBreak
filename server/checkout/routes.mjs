@@ -57,7 +57,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
       ? await packagesFor(selection, { admin, config }) : null;
-    res.json({ requiresAuthentication: false, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock), mock_persistente: persistedMock(config),
+    res.json({ requiresAuthentication: false, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock), mock_persistente: persistedMock(config), mercadopago_test: config.stagingMpTestEnabled===true,
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&

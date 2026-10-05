@@ -2,6 +2,7 @@ import { createCorreoArgentino } from './shipping/correo-argentino.mjs';
 import { createMockShipping } from './shipping/mock.mjs';
 import { createMercadoPago } from './payments/mercadopago.mjs';
 import { createMockPayment } from './payments/mock.mjs';
+import {stagingMpTestAllowed} from './config/staging-mp-test.mjs';
 
 const modes = new Set(['mock', 'real']);
 
@@ -21,7 +22,11 @@ export function resolveProviderModes(env) {
     throw Error('SHIPPING_MODE y PAYMENTS_MODE deben ser mock o real');
   if (production && (shippingMode === 'mock' || paymentsMode === 'mock'))
     throw Error('Los proveedores mock no se permiten en NODE_ENV=production');
-  if (shippingMode === 'mock' && paymentsMode === 'real')
+  const testConfig={production,staging:env.APP_ENV==='staging',stagingMpTestEnabled:env.MATEBREAK_STAGING_MP_TEST==='1',
+    stagingPersistMock:env.MATEBREAK_STAGING_PERSIST_MOCK==='1',localPersistMock:env.MATEBREAK_LOCAL_PERSIST_MOCK==='1',localPickupMock:env.MATEBREAK_LOCAL_PICKUP_MOCK==='1',
+    shippingMode,paymentsMode,mercadoPago:{environment:env.MP_ENVIRONMENT,expectedLiveMode:env.MP_EXPECTED_LIVE_MODE==='false'?false:undefined,
+    accessToken:env.MP_ACCESS_TOKEN||env.MERCADOPAGO_ACCESS_TOKEN,webhookSecret:env.MERCADOPAGO_WEBHOOK_SECRET,collectorId:env.MP_COLLECTOR_ID}};
+  if (shippingMode === 'mock' && paymentsMode === 'real' && !stagingMpTestAllowed(testConfig))
     throw Error('No se puede cobrar de verdad con una tarifa de envío simulada');
   return { shippingMode, paymentsMode };
 }
@@ -33,7 +38,7 @@ export function createProviders(config, overrides = {}) {
   if (!modes.has(shippingMode) || !modes.has(paymentsMode)) throw Error('Modo de proveedor inválido');
   if (config.production && (shippingMode === 'mock' || paymentsMode === 'mock'))
     throw Error('Los proveedores mock no se permiten en producción');
-  if (shippingMode === 'mock' && paymentsMode === 'real')
+  if (shippingMode === 'mock' && paymentsMode === 'real' && !stagingMpTestAllowed(config))
     throw Error('No se puede cobrar de verdad con una tarifa de envío simulada');
 
   const shipping = overrides.correo ?? (shippingMode === 'mock'
@@ -48,6 +53,9 @@ export function createProviders(config, overrides = {}) {
     enabled: config.paymentsMode === 'mock' ? false : config.paymentsMode === 'real' ? true : config.mercadoPago?.enabled });
   if (config.paymentsMode === 'real' && !realPayment.ready)
     throw Error('PAYMENTS_MODE=real requiere MP_ACCESS_TOKEN, MERCADOPAGO_WEBHOOK_SECRET y APP_ORIGIN HTTPS');
+  if(stagingMpTestAllowed(config) && (realPayment.environment!=='test' || realPayment.expectedLiveMode!==false ||
+    String(realPayment.collectorId)!==String(config.mercadoPago.collectorId)))
+    throw Error('Staging Mercado Pago TEST provider contract mismatch');
   const payment = paymentsMode === 'mock'
     ? createMockPayment({ result: config.mockPaymentResult })
     : { ready: realPayment.ready, mock: false,

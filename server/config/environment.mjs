@@ -2,13 +2,16 @@ import { assertStagingConfig } from './staging.mjs';
 import {isIP}from'node:net';
 import { resolveProviderModes, resolveMiCorreoEnvironment } from '../providers.mjs';
 export function loadConfig(env = process.env) {
+if(env.MP_ACCESS_TOKEN&&env.MERCADOPAGO_ACCESS_TOKEN&&env.MP_ACCESS_TOKEN!==env.MERCADOPAGO_ACCESS_TOKEN)throw Error('Mercado Pago token aliases disagree.');
 const production = env.NODE_ENV === 'production';
 const port = Number(env.PORT || 3000);
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw Error('PORT debe ser un puerto válido entre 1 y 65535.');
 const { shippingMode, paymentsMode } = resolveProviderModes(env);
 if (env.APP_ENV && !['local','staging','production'].includes(env.APP_ENV)) throw Error('APP_ENV inválido');
 if (env.MATEBREAK_STAGING_PERSIST_MOCK === '1' && env.APP_ENV !== 'staging') throw Error('Staging persistence requires APP_ENV=staging');
-if (env.APP_ENV === 'staging' && Object.entries(env).some(([name,value]) => value && /^(MP_|MERCADOPAGO_|RESEND_(API_KEY|WEBHOOK_SECRET)$|EMAIL_ENVELOPE_KEY$|CORREO_MICORREO_(USER|PASSWORD|CUSTOMER_ID)$|SUPABASE_ACCESS_TOKEN$|DATABASE_URL$|POSTGRES_URL$)/.test(name))) throw Error('Staging runtime refuses provider/management/database credentials');
+const stagingTest=env.APP_ENV==='staging'&&env.MATEBREAK_STAGING_MP_TEST==='1';
+const allowedTestNames=new Set(['MP_ACCESS_TOKEN','MERCADOPAGO_ACCESS_TOKEN','MERCADOPAGO_WEBHOOK_SECRET','MP_COLLECTOR_ID','MP_ENVIRONMENT','MP_EXPECTED_LIVE_MODE','MP_PUBLIC_KEY']);
+if (env.APP_ENV === 'staging' && Object.entries(env).some(([name,value]) => value && /^(MP_|MERCADOPAGO_|RESEND_(API_KEY|WEBHOOK_SECRET)$|EMAIL_ENVELOPE_KEY$|CORREO_MICORREO_(USER|PASSWORD|CUSTOMER_ID)$|SUPABASE_ACCESS_TOKEN$|DATABASE_URL$|POSTGRES_URL$)/.test(name) && !(stagingTest&&allowedTestNames.has(name)))) throw Error('Staging runtime refuses provider/management/database credentials');
 if(env.APP_ENV==='staging'&&env.EMAILS_ENABLED==='1')throw Error('Real email transport forbidden in staging');
 const config = {
   url: env.SUPABASE_URL,
@@ -22,6 +25,7 @@ const config = {
   rateLimitKey:env.RATE_LIMIT_KEY||'',
   trustedProxyAddresses:env.TRUSTED_PROXY_ADDRESSES?env.TRUSTED_PROXY_ADDRESSES.split(','):[],
   staging: env.APP_ENV === 'staging',
+  stagingMpTestEnabled:env.MATEBREAK_STAGING_MP_TEST==='1',
   stagingProjectRef: env.SUPABASE_STAGING_PROJECT_REF,
   stagingPersistMock: env.MATEBREAK_STAGING_PERSIST_MOCK === '1',
   localPersistMock: env.MATEBREAK_LOCAL_PERSIST_MOCK === '1',

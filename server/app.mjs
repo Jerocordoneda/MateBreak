@@ -1,4 +1,5 @@
 import { assertStagingConfig, persistedMock } from './config/staging.mjs';
+import {stagingMpTestAllowed} from './config/staging-mp-test.mjs';
 import { createAuthFactory } from './integrations/supabase/auth.mjs';
 import { customerRoutes } from './modules/account/customer-routes.mjs';
 import {selectionToken,validCartToken} from './checkout/cart-identity.mjs';
@@ -63,7 +64,7 @@ export function createApp(config, overrides = {}) {
   const scoped=sessionScopedAdmin(baseAdmin,{enabled:!overrides.verifyLiveSession}),admin=scoped.admin;
   app.use(scoped.middleware);
   const providers = createProviders(config, overrides);
-  if (config.staging && (!providers.shipping.mock || !providers.payment.mock)) throw Error('Staging overrides must also be mock');
+  if (config.staging && (!providers.shipping.mock || (!stagingMpTestAllowed(config)&&!providers.payment.mock))) throw Error('Staging providers must match the approved mock or TEST contract');
   const mockCheckout = providers.mock && !persistedMock(config) ? createMockCheckoutStore(providers.payment) : null;
   const authFactory = overrides.authFactory ?? createAuthFactory(config, secure);
   const rateStore=overrides.rateStore??(config.rateLimitKey?createSqlRateStore({admin,key:config.rateLimitKey}):null);
