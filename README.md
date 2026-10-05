@@ -2,11 +2,29 @@
 
 MateBreak es una tienda minorista de mates y accesorios con catálogo por variantes, carrito, checkout, inventario físico y administración. Resuelve la diferencia entre vender una publicación comercial (por ejemplo, un set personalizado) y reservar las piezas físicas que realmente la componen.
 
-Es un proyecto de portfolio para estudiar frontend, APIs, autenticación y transacciones. La lógica financiera y de stock se valida en el backend/PostgreSQL; el navegador presenta datos y recoge decisiones del comprador.
+Desarrollado por **Copplex**, el proyecto integra frontend, APIs, autenticación y transacciones. La lógica financiera y de stock se valida en el backend/PostgreSQL; el navegador presenta datos y recoge decisiones del comprador.
 
-## Tecnologías y arquitectura
+## Stack tecnológico
 
-HTML, CSS y JavaScript ES modules, sin framework frontend; Node.js 22+, Express 5, Supabase PostgreSQL/Auth/Storage, SDK Supabase y SSR para cookies; Cheerio para extracción de catálogo. Node test runner y SQL prueban contratos y concurrencia. Docker Desktop aloja Supabase local y PostgreSQL descartable. GitHub Actions ejecuta controles offline, sin deploys añadidos.
+**Frontend**
+
+![HTML5](https://img.shields.io/badge/HTML5-333?style=flat&logo=html5) ![CSS3](https://img.shields.io/badge/CSS3-333?style=flat&logo=css) ![JavaScript](https://img.shields.io/badge/JavaScript-333?style=flat&logo=javascript)
+
+**Backend**
+
+![Node.js 22](https://img.shields.io/badge/Node.js-22-333?style=flat&logo=nodedotjs) ![Express 5](https://img.shields.io/badge/Express-5-333?style=flat&logo=express)
+
+**Datos e infraestructura**
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-333?style=flat&logo=postgresql) ![PL/pgSQL](https://img.shields.io/badge/PL%2FpgSQL-333?style=flat) ![Supabase](https://img.shields.io/badge/Supabase-333?style=flat&logo=supabase) ![Vercel](https://img.shields.io/badge/Vercel-333?style=flat&logo=vercel) ![Render](https://img.shields.io/badge/Render-333?style=flat&logo=render)
+
+**Desarrollo y CI**
+
+![Git](https://img.shields.io/badge/Git-333?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/GitHub-333?style=flat&logo=github) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-333?style=flat&logo=githubactions)
+
+Frontend HTML/CSS/JavaScript con ES modules y BFF Node.js 22/Express 5. PostgreSQL/Supabase concentra transacciones, RPC en PL/pgSQL y RLS; Supabase Auth administra identidad y Storage las imágenes. Frontend y backend se despliegan por separado en Vercel y Render. Node test runner, SQL y GitHub Actions verifican contratos y concurrencia; Docker aloja entornos locales descartables.
+
+Python se utiliza sólo en scripts auxiliares del procesamiento del catálogo (por ejemplo, los contact sheets de termos en el directorio local de importación); no forma parte del runtime web. Cheerio y los SDK de Supabase complementan la importación y el BFF.
 
 ```mermaid
 flowchart LR

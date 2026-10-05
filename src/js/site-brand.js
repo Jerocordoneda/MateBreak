@@ -1,3 +1,3 @@
 // The same mark used by index.html; never introduce a second wordmark.
-export const brandLogo = "https://lh3.googleusercontent.com/aida-public/AB6AXuB7RvngBOeBB8_8uDG8wLsv7JaOLHl1Szfdd1-BPhDK4VYj7-qs31diindLkxiIHRap1lqiw5OP0rNAeRX3uI8O6DVpU0K7DSEtxmz3ApSOjOZdEqSTidY-vmz9QPYCmHpaQF-eCvMsnGeuoh-at1A7WHij0aplhRiz1m8VhHQ2BgDmp0Gy2Bbwt534XlETZHwYM6wQ4SBXXi2vViExllL4lyVqY2B7hw5wiQJd48ig9ZIfkni4W-uabSz0XNn0Ctq5h1NoOogmT-g-IAg";
-export const brandMarkup = "<img src=\"https://lh3.googleusercontent.com/aida-public/AB6AXuB7RvngBOeBB8_8uDG8wLsv7JaOLHl1Szfdd1-BPhDK4VYj7-qs31diindLkxiIHRap1lqiw5OP0rNAeRX3uI8O6DVpU0K7DSEtxmz3ApSOjOZdEqSTidY-vmz9QPYCmHpaQF-eCvMsnGeuoh-at1A7WHij0aplhRiz1m8VhHQ2BgDmp0Gy2Bbwt534XlETZHwYM6wQ4SBXXi2vViExllL4lyVqY2B7hw5wiQJd48ig9ZIfkni4W-uabSz0XNn0Ctq5h1NoOogmT-g-IAg\" alt=\"\" width=\"48\" height=\"48\"><span>MateBreak<sup>®</sup></span>";
+export const brandLogo = "/src/assets/email/matebreak-logo.png";
+export const brandMarkup = "<img src=\"/src/assets/email/matebreak-logo.png\" alt=\"\" width=\"48\" height=\"48\"><span>MateBreak<sup>®</sup></span>";

@@ -156,7 +156,8 @@ async function init() {
   try {
     context = await api('/checkout/contexto' + suffix);
     populateProvinces(context.provinces,$('#recipient-form [name=provincia]'),$('#pickup-province'));
-    $('#test-mode').hidden = !context.modo_prueba;
+    $('#test-mode').hidden = !(context.modo_prueba||context.mercadopago_test);
+    if(context.mercadopago_test){$('#test-mode').textContent='Staging · Mercado Pago TEST con Checkout Pro. Envío simulado; sin despacho real.';$('#payment-help').textContent='Utilizá exclusivamente el comprador y los medios de pago de prueba de Mercado Pago.';}
     if(context.modo_prueba)$('#test-mode').textContent=context.mock_persistente
       ? 'Prueba de Staging · pago y envío simulados, sin cobros ni despachos reales. El pedido se guarda y reserva inventario de prueba.'
       : 'Prueba sin persistencia · sin cobros, despachos ni reservas de inventario. Se borra al reiniciar el servidor.';
