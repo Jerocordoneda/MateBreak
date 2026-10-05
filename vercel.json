@@ -58,6 +58,10 @@
     {
       "source": "/recuperar-cuenta",
       "destination": "/src/pages/recuperar-cuenta.html"
+    },
+    {
+      "source": "/podcast",
+      "destination": "/src/pages/podcast.html"
     }
   ],
   "headers": [

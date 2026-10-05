@@ -1,0 +1,41 @@
+/* Content-specific layout; colors, type and surfaces use the existing storefront theme. */
+.podcast-page{max-width:1280px;margin:auto;padding:192px 64px 64px}
+.podcast-hero{display:grid;grid-template-columns:1.15fr 1fr;align-items:center;gap:64px;padding-bottom:64px}
+.podcast-eyebrow{margin:0 0 24px}
+.podcast-intro h1{font-size:clamp(40px,4.4vw,64px);line-height:1.08;margin:0 0 24px}
+.podcast-intro em{font-weight:400}
+.podcast-lead{margin:0 0 16px}
+.podcast-description{max-width:470px;margin:0 0 32px;line-height:1.8}
+.podcast-cta{display:inline-flex;align-items:center;justify-content:center;gap:24px;min-height:48px;padding:12px 24px;text-decoration:none;transition:opacity .18s}
+.podcast-cta:hover{opacity:.85}
+.podcast-page a:focus-visible,.podcast-footer a:focus-visible,.podcast-skip:focus-visible{outline:2px solid currentColor;outline-offset:5px}
+.podcast-art{position:relative;min-height:360px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.podcast-orbit{position:absolute;width:260px;height:260px;border:1px solid currentColor;border-radius:50%;opacity:.18}
+.podcast-orbit:before,.podcast-orbit:after{content:'';position:absolute;inset:18px;border:1px solid currentColor;border-radius:50%}
+.podcast-orbit:after{inset:36px}
+.podcast-mic{position:relative;width:104px;height:104px;border-radius:50%;display:grid;place-items:center}
+.podcast-mic svg{width:48px;height:48px;fill:none;stroke:currentColor;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+.podcast-art p{position:relative;margin:48px 16px 0;text-align:center;letter-spacing:.1em}
+.podcast-art span{display:block;font-size:10px;letter-spacing:.1em;margin-top:8px}
+.podcast-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
+.podcast-section-heading h2{margin:0}
+.podcast-status{padding:8px 16px}
+.podcast-empty{padding:32px}
+.podcast-empty .podcast-eyebrow{margin-bottom:16px}
+.podcast-empty h3{font-size:24px;line-height:1.4;margin:0 0 12px;max-width:620px}
+.podcast-empty>p:last-child{margin:0}
+.podcast-store{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-top:32px}
+.podcast-store p{margin:0}
+.podcast-cta-outline{border:1px solid currentColor}
+.podcast-footer{padding-block:64px}
+.podcast-footer p{margin:16px auto 24px;max-width:440px}
+.podcast-footer nav{display:flex;justify-content:center;flex-wrap:wrap;gap:12px 24px}
+.podcast-footer nav a{min-height:44px;display:inline-flex;align-items:center;font-size:14px}
+.podcast-skip{position:fixed;top:8px;left:8px;z-index:100;transform:translateY(-150%);padding:12px}
+.podcast-skip:focus{transform:translateY(0)}
+@media(max-width:1023px){.podcast-page{padding-inline:32px}.podcast-hero{gap:32px}.podcast-art{min-height:300px}.podcast-orbit{width:230px;height:230px}}
+@media(max-width:760px){.podcast-page{padding:104px 20px 48px}.podcast-hero{grid-template-columns:minmax(0,1fr);gap:32px;padding-bottom:48px}.podcast-intro h1{font-size:clamp(36px,8.5vw,52px)}.podcast-description{margin-bottom:24px}.podcast-art{min-height:260px}.podcast-orbit{width:220px;height:220px}.podcast-empty{padding:24px}.podcast-empty h3{font-size:22px}.podcast-store{flex-direction:column;align-items:flex-start}.podcast-footer{padding:48px 20px}.podcast-footer>div{padding-inline:0}}
+@media(max-width:374px){.podcast-page{padding-inline:16px}.podcast-empty{padding:20px}.podcast-section-heading h2{font-size:26px}}
+
+.podcast-episodes{scroll-margin-top:152px}
+@media(max-width:760px){.podcast-episodes{scroll-margin-top:88px}}
