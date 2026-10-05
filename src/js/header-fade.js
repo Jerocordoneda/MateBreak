@@ -49,11 +49,14 @@ document.addEventListener("DOMContentLoaded", () => {
             " rgba(" + r + ", " + g + ", " + b + ", 0) 100%)";
     }
 
+    const staticView = matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)');
+    let running = false;
     let lastP = -1;
     let lastLight = null;
     let lastCurveLight = null;
 
     function frame() {
+        if (staticView.matches || document.hidden) { running = false; paint(0); header.classList.remove('header-dark'); return; }
         if (transitionEl && curve) {
             // Cambio directo cuando --curve-move alcanza el disparador
             const move = parseFloat(curve.style.getPropertyValue("--curve-move")) || 0;
@@ -89,5 +92,8 @@ document.addEventListener("DOMContentLoaded", () => {
         requestAnimationFrame(frame);
     }
 
-    requestAnimationFrame(frame);
+    function resume() { if (!running) { running = true; requestAnimationFrame(frame); } }
+    staticView.addEventListener('change', resume);
+    document.addEventListener('visibilitychange', resume);
+    resume();
 });

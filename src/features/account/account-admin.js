@@ -90,10 +90,12 @@ async function loadTransfers(){
     details.append(element('strong',`Pedido ${order.numero||order.id.slice(0,8).toUpperCase()} · ${money.format(order.importe)}`),
       element('small',`Transferencia pendiente · creada ${dateTime(order.creado_en)} · vence ${dateTime(order.reserva_hasta)}`),element('small',`${order.cliente||'Cliente'} · ${order.contacto||'Contacto pendiente'} · ${Math.ceil(order.segundos_restantes/60)} minutos de reserva`));
     const form=element('form',undefined,'transfer-confirm-form'),reference=element('input'),button=element('button','Marcar como pagado','button-secondary');
-    reference.name='referencia';reference.placeholder='Referencia bancaria verificada';reference.required=true;reference.maxLength=150;
+    reference.setAttribute('aria-label','Referencia bancaria verificada del pedido '+(order.numero||order.id.slice(0,8).toUpperCase()));
+    reference.name='referencia';reference.placeholder='Ej.: operación 1234';reference.required=true;reference.maxLength=150;
     button.disabled=order.segundos_restantes<=0;
     if(button.disabled)button.textContent='Reserva vencida · requiere liberación';
-    form.append(reference,button);
+    const referenceLabel=element('label','Referencia bancaria verificada');referenceLabel.append(reference);
+    form.append(referenceLabel,button);
     form.onsubmit=async event=>{
       event.preventDefault();button.disabled=true;
       try{await api(`/admin/transferencias/${order.id}/confirmar`,'POST',{referencia:reference.value.trim()});message('Pago confirmado y auditado.');await loadTransfers();document.dispatchEvent(new Event('retail-orders-refresh'));}

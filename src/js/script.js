@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Valores suavizados (smoothing)
     const LERP = 0.12;
+    const staticView = matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)');
 
     let targetMove = 0;
     let currentMove = 0;
@@ -15,6 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let rafId = null;
 
     function update() {
+        if (staticView.matches) { cancelAnimationFrame(rafId); rafId = null; curve.style.setProperty('--curve-move', '0px'); curve.style.setProperty('--curve-scale', '1'); return; }
 
         const rect = transition.getBoundingClientRect();
         const windowHeight = window.innerHeight;
@@ -36,6 +38,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function loop() {
+        if (staticView.matches) { rafId = null; return; }
 
         // Suavizado: la curva se desliza y crece con inercia
         currentMove += (targetMove - currentMove) * LERP;
@@ -63,6 +66,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update, { passive: true });
 
+    staticView.addEventListener('change', update);
     update();
 
 });

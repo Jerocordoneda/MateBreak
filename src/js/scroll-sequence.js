@@ -11,6 +11,15 @@ function initSequence(section) {
     const counter = section.querySelector("[data-seq-counter]");
     if (!img) return;
 
+    const staticView = matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)');
+    if (staticView.matches) {
+        const activate = () => {
+            if (!staticView.matches) { staticView.removeEventListener('change', activate); initSequence(section); }
+        };
+        staticView.addEventListener('change', activate);
+        return; // Keep the existing first image; do not preload/analyze all frames on mobile.
+    }
+
     const total = parseInt(section.dataset.seqFrames || "60", 10);
     const dir = section.dataset.seqDir || "src/assets/images/frames-mate1";
     const LERP = 0.3;
@@ -64,6 +73,11 @@ function initSequence(section) {
     let currentBrightness = 1;
 
     function update() {
+        if (staticView.matches) {
+            cancelAnimationFrame(rafId); rafId = null;
+            img.src = frames[0]; img.style.filter = ''; img.style.opacity = '1';
+            return;
+        }
         const rect = section.getBoundingClientRect();
         const vh = window.innerHeight;
         const range = rect.height - vh;
@@ -73,6 +87,7 @@ function initSequence(section) {
     }
 
     function loop() {
+        if (staticView.matches) { rafId = null; return; }
         currentProgress += (targetProgress - currentProgress) * LERP;
 
         const frame = Math.round(currentProgress * (frames.length - 1));
@@ -107,5 +122,6 @@ function initSequence(section) {
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update, { passive: true });
 
+    staticView.addEventListener('change', update);
     update();
 }
