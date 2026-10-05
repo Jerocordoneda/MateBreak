@@ -4,12 +4,14 @@ Base: `bc1cfecf9839f4b6c73569c0d64c0453043fa808`. This candidate is for review;
 merging, deployments, commercial SMTP, provider activation and Cloud catalog
 writes require separate authorization.
 
+Update 5 October 2026: see `provider-readiness.md` for the definitive two-mate policy and local operations. Migration 38 is revised while still unpublished; migration 39 is also required before the new admin backend. Historical deployment reports and the 19e218c prebuilt are superseded for this candidate.
+
 ## Order pricing and recipient
 
 Migration `20261004184020_manual_review_checkout_policy.sql` is additive. Apply
 it before the new backend. Preserve migrations 1–37 and existing order rows.
-Physical mates come from component quantities, not cart line count. One or two
-mates receive no volume promotion; three or more receive 20% off product
+Physical mates come from component quantities, not cart line count. One physical mate
+receives no volume promotion; two or more receive 20% off product
 subtotal, followed by 10% off the discounted products for transfer. Shipping is
 excluded. SQL recomputes prices, inventory and totals; browser totals are not
 accepted. New orders persist original subtotal, promotion and physical count.

@@ -10,8 +10,9 @@ try{
  const token='d'.repeat(64),set=(variant,qty)=>JSON.parse(q(`select public.mb_comercio(${lit(token)},null,'variante',${lit({variante_id:variant,cantidad:qty})}::jsonb);`));
  const check=cart=>JSON.parse(q(`select public.mb_cotizar_catalogo(${lit(cart.id)},'mercadopago');`));
  for(const n of [1,2,3,4,5]){
-  const cart=set(900001,n),quote=check(cart);assert.equal(quote.mates_fisicos,n);assert.equal(quote.subtotal_original_productos,n*10000);assert.equal(quote.descuento_promocional,n>=3?n*2000:0);assert.equal(quote.subtotal,n>=3?n*8000:n*10000);
+  const cart=set(900001,n),quote=check(cart);assert.equal(quote.mates_fisicos,n);assert.equal(quote.subtotal_original_productos,n*10000);assert.equal(quote.descuento_promocional,n>=2?n*2000:0);assert.equal(quote.subtotal,n>=2?n*8000:n*10000);
  }
+ set(900001,0);const twoSet=set(900010,1),twoQuote=check(twoSet);assert.equal(twoQuote.mates_fisicos,2);assert.equal(twoQuote.descuento_promocional,6000);set(900010,0);
  set(900001,1);set(900010,1);const cart=set(900011,1),quote=check(cart);
  assert.equal(quote.mates_fisicos,3);assert.equal(quote.subtotal_original_productos,41500);assert.equal(quote.descuento_promocional,8300);assert.equal(quote.subtotal,33200);
  const box=q("select producto_id from private.inventario_ficha where sku='MB-CAJA-MATE';");

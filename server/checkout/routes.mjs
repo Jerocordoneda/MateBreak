@@ -1,3 +1,4 @@
+import {retailAdminRoutes} from '../payments/retail-admin.mjs';
 import { persistedMock } from '../config/staging.mjs';
 import { randomBytes } from 'node:crypto';
 import { parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
@@ -249,4 +250,5 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
   });
 
   transferAdminRoutes(app, { admin, requireUser, uuid, rpc });
+  retailAdminRoutes(app, {admin,requireUser,uuid});
 }

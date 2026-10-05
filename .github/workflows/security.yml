@@ -28,3 +28,17 @@ jobs:
         env:
           STAGING_BACKEND_ORIGIN: https://matebreak-api-staging.onrender.com
       - run: npm audit --omit=dev --audit-level=high
+
+      - name: Isolated SQL transfer and order operations
+        run: |
+          docker run -d --name matebreak-wholesale-isolated --network none --label matebreak.test=wholesale-local --label matebreak.workdir="$PWD" -e POSTGRES_PASSWORD=disposable-local-only public.ecr.aws/supabase/postgres:17.6.1.171
+          for attempt in $(seq 1 60); do
+            if docker exec matebreak-wholesale-isolated pg_isready -h 127.0.0.1 -U supabase_admin; then break; fi
+            sleep 1
+          done
+          docker exec matebreak-wholesale-isolated pg_isready -h 127.0.0.1 -U supabase_admin
+          node scripts/test-transfer-policy-sql.mjs
+          node scripts/test-retail-operations-sql.mjs
+      - name: Stop isolated SQL test container
+        if: always()
+        run: docker stop matebreak-wholesale-isolated || true

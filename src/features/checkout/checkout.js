@@ -66,7 +66,7 @@ function renderOrder() {
   $('#shipping-progress').value = Math.min(80_000, subtotal);
   const discount = payment === 'transferencia' ? Math.round(subtotal * 10) / 100 : 0;
   const shipping = delivery === 'retiro' ? 0 : shippingQuote?.customerShippingCost;
-  $('#discount').textContent = discount ? `− ${money(discount)}` : '—';
+  $('#discount').textContent = discount ? `− ${money(discount)} · 10% transferencia${Number(context.quote.descuento_promocional)>0 ? ' · 28% efectivo en productos' : ''}` : '—';
   $('#shipping-cost').textContent = shipping === undefined ? 'A cotizar' : shipping === 0 ? 'Gratis' : money(shipping);
   $('#order-total').textContent = shipping === undefined ? 'A cotizar' : money(subtotal - discount + shipping);
 }
@@ -87,7 +87,7 @@ function renderChoices() {
     const label = node('label', undefined, 'checkout-choice'), input = node('input');
     input.type = 'radio'; input.name = 'payment'; input.value = option.codigo; input.disabled = !option.activo;
     input.onchange = () => { payment = option.codigo; renderOrder(); $('#place-order').disabled = !payment; };
-    label.append(input, node('span', option.codigo === 'transferencia' ? 'Transferencia bancaria · 10% de descuento'
+    label.append(input, node('span', option.codigo === 'transferencia' ? 'Transferencia bancaria · 10% adicional sobre productos'
       : context.modo_prueba ? 'Pago de prueba · Mercado Pago simulado' : 'Mercado Pago · tarjetas y medios habilitados'));
     if (input.disabled) label.append(node('small', 'Pendiente de habilitación'));
     payments.append(label);

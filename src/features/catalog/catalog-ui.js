@@ -20,7 +20,7 @@ export function productCard(p) {
   if(p.precio_original>p.precio)text.append(node('del',money(p.precio_original,p.moneda),'catalog-old'));
   text.append(node('strong',money(p.precio,p.moneda),'catalog-price'));
   if(p.descuento>0)text.append(node('span',`${Math.round(p.descuento)}% OFF`,'catalog-discount'));
-  text.append(node('p','Desde 3 mates físicos: 20% sobre productos. Transferencia: 10% adicional sobre el importe descontado.','catalog-transfer'));
+  text.append(node('p','Desde 2 mates físicos: 20% sobre productos. Transferencia: 10% adicional sobre el importe descontado.','catalog-transfer'));
   text.append(node('p','Cuotas según disponibilidad de Mercado Pago','catalog-installments'));
   text.append(node('p','Envío gratis desde $80.000','catalog-shipping'));
   if(p.disponible===false)text.append(node('p','Sin stock','stock-warning'));

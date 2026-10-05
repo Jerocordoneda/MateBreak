@@ -11,7 +11,7 @@ window.addEventListener('pagehide',stop);motion.addEventListener('change',stop);
 function summary(order){
  $('#result-items').replaceChildren(...(order.items||[]).map(i=>{const li=document.createElement('li');li.textContent=i.cantidad+' × '+i.nombre+' · '+money(i.precio_unitario*i.cantidad);return li;}));
  $('#result-totals').replaceChildren();
- for(const [label,value] of [['Productos antes de promoción',order.subtotal_original_productos??order.subtotal_mercaderia],['Promoción desde 3 mates',order.descuento_promocional??0],['Productos',order.subtotal_mercaderia],['Descuentos',order.descuento_productos],['Envío',order.costo_envio],['Total',order.total]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=money(value);$('#result-totals').append(dt,dd);}
+ for(const [label,value] of [['Productos antes de promoción',order.subtotal_original_productos??order.subtotal_mercaderia],['Promoción por 2+ mates',order.descuento_promocional??0],['Productos',order.subtotal_mercaderia],['Descuentos',order.descuento_productos],['Envío',order.costo_envio],['Total',order.total]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=money(value);$('#result-totals').append(dt,dd);}
  $('#result-delivery').textContent='Entrega: '+deliveryText(order.direccion_entrega);
  $('#result-summary').hidden=false;
 }
@@ -31,6 +31,7 @@ async function load(){
   if(number){$('#result-number').textContent='Pedido #'+number;$('#result-number').hidden=false;}
   $('#result-next').href='/src/pages/pedido.html?pedido='+encodeURIComponent(order.id);$('#result-next').hidden=false;
   summary(order);
+  if(state==='pending'&&order.instructions){$('#result-title').textContent='Pedido recibido · pendiente de transferencia';$('#result-description').textContent='Todavía no está pagado. Transferí el importe y enviá el comprobante por Instagram/WhatsApp. Reservamos tu stock durante 24 horas.';}
   if(simulation){$('#result-test-mode').hidden=false;$('#result-test-mode').textContent=simulation==='persistente'?'Staging · pago simulado. Pedido y reserva de inventario de prueba guardados. Sin cobros ni despachos reales.':'Simulación sin persistencia. Sin cobro ni reserva de inventario.';}
   if(state==='pending'&&order.instructions){
    $('#transfer-details').hidden=false;$('#transfer-message').textContent=order.instructions.message+' Vence: '+new Date(order.reserva_hasta).toLocaleString('es-AR');

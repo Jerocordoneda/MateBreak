@@ -39,7 +39,7 @@ begin
    'nombre',r.nombre,'cantidad',r.cantidad,'precio_unitario',r.precio,'opciones',r.opciones,'personalizacion',r.personalizacion));
   total:=total+r.cantidad*r.precio;
  end loop;
- return jsonb_build_object('items',items,'subtotal_original_productos',round(total,2),'descuento_promocional',case when qty>=3 then round(total*0.20,2) else 0 end,'mates_fisicos',qty,'subtotal',round(total,2)-(case when qty>=3 then round(total*0.20,2) else 0 end),'moneda','ARS');
+ return jsonb_build_object('items',items,'subtotal_original_productos',round(total,2),'descuento_promocional',case when qty>=2 then round(total*0.20,2) else 0 end,'mates_fisicos',qty,'subtotal',round(total,2)-(case when qty>=2 then round(total*0.20,2) else 0 end),'moneda','ARS');
 end $$;
 create or replace function private.mb_checkout_minorista_v1(p_token_hash text,p_usuario_id uuid,p_datos jsonb)
 returns jsonb language plpgsql security invoker set search_path='' as $$
@@ -131,3 +131,27 @@ language sql stable security invoker set search_path='' as $$
 $$;
 revoke all on function public.mb_cantidad_promo(uuid),public.mb_cotizar_catalogo(uuid,text),private.mb_checkout_minorista_v1(text,uuid,jsonb),private.mb_order_view(uuid) from public,anon,authenticated;
 grant execute on function public.mb_cantidad_promo(uuid),public.mb_cotizar_catalogo(uuid,text),private.mb_checkout_minorista_v1(text,uuid,jsonb),private.mb_order_view(uuid) to service_role;
+
+-- Strengthen the existing manual confirmation, without a parallel payment path.
+create or replace function public.mb_confirmar_transferencia(p_actor_id uuid,p_pedido_id uuid,p_referencia text)
+returns jsonb language plpgsql security invoker set search_path='' as $$
+declare o public.pedido; g public.pago;
+begin
+ perform pg_advisory_xact_lock(782204,1);
+ if not public.mb_inventario_autorizado(p_actor_id) then raise exception 'Solo administracion puede confirmar pagos' using errcode='42501'; end if;
+ select * into o from public.pedido where id=p_pedido_id for update;
+ if not found then raise exception 'Pedido inexistente'; end if;
+ select * into g from public.pago where pedido_id=o.id and metodo='transferencia' for update;
+ if not found then raise exception 'No es una transferencia'; end if;
+ if nullif(trim(p_referencia),'') is null or length(p_referencia)>150 then raise exception 'Referencia bancaria invalida';end if;
+ if exists(select 1 from private.confirmacion_transferencia where pedido_id=o.id) then
+  return to_jsonb(o);end if;
+ perform set_config('matebreak.retail_actor',p_actor_id::text,true);
+ perform set_config('matebreak.retail_action','confirm_transfer',true);
+ perform set_config('matebreak.retail_action_id','',true);
+ if o.estado<>'pendiente_pago' or o.reserva_hasta<=clock_timestamp() then raise exception 'Pago requiere revision manual'; end if;
+ perform public.mb_confirmar_pago(g.id,p_referencia,g.importe,g.moneda);
+ insert into private.confirmacion_transferencia(pedido_id,actor_id,referencia) values(o.id,p_actor_id,p_referencia);
+ select * into o from public.pedido where id=p_pedido_id;
+ return to_jsonb(o);
+end $$;

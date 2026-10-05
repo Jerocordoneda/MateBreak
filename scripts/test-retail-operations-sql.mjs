@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {createWholesaleDatabase,seedWholesale,literal as lit} from './wholesale-local-runtime.mjs';
+const db=createWholesaleDatabase(),q=db.query,actor='33333333-3333-4333-8333-333333333333';
+try{
+ seedWholesale(q);
+ const session=randomUUID();q(`update auth.users set email_confirmed_at=now() where id=${lit(actor)};insert into auth.sessions(id,user_id)values(${lit(session)},${lit(actor)});`);
+ assert.equal(JSON.parse(q(`set role service_role;select public.mb_sensitive_session_rpc(${lit(actor)},${lit(session)},'mb_retail_order_admin',${lit({p_actor_id:actor,p_action:'list',p_data:{}})}::jsonb);`)).length,0);
+ assert.throws(()=>q('set role service_role;update private.retail_order_audit set action=action;'),/permission denied/);
+ const create=()=>{
+  const token=randomUUID().replaceAll('-','').repeat(2);
+  q(`select public.mb_comercio(${lit(token)},null,'variante','{"variante_id":900001,"cantidad":1}');`);
+  return JSON.parse(q(`select public.mb_checkout_minorista(${lit(token)},null,${lit({idempotencia:randomUUID(),pago:'transferencia',envio:'retiro',destinatario:{nombre:'Ana',apellido:'Local',email:'retail@example.invalid',telefono:'2494123456'}})}::jsonb);`));
+ };
+ const call=(o,action,expectedState,actionId=randomUUID())=>`select public.mb_retail_order_admin(${lit(actor)},${lit(action)},${lit({orderId:o.id,actionId,expectedState})}::jsonb);`;
+ const o=create();
+ for(const role of ['anon','authenticated'])assert.throws(()=>q('set role '+role+';'+call(o,'prepare','pendiente_pago')),/permission denied/);
+ assert.throws(()=>q(call(o,'prepare','pendiente_pago')),/no pagado/);
+ assert.throws(()=>q(call(o,'deliver','pendiente_pago')),/no despachado/);
+ q(`select public.mb_confirmar_transferencia(${lit(actor)},${lit(o.id)},'BANK-LOCAL');`);
+ const actionId=randomUUID(),prepare=call(o,'prepare','pagado',actionId);
+ await Promise.all([db.parallel(prepare),db.parallel(prepare)]);
+ assert.equal(q(`select count(*)from private.retail_order_audit where action_id=${lit(actionId)} and actor_id=${lit(actor)};`),'1');
+ assert.equal(q(`select count(*)from private.retail_order_audit where pedido_id=${lit(o.id)} and action='confirm_transfer' and actor_id=${lit(actor)};`),'1');
+ assert.throws(()=>q(call(o,'cancel','en_preparacion')),/requiere pedido pendiente/);
+ assert.throws(()=>q(call(o,'deliver','en_preparacion')),/no despachado/);
+ assert.throws(()=>q(call(o,'prepare','pagado',actionId).replace(actor,'44444444-4444-4444-8444-444444444444')),/administracion/);
+ const list=JSON.parse(q(`select public.mb_retail_order_admin(${lit(actor)},'list','{}');`));
+ assert.equal(list.find(x=>x.id===o.id).listo_despachar,true);
+ assert.equal(list.find(x=>x.id===o.id).historial.length,2);
+ assert.throws(()=>q(`select public.mb_record_verified_dispatch(${lit(o.id)},'SYNTHETIC1234','accepted');`),/Despacho no verificable/);
+ q(`update public.envio set snapshot='{"environment":"production"}',estado_integracion='importado' where pedido_id=${lit(o.id)};select public.mb_record_verified_dispatch(${lit(o.id)},'SYNTHETIC1234','accepted');`);
+ const deliver=call(o,'deliver','enviado');q(deliver);q(deliver);assert.equal(q(`select estado from public.pedido where id=${lit(o.id)};`),'entregado');
+ const cancelled=create(),cancel=call(cancelled,'cancel','pendiente_pago');q(cancel);const stock=q('select stock from public.producto_simple where id_producto=900002;');q(cancel);assert.equal(q('select stock from public.producto_simple where id_producto=900002;'),stock);
+ const expired=create();q(`update public.pedido set reserva_hasta=clock_timestamp()-interval '1 second' where id=${lit(expired.id)};`);
+ const expire=call(expired,'expire','pendiente_pago');q(expire);q(expire);
+ assert.equal(q(`select estado from public.pedido where id=${lit(expired.id)};`),'expirado');
+ assert.equal(q(`select sum(cantidad)from public.movimiento_stock where pedido_id=${lit(expired.id)};`),'0');
+ console.log('PASS retail admin service-only role checks; no arbitrary jumps; concurrent idempotent prepare; audit actor/time; derived ready; cancel and expire exactly once; no dispatch without verified logistics');
+}finally{db.close();}

@@ -53,7 +53,7 @@ Resend encaja con el diseño: REST para outbox, idempotencia y recibos firmados;
 | Dato necesario | Destino preparado |
 | --- | --- |
 | Dominio remitente previsto `matebreak.com.ar`; acceso pendiente a DonWeb | NS actuales `ns1.donweb.com` / `ns2.donweb.com`; conservar Tiendanube y zona existente |
-| Remitente autorizado y dirección de respuestas | `RESEND_FROM_EMAIL=MateBreak <pedidos@matebreak.com.ar>` y `RESEND_REPLY_TO=Mate.break32@gmail.com`; no activar antes de verificar dominio |
+| Remitente autorizado y dirección de respuestas | `RESEND_FROM_EMAIL=MateBreak <contacto@matebreak.com.ar>` y `RESEND_REPLY_TO=Mate.break32@gmail.com`; no activar antes de verificar dominio |
 | API key con permiso de envío para ese dominio | `RESEND_API_KEY`, solo backend/worker; `createResend` requiere opt-in explícito |
 | Secreto `whsec_…` del webhook | `RESEND_WEBHOOK_SECRET`; endpoint raw firmado `/api/emails/resend/recibos`, deshabilitado por defecto |
 | Clave aleatoria de cifrado AES-256-GCM, 32 bytes/64 hex minúsculas | `EMAIL_ENVELOPE_KEY`, gestor de secretos del worker; generar fuera de Git y mantenerla recuperable |

@@ -4,7 +4,7 @@ declare c jsonb; o jsonb; q integer; expected numeric; token text:=repeat('5',64
 begin
  foreach q in array array[1,2,3,4,5,8,10,2,1] loop
   c:=public.mb_comercio(token,null,'variante',jsonb_build_object('variante_id',900001,'cantidad',q));
-  expected:=case when q>=3 then q*8000 else q*10000 end;
+  expected:=case when q>=2 then q*8000 else q*10000 end;
   if (public.mb_cotizar_catalogo((c->>'id')::uuid,'mercadopago')->>'subtotal')::numeric<>expected then raise exception 'Guest promotional regression for %',q;end if;
  end loop;
  update public.catalogo_variante set precio=12000 where id=900001;

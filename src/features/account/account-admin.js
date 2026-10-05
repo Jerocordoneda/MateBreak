@@ -1,3 +1,4 @@
+import {mountRetailOrders} from './account-retail-orders.js';
 import {api,element,message} from './ui.mjs';
 import {dateTime} from './account-data.js';
 import {mountTeam} from './account-team.js';
@@ -74,27 +75,39 @@ async function loadDashboard(){
   finally{button.disabled=false;}
 }
 
+let transferPage=1;
 async function loadTransfers(){
   const target=$('#pending-transfers');target.replaceChildren();
-  const orders=await api('/admin/transferencias');
+  const orders=await api('/admin/transferencias?pagina='+transferPage);
+  const previous=element('button','Transferencias anteriores','button-secondary'),next=element('button','Transferencias siguientes','button-secondary');
+  previous.disabled=transferPage===1;next.disabled=orders.length<100;
+  previous.onclick=()=>{transferPage--;loadTransfers().catch(e=>message(e.message,true));};
+  next.onclick=()=>{transferPage++;loadTransfers().catch(e=>message(e.message,true));};
+  target.append(previous,element('p','Página de transferencias '+transferPage),next);
   if(!orders.length){target.append(empty('No hay transferencias pendientes.'));return;}
   for(const order of orders){
     const row=element('article',undefined,'dashboard-list-row'),details=element('div');
-    details.append(element('strong',`Pedido ${order.id.slice(0,8).toUpperCase()} · ${money.format(order.importe)}`),
-      element('small',`Pendiente de transferencia · vence ${dateTime(order.reserva_hasta)}`));
+    details.append(element('strong',`Pedido ${order.numero||order.id.slice(0,8).toUpperCase()} · ${money.format(order.importe)}`),
+      element('small',`Transferencia pendiente · creada ${dateTime(order.creado_en)} · vence ${dateTime(order.reserva_hasta)}`),element('small',`${order.cliente||'Cliente'} · ${order.contacto||'Contacto pendiente'} · ${Math.ceil(order.segundos_restantes/60)} minutos de reserva`));
     const form=element('form',undefined,'transfer-confirm-form'),reference=element('input'),button=element('button','Marcar como pagado','button-secondary');
     reference.name='referencia';reference.placeholder='Referencia bancaria verificada';reference.required=true;reference.maxLength=150;
+    button.disabled=order.segundos_restantes<=0;
+    if(button.disabled)button.textContent='Reserva vencida · requiere liberación';
     form.append(reference,button);
     form.onsubmit=async event=>{
       event.preventDefault();button.disabled=true;
-      try{await api(`/admin/transferencias/${order.id}/confirmar`,'POST',{referencia:reference.value.trim()});message('Pago confirmado y auditado.');await loadTransfers();}
+      try{await api(`/admin/transferencias/${order.id}/confirmar`,'POST',{referencia:reference.value.trim()});message('Pago confirmado y auditado.');await loadTransfers();document.dispatchEvent(new Event('retail-orders-refresh'));}
       catch(cause){message(cause.message,true);button.disabled=false;}
     };
     row.append(details,form);target.append(row);
   }
 }
 
+const refreshTransfersEvent=()=>loadTransfers().catch(cause=>message(cause.message,true));
 export async function mountAdmin(currentUser){
+  mountRetailOrders().catch(cause=>message(cause.message,true));
+  document.removeEventListener('retail-transfers-refresh',refreshTransfersEvent);
+  document.addEventListener('retail-transfers-refresh',refreshTransfersEvent);
   mountWholesaleAdmin().catch(cause=>message(cause.message,true));
   $('#refresh-transfers').onclick=async()=>{try{await loadTransfers();}catch(e){message(e.message,true);}};
   $('#refresh-dashboard').onclick=async()=>{try{await loadDashboard();message('Dashboard actualizado.');}catch(e){message(e.message,true);}};

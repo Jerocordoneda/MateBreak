@@ -215,8 +215,13 @@
     },
     {
       "file": "20261004184020_manual_review_checkout_policy.sql",
-      "status": "local-manual-review-not-deployed",
-      "sha256LF": "017d702dcaa877840df35fcc4a7648be5376fc9eb05a08c84d35ebd1dee01d24"
+      "status": "local-two-mate-transfer-policy-not-deployed",
+      "sha256LF": "78e9a04b0d2ce51f54419c85119612a88078276c9d349544ddcb64d4160a3418"
+    },
+    {
+      "file": "20261005040724_local_retail_order_operations.sql",
+      "status": "local-retail-operations-not-deployed",
+      "sha256LF": "a90780533f9e66eb957af55735e1570f448a8413089fd91ece82a616da11a3e9"
     }
   ]
 }

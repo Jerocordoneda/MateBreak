@@ -337,7 +337,16 @@
     "version": "20261004184020",
     "name": "manual_review_checkout_policy",
     "remoteVersion": null,
-    "localTokenMd5": "61d640f36848b45ba7cd3d64ab544e43",
+    "localTokenMd5": "17faeffefe925ce7c9042ec3a151fc3e",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261005040724_local_retail_order_operations.sql",
+    "version": "20261005040724",
+    "name": "local_retail_order_operations",
+    "remoteVersion": null,
+    "localTokenMd5": "dac8ed07324d357575a8e4e54eb1c175",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
   }
