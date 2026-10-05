@@ -31,7 +31,7 @@ export function securityMiddleware({ origin, production, rateStore, url }) {
       'X-Frame-Options': 'DENY',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
       'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
-      'Content-Security-Policy': publicCspFor({production,url}),
+      'Content-Security-Policy': publicCspFor({production,url,pathname:req.path}),
     });
     if (production) res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     if (!req.path.startsWith('/api/')) return next();

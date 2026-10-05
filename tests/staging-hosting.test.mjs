@@ -1,4 +1,4 @@
-import {publicCsp} from '../server/security/public-policy.mjs';
+import {publicCsp,podcastCsp,podcastPaths} from '../server/security/public-policy.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,mkdtempSync,mkdirSync,writeFileSync,copyFileSync,rmSync} from 'node:fs';
@@ -11,11 +11,11 @@ const backend='https://synthetic-fixture.onrender.com'; // Offline only; never c
 
 test('staging headers protect root explicitly and preserve non-root coverage under strict validation',()=>{
  const prepared=createStagingVercelConfig(backend);
- assert.deepEqual(prepared.headers.map(rule=>rule.source),['/','/:path*']);
+ assert.deepEqual(prepared.headers.map(rule=>rule.source),['/','/:path*',...podcastPaths]);
  for(const rule of prepared.headers)assert.deepEqual(rule.headers,[
   {key:'X-Robots-Tag',value:'noindex, nofollow'},
   {key:'Cache-Control',value:'no-store'},
-  {key:'Content-Security-Policy',value:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'},
+  {key:'Content-Security-Policy',value:podcastPaths.includes(rule.source)?podcastCsp:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'},
  ]);
  const root=JSON.parse(readFileSync(new URL('../vercel.json',import.meta.url),'utf8'));
  assert.equal(assertStagingVercelReady(root,'https://matebreak-api-staging.onrender.com'),'https://matebreak-api-staging.onrender.com');

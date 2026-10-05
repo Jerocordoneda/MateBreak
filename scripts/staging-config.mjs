@@ -1,5 +1,5 @@
 // Offline configuration shared by the preparer, build gate and tests.
-import {publicCsp} from '../server/security/public-policy.mjs';
+import {publicCsp,podcastCsp,podcastPaths} from '../server/security/public-policy.mjs';
 import {isDeepStrictEqual} from 'node:util';
 export const frontendPages={'/tienda':'catalogo','/carrito':'tienda','/checkout/resultado':'checkout-resultado','/checkout':'checkout','/productos/:slug':'producto','/mi-cuenta':'cuenta','/mayorista':'mayorista','/regalos-empresariales':'regalos-empresariales','/recuperar-cuenta':'recuperar-cuenta','/podcast':'podcast'};
 export const backendRoutes=['/api/:path*','/auth/:path*','/interno/:path*','/healthz'];
@@ -17,7 +17,7 @@ export function createStagingVercelConfig(backend) {
  ...Object.entries(frontendPages).map(([source,page])=>({source,destination:'/src/pages/'+page+'.html'}))],
  // CLI 62.0.0 compiles /:path* without matching the literal root slash.
  // Keep its existing coverage and protect the home document explicitly.
- headers:['/','/:path*'].map(source=>({source,headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'},{key:'Content-Security-Policy',value:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'}]}))};
+ headers:['/','/:path*',...podcastPaths].map(source=>({source,headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'},{key:'Content-Security-Policy',value:podcastPaths.includes(source)?podcastCsp:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'}]}))};
 }
 // Diagnostic names only: public Vercel configuration/request properties, not an
 // acceptance list. Every additional property still fails isDeepStrictEqual.
