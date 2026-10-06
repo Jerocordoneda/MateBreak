@@ -75,7 +75,9 @@ export function createApp(config, overrides = {}) {
   const workers=emailRuntime(app,{admin,config,adapter:overrides.emailAdapter});
   app.use('/api', express.json({ limit: '16kb' }));
   app.use('/api', async (req, res, next) => {
+    if(config.staging&&req.path==='/productos')req.catalogDiagnosticStage='auth_factory';
     req.auth = authFactory(req, res);
+    if(req.catalogDiagnosticStage)req.catalogDiagnosticStage='auth_get_user';
     const { data, error } = await req.auth.auth.getUser();
     req.user = !error ? data?.user : null;
     // Logout must remain possible even for a session already revoked in SQL.
@@ -91,6 +93,7 @@ export function createApp(config, overrides = {}) {
     // Only cart/auth routes set this cookie: parallel catalog requests must not
     // overwrite the initial cart credential with unrelated random values.
     if (req.cartToken !== existing && ((req.path.startsWith('/carrito') && req.path !== '/carrito/resumen' && req.query.directa!=='1') || req.path === '/auth/login')) res.append('Set-Cookie', serializeCookieHeader(cookieName, req.cartToken, cookieOptions));
+    if(req.catalogDiagnosticStage)req.catalogDiagnosticStage='catalog_handler';
     next();
   });
   const requireUser = req => { if (!req.user) throw fail(401, 'Iniciá sesión para continuar'); return req.user.id; };
@@ -135,6 +138,8 @@ export function createApp(config, overrides = {}) {
   app.get('/recuperar-cuenta',(req,res)=>res.sendFile(path.join(root,'src/pages/recuperar-cuenta.html'),{dotfiles:'allow'}));
   app.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
+    // TEMPORARY Staging-only classification: no message, headers, cookies or PII.
+    if(config.staging&&req.path==='/api/productos')console.warn(JSON.stringify({kind:'catalog_failure',request_id:req.id,stage:req.catalogDiagnosticStage||'before_auth',error_class:['Error','TypeError','SyntaxError','AbortError','TimeoutError'].includes(error.name)?error.name:'other',source:String(error.stack||'').match(/(?:server[\\/](?:app\.mjs|integrations[\\/]supabase[\\/]auth\.mjs|modules[\\/]catalog[\\/]routes\.mjs)|node:internal[\\/]http[^\s)]*)[:]\d+[:]\d+/)?.[0]||'other'}));
     if (error.name === 'MiCorreoError') {
       console.warn(JSON.stringify({provider:'micorreo',endpoint:error.endpoint,status:error.status,
         requestId:req.id,errorType:error.type}));
