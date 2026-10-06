@@ -24,7 +24,7 @@ begin
  on conflict(pago_externo_id,estado_externo) do update set resultado=excluded.resultado;
  -- An active worker keeps its claim and completes through mb_finish_*.
  -- Synchronous reconciliation is not a worker attempt, so attempts stays 0.
- if j.state in('pending','retry') then
+ if j.state in('pending','retry') or (v_review and j.state='done') then
   update private.payment_reconciliation_job set state=case when v_review then 'review' else 'done' end,
    claim_id=null,claimed_at=null where payment_id=p_payment_id;
  end if;
@@ -32,3 +32,18 @@ begin
 end $$;
 revoke all on function public.mb_complete_payment_reconciliation(text) from public,anon,authenticated;
 grant execute on function public.mb_complete_payment_reconciliation(text) to service_role;
+
+-- A newer reconciliation can establish a hold between a worker's GET and its
+-- finish call. Never let an older successful result mark that claimed job done.
+create or replace function public.mb_finish_payment_reconciliation(p_claim_id uuid,p_outcome text) returns void
+language plpgsql security invoker set search_path='' as $$
+begin
+ if p_outcome not in('done','retry','review') then raise exception 'Invalid outcome'; end if;
+ update private.payment_reconciliation_job j set state=case
+  when p_outcome='done' and exists(select 1 from private.mp_payment_observation o
+   where o.payment_id=j.payment_id and (o.outcome='revision_manual' or exists(select 1 from private.order_financial_hold h where h.pedido_id=o.pedido_id))) then 'review'
+  when p_outcome='retry' and attempts>=10 then 'review' else p_outcome end,
+  available_at=now()+make_interval(secs=>least(3600,30*(2^attempts)::integer)),claim_id=null
+ where claim_id=p_claim_id and state='processing';
+ if not found then raise exception 'Invalid claim'; end if;
+end $$;

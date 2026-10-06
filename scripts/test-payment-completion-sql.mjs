@@ -52,6 +52,20 @@ try{
  assert.equal(q(`select attempts from private.payment_reconciliation_job where payment_id=${lit(paymentId)}`),'1');
  assert.equal(await reconcileOnce({admin,provider,enabled:true}),false);
  assert.equal(q('select count(*) from public.pago_webhook_auditoria'),'1');assert.equal(baseline(),before);
+ // A stale worker success must not override a concurrently established hold.
+ rpc('mb_queue_payment_reconciliation',{p_payment_id:paymentId});
+ const claim=JSON.parse(rpc('mb_claim_payment_reconciliation'));
+ q(`insert into private.order_financial_hold(pedido_id,reason) values(${lit(order.id)},'synthetic_concurrent_hold');`);
+ assert.equal(JSON.parse(rpc('mb_complete_payment_reconciliation',{p_payment_id:paymentId})).review,true);
+ rpc('mb_finish_payment_reconciliation',{p_claim_id:claim.claimId,p_outcome:'done'});
+ assert.equal(q(`select state from private.payment_reconciliation_job where payment_id=${lit(paymentId)}`),'review');
+ assert.equal(q('select resultado from public.pago_webhook_auditoria'),'revision_manual');
+ assert.equal(baseline(),before);
+ // Fixture for the opposite race order: old worker finished before the hold
+ // became visible. Completion of the newer observation promotes done to review.
+ q(`update private.payment_reconciliation_job set state='done' where payment_id=${lit(paymentId)};`);
+ rpc('mb_complete_payment_reconciliation',{p_payment_id:paymentId});
+ assert.equal(q(`select state from private.payment_reconciliation_job where payment_id=${lit(paymentId)}`),'review');
  assert.equal(q("select has_function_privilege('anon','public.mb_complete_payment_reconciliation(text)','execute') or has_function_privilege('authenticated','public.mb_complete_payment_reconciliation(text)','execute')"),'f');
  console.log('PASS synchronous completion/audit, missing observation fail closed, concurrent duplicate recovery, worker claim ownership, no commercial effects, restricted RPC');
 }finally{db.close();}

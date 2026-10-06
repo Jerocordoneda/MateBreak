@@ -28,5 +28,5 @@ export async function reconcilePayment({admin,provider,paymentId}) {
  // A failure leaves the durable job eligible for normal reconciliation retry.
  const completed=await admin.rpc('mb_complete_payment_reconciliation',{p_payment_id:paymentId});
  if(completed.error)throw Error('Payment reconciliation completion failed');
- return result.data;
+ return {...result.data,review:completed.data?.review??result.data?.review};
 }

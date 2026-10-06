@@ -17,6 +17,8 @@ test('completion follows persisted observation, and failures leave a recoverable
  assert.deepEqual(calls[1].args,{p_payment_id:'123'});
  calls.length=0;await assert.rejects(run('mb_reconcile_mp_payment'));assert.equal(calls.length,1);
  calls.length=0;await assert.rejects(run('mb_complete_payment_reconciliation'),/completion failed/);assert.equal(calls.length,2);
+ const held=await reconcilePayment({provider,paymentId:'123',admin:{rpc:async(name)=>({data:name==='mb_complete_payment_reconciliation'?{review:true}:{outcome:'duplicate',review:false}})}});
+ assert.equal(held.review,true);assert.equal(held.outcome,'duplicate');
 });
 test('payment observations minimize PII and reject account, environment and amount confusion',()=>{
  const o=paymentObservation({...payment,payer:{email:'private@example.test'},card:{number:'secret'}},config);

@@ -13,7 +13,9 @@ representa una nueva entrega. Los jobs de síncrono pendientes/retry pasan a
 `done`, o `review` ante retención financiera. `attempts` cuenta claims del worker,
 por eso puede quedar en 0 para un job cerrado sin worker.
 
-Un worker conserva su claim activo y lo termina con `mb_finish_*`. Si falla el
+Un worker conserva su claim activo y lo termina con `mb_finish_*`. Ante un cierre
+intentado por un worker antiguo y una retención concurrente, prevalece
+`review`; un resultado previo nunca elimina esa retención. Si falla el
 finalizador, el job durable queda recuperable. La recuperación de una observación
 ya aplicada usa el mismo RPC finalizador (sólo service_role), sin insertar una
 auditoría manual, reenviar webhooks ni volver a confirmar pedidos. No procesa
