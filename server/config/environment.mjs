@@ -25,6 +25,7 @@ const config = {
   rateLimitKey:env.RATE_LIMIT_KEY||'',
   trustedProxyAddresses:env.TRUSTED_PROXY_ADDRESSES?env.TRUSTED_PROXY_ADDRESSES.split(','):[],
   staging: env.APP_ENV === 'staging',
+  mp1008Diagnostic:{enabled:env.MATEBREAK_DIAGNOSTIC_1008_ENABLED==='1',key:env.MATEBREAK_DIAGNOSTIC_1008_KEY,expiresAt:env.MATEBREAK_DIAGNOSTIC_1008_EXPIRES_AT},
   stagingMpTestEnabled:env.MATEBREAK_STAGING_MP_TEST==='1',
   stagingProjectRef: env.SUPABASE_STAGING_PROJECT_REF,
   stagingPersistMock: env.MATEBREAK_STAGING_PERSIST_MOCK === '1',
