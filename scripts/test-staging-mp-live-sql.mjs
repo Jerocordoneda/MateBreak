@@ -29,6 +29,7 @@ try{
  assert.equal(q(`select attempts from private.payment_reconciliation_job where payment_id=${lit(paymentId)}`),'1');
  assert.equal(q(`select outcome from private.mp_payment_observation where payment_id=${lit(paymentId)}`),'revision_manual');
  assert.equal(q(`select reason from private.order_financial_hold where pedido_id=${lit(order.id)}`),'confirmation_requires_review');
+ assert.equal(q(`select resultado from public.pago_webhook_auditoria where pago_externo_id=${lit(paymentId)}`),'revision_manual');
  const sql=`set role service_role;select public.mb_reconcile_mp_payment(${lit(observation)}::jsonb);`;
  const duplicates=await Promise.all([db.parallel(sql),db.parallel(sql)]);
  assert.ok(duplicates.every(x=>JSON.parse(x).outcome==='duplicate'));

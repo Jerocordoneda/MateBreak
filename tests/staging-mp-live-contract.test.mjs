@@ -64,6 +64,6 @@ test('Staging live-mode exception still requires HMAC before queue and authorita
  const ts=String(Math.floor(Date.now()/1000)),requestId='synthetic-request';
  const v1=createHmac('sha256',opts.webhookSecret).update(`id:${base.id};request-id:${requestId};ts:${ts};`).digest('hex');
  assert.equal((await fetch(url,{method:'POST',headers:{'x-signature':`ts=${ts},v1=${v1}`,'x-request-id':requestId}})).status,200);
- assert.deepEqual(writes.map(x=>x.name),['mb_queue_payment_reconciliation','mb_reconcile_mp_payment']);
+ assert.deepEqual(writes.map(x=>x.name),['mb_queue_payment_reconciliation','mb_reconcile_mp_payment','mb_complete_payment_reconciliation']);
  assert.equal(writes[1].args.p_observation.environment,'test');assert.equal(writes[1].args.p_observation.collectorId,seller);
 });

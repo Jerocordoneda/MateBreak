@@ -24,5 +24,9 @@ export async function reconcilePayment({admin,provider,paymentId}) {
  try{observation=paymentObservation(payment,{paymentId,collectorId:provider.collectorId,environment:provider.environment,expectedLiveMode:provider.expectedLiveMode});}catch(error){error.retryable=false;throw error;}
  const result=await admin.rpc('mb_reconcile_mp_payment',{p_observation:observation});
  if(result.error)throw Object.assign(Error('Payment reconciliation persistence failed'),{retryable:result.error.code!=='P0001'});
+ // Use the committed authoritative observation, never the notification body.
+ // A failure leaves the durable job eligible for normal reconciliation retry.
+ const completed=await admin.rpc('mb_complete_payment_reconciliation',{p_payment_id:paymentId});
+ if(completed.error)throw Error('Payment reconciliation completion failed');
  return result.data;
 }

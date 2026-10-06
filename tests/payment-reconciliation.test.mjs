@@ -7,6 +7,17 @@ import {createMercadoPago,verifyMercadoPagoSignature} from '../server/payments/m
 const id='11111111-1111-4111-8111-111111111111';
 const payment={id:123,external_reference:id,collector_id:456,live_mode:false,currency_id:'ARS',transaction_amount:100,transaction_amount_refunded:0,status:'approved',date_last_updated:'2026-10-04T07:00:00Z'};
 const config={paymentId:'123',collectorId:'456',environment:'test',expectedLiveMode:false};
+test('completion follows persisted observation, and failures leave a recoverable job',async()=>{
+ const provider={ready:true,...config,getPayment:async()=>payment};
+ const calls=[];
+ const run=async(failAt)=>reconcilePayment({provider,paymentId:'123',admin:{rpc:async(name,args)=>{
+  calls.push({name,args});return name===failAt?{error:{code:'XX000'}}:{data:{outcome:'aplicado'}};
+ }}});
+ await run();assert.deepEqual(calls.map(c=>c.name),['mb_reconcile_mp_payment','mb_complete_payment_reconciliation']);
+ assert.deepEqual(calls[1].args,{p_payment_id:'123'});
+ calls.length=0;await assert.rejects(run('mb_reconcile_mp_payment'));assert.equal(calls.length,1);
+ calls.length=0;await assert.rejects(run('mb_complete_payment_reconciliation'),/completion failed/);assert.equal(calls.length,2);
+});
 test('payment observations minimize PII and reject account, environment and amount confusion',()=>{
  const o=paymentObservation({...payment,payer:{email:'private@example.test'},card:{number:'secret'}},config);
  assert.equal(o.amount,100);assert.match(o.digest,/^[a-f0-9]{64}$/);assert.ok(!JSON.stringify(o).includes('private'));

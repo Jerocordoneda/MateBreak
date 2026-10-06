@@ -222,6 +222,11 @@
       "file": "20261005040724_local_retail_order_operations.sql",
       "status": "local-retail-operations-not-deployed",
       "sha256LF": "a90780533f9e66eb957af55735e1570f448a8413089fd91ece82a616da11a3e9"
+    },
+    {
+      "file": "20261006224006_payment_reconciliation_completion.sql",
+      "status": "staging-payment-completion",
+      "sha256LF": "4d903fa96d234377b50e320558e7059b94cddfdaf94192d7e0f5271163e86965"
     }
   ]
 }
