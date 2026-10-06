@@ -108,7 +108,9 @@ export function createApp(config, overrides = {}) {
   const checked = async query => { const { data, error } = await query; if (error) throw fail(400, 'No se pudo guardar o consultar los datos'); return data; };
   authRoutes(app, { admin, config, authFactory, rpc, rotateCart,verifyLiveSession:overrides.verifyLiveSession??requireLiveSession });
   recoveryRoutes(app,{admin,config,authFactory});
-  catalogRoutes(app, { admin });
+  // This shared public read must preserve the native SETOF availability array.
+  // Session checks still run above; sensitive routes retain the scoped RPC gate.
+  catalogRoutes(app, { admin:baseAdmin });
   checkoutRoutes(app, { admin, config, hashToken, correo: providers.shipping, payment: providers.payment, mockCheckout });
   paymentRoutes(app, { admin, mercadoPago: providers.webhook });
   cartRoutes(app, { admin, checked, hashToken, rpc, rotateCart });
