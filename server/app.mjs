@@ -27,7 +27,6 @@ import {createSqlRateStore} from './security/rate-store.mjs';
 import {recoveryRoutes} from './auth/recovery.mjs';
 import {emailRuntime} from './email/runtime.mjs';
 import {sessionScopedAdmin}from'./auth/session-rpc.mjs';
-import {registerMp1008Diagnostic} from './diagnostics/mp-1008.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const fail = (status, message) => Object.assign(new Error(message), { status });
@@ -39,9 +38,6 @@ export function createApp(config, overrides = {}) {
   const app = express();
   app.disable('x-powered-by');
   app.disable('etag');
-  // Isolate the temporary GET diagnostic before all SQL/session middleware.
-  // The closure resolves the provider only when a fully gated request executes.
-  registerMp1008Diagnostic(app,{config,verifyIdentity:()=>providers.webhook.verifyTestIdentity()});
   let parsedOrigin;
   try { parsedOrigin = new URL(config.origin); } catch { throw Error('APP_ORIGIN inválido'); }
   if (!['http:', 'https:'].includes(parsedOrigin.protocol) || parsedOrigin.origin !== config.origin ||
