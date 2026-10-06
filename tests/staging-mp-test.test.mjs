@@ -13,7 +13,7 @@ test('Staging real transport with mock shipping requires every explicit TEST gua
  for(const patch of [{APP_ENV:'local'},{APP_ENV:'production'},{NODE_ENV:'production'},{MATEBREAK_STAGING_MP_TEST:'0'},
  {MATEBREAK_STAGING_PERSIST_MOCK:'1'},{MATEBREAK_LOCAL_PERSIST_MOCK:'1'},{MATEBREAK_LOCAL_PICKUP_MOCK:'1'},
  {MP_ACCESS_TOKEN:''},{MERCADOPAGO_WEBHOOK_SECRET:''},{MP_COLLECTOR_ID:''},{MP_COLLECTOR_ID:'invalid'},
- {MP_EXPECTED_LIVE_MODE:'true'},{MP_EXPECTED_LIVE_MODE:''},{MP_EXPECTED_LIVE_MODE:'FALSE'},{MP_ENVIRONMENT:'production'},{MP_ENVIRONMENT:''},
+ {MP_EXPECTED_LIVE_MODE:''},{MP_EXPECTED_LIVE_MODE:'FALSE'},{MP_ENVIRONMENT:'production'},{MP_ENVIRONMENT:''},
  {SUPABASE_STAGING_PROJECT_REF:PROTECTED_PRODUCTION_REF,SUPABASE_URL:`https://${PROTECTED_PRODUCTION_REF}.supabase.co`},
  {APP_ORIGIN:'http://stage.example.test'},{CORREO_MICORREO_PASSWORD:'synthetic'},{RESEND_API_KEY:'synthetic'},{EMAILS_ENABLED:'1'},
  {MP_UNKNOWN_CREDENTIAL:'synthetic'},{DATABASE_URL:'synthetic'},{MERCADOPAGO_ACCESS_TOKEN:'TEST-different-synthetic'}]) assert.throws(()=>loadConfig({...env,...patch}));

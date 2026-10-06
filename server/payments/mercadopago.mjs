@@ -2,6 +2,10 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 import {STAGING_MP_TEST_SELLER} from '../config/staging-mp-test.mjs';
 
 const api = 'https://api.mercadopago.com';
+// In-memory provenance, issued only after fresh authenticated test_user checks.
+// Neither environment variables nor a property on a response can forge it.
+const verifiedStagingTestPayments=new WeakSet();
+export const isVerifiedStagingTestPayment=payment=>payment!==null&&typeof payment==='object'&&verifiedStagingTestPayments.has(payment);
 export function verifyMercadoPagoSignature({ signature, requestId, dataId, secret, now = Date.now() }) {
   if (![signature,requestId,dataId,secret].every(v=>typeof v==='string'&&v.length>0) || /[;\r\n]/.test(requestId)) return false;
   const entries=signature.split(',').map(part=>part.trim().split('='));
@@ -15,14 +19,19 @@ export function verifyMercadoPagoSignature({ signature, requestId, dataId, secre
   return timingSafeEqual(expected, Buffer.from(parts.v1, 'hex'));
 }
 
-export function createMercadoPago({ accessToken, webhookSecret, origin, collectorId, expectedLiveMode, environment='test', enabled = false, requireTestIdentity=false } = {}, fetcher = fetch) {
+export function createMercadoPago({ accessToken, webhookSecret, origin, collectorId, expectedLiveMode, environment='test', enabled = false, requireTestIdentity=false,appEnvironment,production } = {}, fetcher = fetch) {
   let safeOrigin=false;try{const u=new URL(origin);safeOrigin=u.protocol==='https:'&&u.origin===origin&&!u.username&&!u.password;}catch{}
   if(!['test','production'].includes(environment))throw Error('Ambiente de Mercado Pago inválido');
   if (enabled && (!accessToken || !webhookSecret || !safeOrigin || typeof expectedLiveMode!=='boolean' || !/^\d{1,30}$/.test(String(collectorId||'')))) {
     throw Error('Mercado Pago requiere token, secreto, vendedor y APP_ORIGIN HTTPS');
   }
   const ready = Boolean(enabled && accessToken && webhookSecret && safeOrigin && collectorId);
-  if(requireTestIdentity && (!ready || environment!=='test' || expectedLiveMode!==false || String(collectorId)!==STAGING_MP_TEST_SELLER || !/^(TEST-|APP_USR-).+/.test(accessToken)))
+  const stagingTestLive=appEnvironment==='staging'&&production===false&&requireTestIdentity===true&&
+    environment==='test'&&expectedLiveMode===true&&String(collectorId)===STAGING_MP_TEST_SELLER;
+  if(enabled&&environment==='test'&&expectedLiveMode===true&&!stagingTestLive)
+    throw Error('Mercado Pago TEST live-mode contract invalid');
+  if(requireTestIdentity && (!ready || environment!=='test' || typeof expectedLiveMode!=='boolean' ||
+    (expectedLiveMode===true&&!stagingTestLive) || String(collectorId)!==STAGING_MP_TEST_SELLER || !/^(TEST-|APP_USR-).+/.test(accessToken)))
     throw Error('Mercado Pago TEST identity contract invalid');
   async function verifyTestIdentity() {
     if(!requireTestIdentity) throw Error('Mercado Pago TEST identity contract not enabled');
@@ -80,7 +89,12 @@ export function createMercadoPago({ accessToken, webhookSecret, origin, collecto
     getPayment: async id => {
       if (!/^\d{1,30}$/.test(String(id))) throw Error('Pago externo inválido');
       if(requireTestIdentity) await verifyTestIdentity();
-      return call(`/v1/payments/${id}`);
+      const payment=await call(`/v1/payments/${id}`);
+      if(stagingTestLive&&payment&&typeof payment==='object'&&!Array.isArray(payment)){
+        Object.freeze(payment);
+        verifiedStagingTestPayments.add(payment);
+      }
+      return payment;
     },
   };
 }
