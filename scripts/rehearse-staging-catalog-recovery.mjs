@@ -9,7 +9,8 @@ const dir=resolve(process.argv[2]||''),read=name=>JSON.parse(readFileSync(resolv
 const changes=read('fresh-delta'),current=read('staging-catalog'),tables=read('protected-tables');
 const protectedSql=readFileSync(resolve(dir,'protected-query.sql'),'utf8').replace(/;\s*$/,'');
 const sha=v=>createHash('sha256').update(v).digest('hex');
-const imageManifest=readFileSync(new URL('../src/assets/catalog-staging/manifest.json',import.meta.url));
+// Match the public build's explicit LF canonicalization on Windows.
+const imageManifest=Buffer.from(readFileSync(new URL('../src/assets/catalog-staging/manifest.json',import.meta.url),'utf8').replaceAll('\r\n','\n'));
 const allowed={producto:['id_producto'],catalogo_producto:['producto_id'],catalogo_variante:['id'],catalogo_imagen:['producto_id','source_url']};
 for(const c of changes){assert.ok(allowed[c.table]);assert.deepEqual(Object.keys(c.key),allowed[c.table]);assert.ok(c.fields.every(f=>/^[a-z_]+$/.test(f)));assert.ok(!c.fields.some(f=>['stock','creado_en','actualizado_en','importado_en'].includes(f)));}
 export function sql(rows,protectedDigests){
