@@ -36,11 +36,24 @@ export function mountResponsiveHeader(root = document) {
       button.addEventListener('click', () => {
         group.classList.remove('mb-subnav-dismissed');
         const open = !group.classList.contains('mb-subnav-open');
+        for (const other of nav.querySelectorAll('.mb-subnav-open')) {
+          if (other === group) continue;
+          other.classList.remove('mb-subnav-open');
+          other.querySelector('.mb-subnav-toggle')?.setAttribute('aria-expanded', 'false');
+        }
         group.classList.toggle('mb-subnav-open', open); button.setAttribute('aria-expanded', String(open));
       });
       group.addEventListener('pointerenter', () => group.classList.remove('mb-subnav-dismissed'));
       button.addEventListener('keydown', event => {
-        if (event.key === 'ArrowDown') { event.preventDefault(); group.classList.remove('mb-subnav-dismissed'); group.classList.add('mb-subnav-open'); button.setAttribute('aria-expanded', 'true'); menu.querySelector('a')?.focus(); }
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          for (const other of nav.querySelectorAll('.mb-subnav-open')) {
+            if (other === group) continue;
+            other.classList.remove('mb-subnav-open');
+            other.querySelector('.mb-subnav-toggle')?.setAttribute('aria-expanded', 'false');
+          }
+          group.classList.remove('mb-subnav-dismissed'); group.classList.add('mb-subnav-open'); button.setAttribute('aria-expanded', 'true'); menu.querySelector('a')?.focus();
+        }
       });
     }
     const secondary = document.createElement('div'); secondary.className = 'mb-mobile-secondary';

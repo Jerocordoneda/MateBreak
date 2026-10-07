@@ -179,5 +179,5 @@ $('#refresh').addEventListener('click',() => refresh().then(() => message('Inven
 $('#refresh-receipts').addEventListener('click',()=>loadReceipts().catch(e=>message(e.message,true)));
 $('#refresh-preparation').addEventListener('click',()=>loadPreparation().catch(e=>message(e.message,true)));
 $('#all-history').addEventListener('click',() => loadHistory().catch(e => message(e.message,true)));
-$('#logout').addEventListener('click',async () => { try { await api('/auth/logout',{method:'POST',body:'{}'}); location.replace('/tienda#cuenta'); } catch(e) { message(e.message,true); } });
+document.querySelector('#logout')?.addEventListener('click',async () => { try { await api('/auth/logout',{method:'POST',body:'{}'}); location.replace('/tienda#cuenta'); } catch(e) { message(e.message,true); } });
 refresh().catch(e => message(e.message,true));

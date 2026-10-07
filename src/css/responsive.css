@@ -40,10 +40,11 @@ dialog::backdrop { background: #0009; }
   .mb-commerce-header.mb-nav-open .mb-categorybar { display: block; }
   .mb-commerce-header .mb-category-nav { display: flex; flex-direction: column; gap: 4px; width: 100%; min-width: 0; white-space: normal; font-size: 13px; align-items: stretch; }
   .mb-category-nav > a, .mb-category-nav .group > a { display: flex; align-items: center; min-height: 44px; padding: 8px 10px; }
-  .mb-category-nav .group { display: grid; grid-template-columns: minmax(0, 1fr) 44px; }
-  .mb-category-nav .mb-subnav-toggle { min-height: 44px; min-width: 44px; }
+  .mb-category-nav .group { display: flex; flex-wrap: wrap; align-items: center; }
+  .mb-category-nav .group > a { flex: 0 0 auto; }
+  .mb-category-nav .mb-subnav-toggle { min-height: 44px; min-width: 0; padding: 0 10px 0 0; }
   .mb-commerce-header .mb-category-nav .group:not(.mb-subnav-open) > .dropdown-menu { display: none !important; }
-  .mb-commerce-header .mb-category-nav .dropdown-menu { position: static; transform: none; grid-column: 1 / -1; padding: 0 0 4px 12px; }
+  .mb-commerce-header .mb-category-nav .dropdown-menu { position: static; transform: none; flex-basis: 100%; padding: 0 0 4px 12px; }
   .mb-category-nav .dropdown-menu > div { width: 100%; padding: 0; box-shadow: none; background: transparent; }
   .mb-mobile-secondary { display: flex; flex-wrap: wrap; border-top: 1px solid #d8c3a54d; gap: 8px; padding-top: 8px; }
   .mb-mobile-secondary a { min-height: 44px; display: flex; align-items: center; padding: 8px 10px; }
@@ -57,7 +58,7 @@ dialog::backdrop { background: #0009; }
   [data-home] [data-seq-img] { height: clamp(200px, 40svh, 320px); max-height: 320px; width: 100%; animation: none; object-fit: contain; }
   [data-home-actions] { margin-top: 0; }
   [data-home-actions] > div { gap: 12px; padding-bottom: 20px; }
-  [data-home-actions] button { min-height: 48px; padding: 12px 18px; width: 100%; max-width: 380px; }
+  [data-home-actions] button, [data-home-actions] a { min-height: 48px; padding: 12px 18px; width: 100%; max-width: 380px; text-align: center; }
   [data-marketing] footer .col-span-2 { grid-column: auto; }
   [data-marketing] footer [class~="gap-gutter"] { gap: 24px; }
   [data-marketing] footer .flex { flex-wrap: wrap; gap: 16px; }
