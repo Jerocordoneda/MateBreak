@@ -41,6 +41,7 @@ jobs:
           node scripts/test-retail-operations-sql.mjs
           node scripts/test-staging-mp-live-sql.mjs
           node scripts/test-payment-completion-sql.mjs
+          node scripts/test-staging-qa-stock-sql.mjs
       - name: Stop isolated SQL test container
         if: always()
         run: docker stop matebreak-wholesale-isolated || true
