@@ -110,7 +110,7 @@ export function createApp(config, overrides = {}) {
   recoveryRoutes(app,{admin,config,authFactory});
   // This shared public read must preserve the native SETOF availability array.
   // Session checks still run above; sensitive routes retain the scoped RPC gate.
-  catalogRoutes(app, { admin:baseAdmin });
+  catalogRoutes(app, { admin:baseAdmin,config });
   checkoutRoutes(app, { admin, config, hashToken, correo: providers.shipping, payment: providers.payment, mockCheckout });
   paymentRoutes(app, { admin, mercadoPago: providers.webhook });
   cartRoutes(app, { admin, checked, hashToken, rpc, rotateCart });

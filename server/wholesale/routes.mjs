@@ -1,3 +1,4 @@
+import {catalogImageUrl} from '../modules/catalog/images.mjs';
 import {verifiedWholesaleSession} from './access.mjs';
 import {commercialContext} from './context.mjs';
 import {completion} from './profile.mjs';
@@ -18,7 +19,7 @@ export function wholesaleRoutes(app,{admin,config}){
   if(!existing&&req.query.ref!==undefined){if(typeof req.query.ref!=='string'||!/^[a-zA-Z0-9_-]{3,64}$/.test(req.query.ref))throw fail(400,'Referencia comercial inválida');ref=req.query.ref;}
   const catalog=await rpc('mb_wholesale_catalog',{p_ref:ref});if(!catalog.referenceValid)throw fail(400,'Referencia comercial no disponible');
   if(!existing)setCookie(res,refName,ref||'web');
-  const items=catalog.items.map(i=>{const {imagePath,...item}=i;return{...item,image:item.image||(imagePath?admin.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl:null)};});
+  const items=catalog.items.map(i=>{const {imagePath,...item}=i;return{...item,image:item.image||catalogImageUrl(admin,config,imagePath)};});
   res.json({accountId:req.user.id,items,minimum:catalog.minimum,provinces,contactReady:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||''),contactUrl:/^[1-9]\d{9,14}$/.test(config.wholesaleWhatsapp||'')?'https://wa.me/'+config.wholesaleWhatsapp:null});
  });
  app.get('/api/mayorista/acceso',(req,res)=>res.json({accountId:req.user.id}));

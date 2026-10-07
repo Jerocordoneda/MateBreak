@@ -1,3 +1,4 @@
+import {catalogImageUrl} from './images.mjs';
 const selection = `id_producto,nombre,descripcion,precio,tipo,activo,slug,moneda,
  catalogo_producto!inner(disponible,precio_original,precio_transferencia,descuento,cuotas,envio_gratis,destacado,publicado,personalizacion,atributos),
  catalogo_producto_categoria(catalogo_categoria(id,nombre,slug,padre_id)),
@@ -6,7 +7,7 @@ const selection = `id_producto,nombre,descripcion,precio,tipo,activo,slug,moneda
  catalogo_imagen(source_url,posicion,rol,alt,vigente,catalogo_asset(storage_path)),
  catalogo_promocion(texto),combo(catalogo_componente!catalogo_componente_combo_id_fkey(evidencia,cantidad,producto_simple_id))`;
 
-export function catalogRoutes(app, {admin}) {
+export function catalogRoutes(app, {admin,config}) {
   let cached, until=0, pending;
   async function products() {
     if(cached&&Date.now()<until)return cached;
@@ -28,7 +29,7 @@ export function catalogRoutes(app, {admin}) {
       const inventory=new Map(availability.map(v=>[String(v.variante_id),v]));
       cached=rows.map(row=>{
         const {catalogo_producto:details,catalogo_producto_categoria,catalogo_opcion,catalogo_variante,catalogo_imagen,catalogo_promocion,combo,...base}=row;
-        const images=catalogo_imagen.filter(i=>i.vigente).sort((a,b)=>a.posicion-b.posicion).map(i=>({url:admin.storage.from('product-images').getPublicUrl(i.catalogo_asset.storage_path).data.publicUrl,alt:i.alt,rol:i.rol,source:i.source_url}));
+        const images=catalogo_imagen.filter(i=>i.vigente).sort((a,b)=>a.posicion-b.posicion).map(i=>({url:catalogImageUrl(admin,config,i.catalogo_asset?.storage_path),alt:i.alt,rol:i.rol,source:i.source_url})).filter(i=>i.url);
         return {...base,...details,id_producto:String(row.id_producto),
           categorias:catalogo_producto_categoria.map(c=>c.catalogo_categoria),opciones:catalogo_opcion.sort((a,b)=>a.posicion-b.posicion),
           variantes:catalogo_variante.filter(v=>v.vigente).map(({imagen_origen,vigente,...v})=>({...v,id:String(v.id),comprable:inventory.get(String(v.id))?.comprable??false,con_stock:inventory.get(String(v.id))?.con_stock??false,imagen:images.find(i=>i.source===imagen_origen)?.url||null})),
