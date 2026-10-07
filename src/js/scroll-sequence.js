@@ -11,7 +11,11 @@ function initSequence(section) {
     const counter = section.querySelector("[data-seq-counter]");
     if (!img) return;
 
-    const staticView = matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)');
+    const homeExperience = section.closest('[data-home]') !== null;
+    const staticQuery = homeExperience
+        ? '(max-width: 760px)'
+        : '(max-width: 760px), (prefers-reduced-motion: reduce)';
+    const staticView = matchMedia(staticQuery);
     if (staticView.matches) {
         const activate = () => {
             if (!staticView.matches) { staticView.removeEventListener('change', activate); initSequence(section); }
