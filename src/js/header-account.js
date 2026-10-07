@@ -1,7 +1,9 @@
 import {mountResponsiveHeader} from './responsive-header.mjs';
 import {mountPublicBranding} from './public-branding.mjs';
+import {mountPublicHeader} from './public-header.mjs';
 mountPublicBranding();
 mountResponsiveHeader();
+mountPublicHeader();
 // Enhance navigation separately; commerce state continues through the existing cart module.
 let channel, quantity = -1, refreshing = false, revision = 0;
 try { channel = new BroadcastChannel('matebreak-carrito'); } catch { /* Reload on focus when unsupported. */ }
