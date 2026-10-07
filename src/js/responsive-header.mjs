@@ -29,7 +29,7 @@ export function mountResponsiveHeader(root = document) {
       if (!link || !menu) continue;
       const label = link.textContent.replace('expand_more', '').trim();
       const button = document.createElement('button'); button.type = 'button'; button.className = 'mb-subnav-toggle';
-      button.textContent = '⌄'; button.setAttribute('aria-label', 'Subcategorías de ' + label);
+      button.textContent = '>'; button.setAttribute('aria-label', 'Subcategorías de ' + label);
       button.setAttribute('aria-expanded', 'false');
       const icon = link.querySelector('.material-symbols-outlined'); icon?.remove();
       link.after(button);
