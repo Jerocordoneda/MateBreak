@@ -22,7 +22,7 @@ for(const reduced of [false,true])test(`Home desktop frame 060, bounded preload,
  const count=r.preloaded.length;r.scroll(-2000);await r.drain();assert.equal(r.preloaded.length,count,'Offscreen does not preload');
 });
 test('Time smoothing is independent of refresh rate',()=>{
- const r=sequence();for(const hz of [60,120,144]){let p=0;for(let n=0;n<hz;n++)p+=(1-p)*r.context.sequenceInterpolationAlpha(1000/hz);assert.ok(Math.abs(p-(1-Math.exp(-1000/24)))<1e-9);}
+ const r=sequence();for(const hz of [60,120,144]){let p=0;for(let n=0;n<hz;n++)p+=(1-p)*r.context.sequenceInterpolationAlpha(1000/hz);assert.ok(Math.abs(p-(1-Math.exp(-1000/18)))<1e-9);}
 });
 test('Home mobile and other reduced-motion pages do not preload',async()=>{
  for(const config of [{width:390},{width:760},{reduced:true,home:false}]){const r=sequence(config);r.scroll(-899);await r.drain();assert.equal(r.img.src,'first.webp');assert.equal(r.preloaded.length,0);}

@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // The same settling time at 60, 120 or 144 Hz; clamp background-tab pauses.
-function sequenceInterpolationAlpha(elapsedMs, timeConstantMs = 24) {
+function sequenceInterpolationAlpha(elapsedMs, timeConstantMs = 18) {
     return 1 - Math.exp(-Math.min(64, Math.max(0, elapsedMs)) / timeConstantMs);
 }
 
