@@ -44,6 +44,7 @@ try {
     const brand = document.querySelector('.mb-public-header .mb-public-brand,.mb-brand-link,.mb-site-brand,header .brand');
     const cart = document.querySelector('[data-cart-link]'), account = document.querySelector('[data-account-link]');
     return {logo:rect(brand?.querySelector('img')),brand:rect(brand),cart:rect(cart),account:rect(account),bar:rect(document.querySelector('.mb-public-mainbar')),category:rect(document.querySelector('.mb-categorybar')),
+      items:[...document.querySelector('.mb-category-nav').children].filter(e=>e.getBoundingClientRect().width>0).map(rect),
       overflow:document.documentElement.scrollWidth>innerWidth+1,
       brandCount:document.querySelectorAll('.mb-public-brand').length,
       badge:cart?.querySelector('[data-cart-badge]')?.textContent,
@@ -69,6 +70,14 @@ try {
     assert.ok(measured.cart.width>=44&&measured.account.width>=44);
     assert.equal(await page.locator('[data-account-link]').innerText(),'','Account is icon only');
     assert.equal(measured.account.x+measured.account.width,width-measured.logo.x,'Account at right content edge');
+    if(width>760){
+     assert.equal(measured.items.length,6,'Six visible categories');
+     assert.ok(Math.abs(measured.items[0].x-measured.logo.x)<1,'Mates starts at logo edge');
+     const last=measured.items.at(-1);
+     assert.ok(Math.abs(last.x+last.width-measured.account.x-measured.account.width)<1,'Podcast ends at account edge');
+     const gaps=measured.items.slice(1).map((item,i)=>item.x-measured.items[i].x-measured.items[i].width);
+     assert.ok(Math.min(...gaps)>=0&&Math.max(...gaps)-Math.min(...gaps)<1,'Actual-width items have equal free gaps');
+    }
     assert.equal(await page.locator('.mb-category-nav > [data-path=home]').count(),0);
     assert.equal(await page.locator('.mb-category-nav > .mb-podcast-link').count(),1);
     assert.equal(await page.locator('.mb-help-nav a').count(),3);

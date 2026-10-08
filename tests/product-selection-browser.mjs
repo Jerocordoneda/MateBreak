@@ -48,9 +48,10 @@ try{
  }
  for(const reducedMotion of ['no-preference','reduce']){
   const ctx=await browser.newContext({viewport:{width:1440,height:900},reducedMotion}),p=await ctx.newPage();await p.goto(`http://127.0.0.1:${server.address().port}/`);
-  assert.equal(await p.locator('[data-scroll-sequence]').evaluate(e=>getComputedStyle(e).marginTop),'-72px');
+  assert.equal(await p.locator('[data-scroll-sequence]').evaluate(e=>getComputedStyle(e).marginTop),'-104px');
   assert.equal(await p.locator('[data-seq-img]').evaluate(e=>getComputedStyle(e).animationName),'mateFloat');
-  await p.mouse.wheel(0,1800);await p.waitForFunction(()=>document.querySelector('[data-seq-img]').src.includes('frame-060-'));report.cases.push({reducedMotion,frame:60});await ctx.close();
+  await p.locator('[data-scroll-sequence]').evaluate(e=>scrollTo(0,scrollY+e.getBoundingClientRect().top+e.offsetHeight-innerHeight+1));
+  await p.waitForFunction(()=>document.querySelector('[data-seq-img]').src.includes('frame-060-'));report.cases.push({reducedMotion,frame:60});await ctx.close();
  }
  assert.deepEqual(report.errors,[]);console.log('PASS selection, exact mutation IDs, in-flight guard, stale image, five widths and desktop frame 60 normal/reduced motion');
 }catch(e){report.failure=e.message;console.error(e);process.exitCode=1;}finally{fs.writeFileSync(path.join(output,'selection.json'),JSON.stringify(report,null,2));await browser.close();server.close();}

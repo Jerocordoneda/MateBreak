@@ -78,8 +78,9 @@ header.mb-public-header button:focus-visible { outline: 2px solid #f4bb92; outli
 header.mb-public-header { backdrop-filter: blur(24px); }
 header.mb-public-header .mb-help-nav { display:flex; align-items:center; gap:40px; font:400 20px/28px 'Geist',sans-serif; letter-spacing:2px; text-transform:uppercase; }
 header.mb-public-header .mb-help-nav small {font-size:.55em;}
-header.mb-public-header .mb-categorybar {box-sizing:border-box;height:49px;border-top:1px solid #4947411a;padding:0 24px;display:flex;align-items:center;justify-content:center;}
-header.mb-public-header .mb-category-nav {display:flex;align-items:center;gap:40px;margin:0;padding:0;font:500 14px/20px 'Geist',sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#c8c5c4;}
+header.mb-public-header .mb-categorybar {box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;height:49px;border-top:1px solid #4947411a;padding:0 64px;display:flex;align-items:center;}
+header.mb-public-header .mb-category-nav {display:flex;align-items:center;justify-content:space-between;width:100%;gap:0;margin:0;padding:0;font:500 14px/20px 'Geist',sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#c8c5c4;}
+header.mb-public-header .mb-category-nav > a,header.mb-public-header .mb-category-nav > .group {flex-shrink:0;}
 header.mb-public-header .mb-category-nav a {color:inherit;text-decoration:none;white-space:nowrap;}
 header.mb-public-header .mb-category-nav a:hover {color:#ebbb97;}
 header.mb-public-header .mb-category-nav .group {position:relative;display:flex;align-items:center;}
@@ -98,14 +99,15 @@ body[data-marketing] > main {padding-top:129px;}
 .mb-public-simple :target {scroll-margin-top:152px;}
 @media(max-width:1023px){
   header.mb-public-header .mb-help-nav {gap:12px;font-size:12px;letter-spacing:1.2px;}
-  header.mb-public-header .mb-category-nav {gap:16px;font-size:12px;letter-spacing:1px;}
+  header.mb-public-header .mb-categorybar {padding-inline:clamp(16px,4vw,32px);}
+  header.mb-public-header .mb-category-nav {font-size:12px;letter-spacing:1px;}
 }
 @media(max-width:760px){
   header.mb-public-header .mb-help-nav {display:none;}
   header.mb-public-header .mb-public-actions > .mb-menu-toggle {box-sizing:border-box;width:44px;height:44px;flex:0 0 44px;padding:0;}
-  header.mb-public-header .mb-categorybar {display:none;position:fixed;inset:68px 12px auto;height:auto;padding:12px;max-height:calc(100dvh - 84px);overflow:auto;overscroll-behavior:contain;background:#1b1b1b;border:1px solid #d8c3a54d;border-radius:10px;}
+  header.mb-public-header .mb-categorybar {display:none;position:fixed;inset:68px 12px auto;width:auto;max-width:none;margin:0;height:auto;padding:12px;max-height:calc(100dvh - 84px);overflow:auto;overscroll-behavior:contain;background:#1b1b1b;border:1px solid #d8c3a54d;border-radius:10px;}
   header.mb-public-header.mb-nav-open .mb-categorybar {display:block;}
-  header.mb-public-header .mb-category-nav {flex-direction:column;align-items:stretch;gap:4px;width:100%;font-size:13px;}
+  header.mb-public-header .mb-category-nav {flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;width:100%;font-size:13px;}
   header.mb-public-header .mb-category-nav .dropdown-menu {position:static;transform:none;flex-basis:100%;padding:0 0 4px 12px;}
   header.mb-public-header .dropdown-menu > div {width:100%;padding:0;box-shadow:none;background:transparent;}
   header.mb-public-header .mb-team-label {top:37px;font-size:7px;line-height:8px;}
