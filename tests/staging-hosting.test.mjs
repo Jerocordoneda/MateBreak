@@ -1,18 +1,32 @@
 import {publicCsp,podcastCsp,podcastPaths} from '../server/security/public-policy.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,mkdtempSync,mkdirSync,writeFileSync,copyFileSync,rmSync} from 'node:fs';
+import {readFileSync,readdirSync,mkdtempSync,mkdirSync,writeFileSync,copyFileSync,rmSync} from 'node:fs';
 import {spawn,spawnSync} from 'node:child_process';
 import {createServer} from 'node:net';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {createStagingVercelConfig,assertStagingVercelReady,validateBackendOrigin,backendRoutes} from '../scripts/staging-config.mjs';
+import {createStagingVercelConfig,assertStagingVercelReady,validateBackendOrigin,backendRoutes,publicAssetHeaders} from '../scripts/staging-config.mjs';
 const backend='https://synthetic-fixture.onrender.com'; // Offline only; never contacted.
+
+test('asset cache overrides never cover commercial responses and immutable photos are content-addressed',()=>{
+ const config=createStagingVercelConfig(backend);
+ assert.deepEqual(config.headers.slice(2+podcastPaths.length),publicAssetHeaders);
+ for(const path of ['/','/tienda','/productos/mate','/carrito','/checkout','/mi-cuenta','/api/productos','/api/carrito','/auth/login','/interno/inventario','/src/pages/cuenta.html']){
+  assert.ok(!publicAssetHeaders.some(rule=>path.startsWith(rule.source.split('/:path*')[0]+'/')),path);
+ }
+ const photos=readdirSync(new URL('../src/assets/catalog-staging/',import.meta.url)).filter(name=>name.endsWith('.webp'));
+ assert.equal(photos.length,610);
+ assert.ok(photos.every(name=>/^[a-f0-9]{64}\.webp$/.test(name)));
+ for(const mutate of [c=>{c.headers.at(-1).source='/api/:path*';},c=>{c.headers.at(-2).headers[0].value='public, max-age=3600';}]){
+  const changed=structuredClone(config);mutate(changed);assert.throws(()=>assertStagingVercelReady(changed,backend),/blocked.*\$\.headers/);
+ }
+});
 
 test('staging headers protect root explicitly and preserve non-root coverage under strict validation',()=>{
  const prepared=createStagingVercelConfig(backend);
- assert.deepEqual(prepared.headers.map(rule=>rule.source),['/','/:path*',...podcastPaths]);
- for(const rule of prepared.headers)assert.deepEqual(rule.headers,[
+ assert.deepEqual(prepared.headers.map(rule=>rule.source),['/','/:path*',...podcastPaths,...publicAssetHeaders.map(r=>r.source)]);
+ for(const rule of prepared.headers.slice(0,2+podcastPaths.length))assert.deepEqual(rule.headers,[
   {key:'X-Robots-Tag',value:'noindex, nofollow'},
   {key:'Cache-Control',value:'no-store'},
   {key:'Content-Security-Policy',value:podcastPaths.includes(rule.source)?podcastCsp:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'},

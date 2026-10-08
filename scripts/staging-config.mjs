@@ -3,6 +3,13 @@ import {publicCsp,podcastCsp,podcastPaths} from '../server/security/public-polic
 import {isDeepStrictEqual} from 'node:util';
 export const frontendPages={'/tienda':'catalogo','/carrito':'tienda','/checkout/resultado':'checkout-resultado','/checkout':'checkout','/productos/:slug':'producto','/mi-cuenta':'cuenta','/mayorista':'mayorista','/regalos-empresariales':'regalos-empresariales','/recuperar-cuenta':'recuperar-cuenta','/podcast':'podcast'};
 export const backendRoutes=['/api/:path*','/auth/:path*','/interno/:path*','/healthz'];
+// Public code/assets only. Unversioned files revalidate on every navigation;
+// catalog photos are content-addressed, so an immutable URL never changes bytes.
+// HTML, API, authentication and private tools retain no-store.
+export const publicAssetHeaders=[
+ ...['css','js','features','services','assets'].map(folder=>({source:'/src/'+folder+'/:path*',headers:[{key:'Cache-Control',value:'public, max-age=0, must-revalidate'}]})),
+ {source:'/src/assets/catalog-staging/:hash([a-f0-9]{64}).webp',headers:[{key:'Cache-Control',value:'public, max-age=31536000, immutable'}]},
+];
 export function validateBackendOrigin(value) {
  if(!value)throw Error('Staging deploy blocked: STAGING_BACKEND_ORIGIN is missing');
  const url=new URL(value);
@@ -17,7 +24,7 @@ export function createStagingVercelConfig(backend) {
  ...Object.entries(frontendPages).map(([source,page])=>({source,destination:'/src/pages/'+page+'.html'}))],
  // CLI 62.0.0 compiles /:path* without matching the literal root slash.
  // Keep its existing coverage and protect the home document explicitly.
- headers:['/','/:path*',...podcastPaths].map(source=>({source,headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'},{key:'Content-Security-Policy',value:podcastPaths.includes(source)?podcastCsp:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'}]}))};
+ headers:[...['/','/:path*',...podcastPaths].map(source=>({source,headers:[{key:'X-Robots-Tag',value:'noindex, nofollow'},{key:'Cache-Control',value:'no-store'},{key:'Content-Security-Policy',value:podcastPaths.includes(source)?podcastCsp:publicCsp},{key:'X-Content-Type-Options',value:'nosniff'},{key:'Referrer-Policy',value:'strict-origin-when-cross-origin'},{key:'Permissions-Policy',value:'camera=(), microphone=(), geolocation=()'}]})),...structuredClone(publicAssetHeaders)]};
 }
 // Diagnostic names only: public Vercel configuration/request properties, not an
 // acceptance list. Every additional property still fails isDeepStrictEqual.
