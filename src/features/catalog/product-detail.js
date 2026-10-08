@@ -1,5 +1,6 @@
 import {getProductBySlug,money} from '../../services/products.js';
 import {node,setProductPhoto} from './catalog-ui.js';
+import {resolveProductSelection} from './product-selection.mjs';
 const root=document.querySelector('#product-content');
 async function init(){
   try{
@@ -11,12 +12,14 @@ async function init(){
     const layout=node('div',null,'product-detail'),gallery=node('div'),hero=node('div',null,'product-gallery-main'),thumbs=node('div',null,'product-thumbnails');
     const galleryImages=p.imagenes.filter(i=>i.rol!=='descripcion'&&typeof i.url==='string'&&i.url.trim());
     const buttons=[];
-    const showImage=url=>{setProductPhoto(hero,url,p.nombre);buttons.forEach(({button,image})=>button.setAttribute('aria-pressed',String(image.url===url)));};
+    const showImage=(url,alt=p.nombre)=>{const current=hero.querySelector('img');if(current&&current.getAttribute('src')===url)current.alt=alt;else setProductPhoto(hero,url,alt,{eager:true});buttons.forEach(({button,image})=>button.setAttribute('aria-pressed',String(image.url===url)));};
     for(const [index,image] of galleryImages.entries()){
       const button=node('button');button.type='button';button.setAttribute('aria-label',`Ver imagen ${index+1}`);setProductPhoto(button,image.url,image.alt||p.nombre);button.onclick=()=>showImage(image.url);thumbs.append(button);buttons.push({button,image});
     }
     showImage(galleryImages[0]?.url);gallery.append(hero,thumbs);
-    const info=node('div',null,'product-info');info.append(node('p',p.tipo==='combo'?'PARA COMPARTIR':'PARA TU RITUAL','eyebrow'),node('h1',p.nombre));
+    const info=node('div',null,'product-info'),title=node('h1',p.nombre),modelTitle=node('span',null,'product-selected-model');title.append(modelTitle);info.append(node('p',p.tipo==='combo'?'PARA COMPARTIR':'PARA TU RITUAL','eyebrow'),title);
+    // Warm only this product's variant photos, not the entire catalog.
+    for(const url of new Set(p.variantes.map(v=>v.imagen).filter(Boolean))){const image=new Image();image.fetchPriority='low';image.src=url;}
     const pricing=node('div',null,'product-pricing'),form=node('form',null,'product-options'),selects=[];
     for(const option of p.opciones){const label=node('label',option.nombre),select=node('select');select.name=option.nombre;
       select.append(new Option('Seleccioná una opción',''));for(const value of option.valores)select.append(new Option(value,value));select.required=true;label.append(select);form.append(label);selects.push(select);}
@@ -26,23 +29,27 @@ async function init(){
     button.type='submit';buyNow.type='submit';
     quantity.type='number';quantity.min='1';quantity.max='99';quantity.step='1';quantity.value='1';quantity.required=true;quantityLabel.append(quantity);
     const cartLink=node('a','Ver mi carrito →','text-link');cartLink.href='/carrito';
-    const selectedVariant=()=>selects.some(s=>!s.value)?null:p.variantes.find(v=>selects.every(s=>v.opciones[s.name]===s.value));
+    let submitting=false;
+    const selection=()=>resolveProductSelection(p,Object.fromEntries(selects.map(s=>[s.name,s.value])));
+    const selectedVariant=()=>selection().variant;
     function update(){
-      const v=selectedVariant(),price=v?.precio??p.precio,original=v?.precio_original??p.precio_original;
+      const {variant:v,preview,matches,model}=selection(),price=preview?.precio,original=preview?.precio_original;
+      modelTitle.textContent=model;modelTitle.hidden=!model;
+      root.dataset.productId=p.id_producto;root.dataset.variantId=v?.id||'';
       pricing.replaceChildren();if(original>price)pricing.append(node('del',money(original,p.moneda),'catalog-old'),node('span',`${Math.round((1-price/original)*100)}% OFF`,'catalog-discount'));
-      pricing.append(node('strong',money(price,p.moneda),'catalog-price'));
+      pricing.append(node('strong',(!v&&matches.length>1?'Desde ':'')+money(price,p.moneda),'catalog-price'));
       pricing.append(node('p','Desde 2 mates físicos: 20% sobre productos. Transferencia: 10% adicional sobre el importe descontado.','catalog-transfer'));
       pricing.append(node('p','Cuotas según disponibilidad de Mercado Pago'));
       pricing.append(node('p','Envío gratis desde $80.000','catalog-shipping'));
       for(const promotion of p.promociones)if(promotion!=='Envío gratis'&&!/transferencia|cuotas|20% OFF Comprando 2 o más/i.test(promotion))pricing.append(node('p',promotion,'catalog-transfer'));
-      availability.textContent=!v?'Elegí las opciones para ver disponibilidad.':!v.comprable?'Disponible por consulta: estamos vinculando su stock.':v.con_stock?'Disponible':'Sin stock';
-      button.disabled=!v||!v.comprable||!v.con_stock||v.precio==null;
+      availability.textContent=!matches.length?'Esta combinación no está disponible.':!v?'Completá las opciones para confirmar disponibilidad y precio final.':!v.comprable?'Disponible por consulta: estamos vinculando su stock.':v.con_stock?'Disponible':'Sin stock';
+      button.disabled=submitting||!v||!v.comprable||!v.con_stock||v.precio==null;
       buyNow.disabled=button.disabled;
-      if(v?.imagen)showImage(v.imagen);
+      showImage(preview?.imagen||galleryImages[0]?.url,p.nombre+(model?' · '+model:''));
     }
     selects.forEach(s=>s.onchange=update);form.append(availability,quantityLabel,button,buyNow,status,cartLink);info.append(pricing,form);
     form.onsubmit=async event=>{
-      event.preventDefault();const direct=event.submitter===buyNow,v=selectedVariant(),units=Number(quantity.value);if(!v||!Number.isInteger(units)||units<1||units>99)return;button.disabled=true;buyNow.disabled=true;status.textContent=direct?'Preparando tu compra inmediata…':'Guardando…';
+      event.preventDefault();const direct=event.submitter===buyNow,v=selectedVariant(),units=Number(quantity.value);if(submitting||!v||!v.comprable||!v.con_stock||!Number.isInteger(units)||units<1||units>99)return;submitting=true;button.disabled=true;buyNow.disabled=true;status.textContent=direct?'Preparando tu compra inmediata…':'Guardando…';
       try{
         if(direct){
           const response=await fetch('/api/compra-directa',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({variante_id:v.id,cantidad:units,personalizacion:custom?.value||''})});
@@ -54,7 +61,7 @@ async function init(){
         const response=await fetch('/api/carrito/variantes/'+v.id,{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({cantidad:(old?.cantidad||0)+units,...(custom?{personalizacion:custom.value}:{})})});
         const result=await response.json();if(!response.ok)throw Error(result.error||'No pudimos agregar el producto');
         window.dispatchEvent(new CustomEvent('mb:cart',{detail:result.items.reduce((n,i)=>n+i.cantidad,0)}));status.textContent='Producto agregado. Tu selección está guardada.';
-      }catch(e){status.textContent=e.message;}finally{update();}
+      }catch(e){status.textContent=e.message;}finally{submitting=false;update();}
     };
     layout.append(gallery,info);
     const copy=node('section',null,'product-copy');copy.append(node('h2','Cada detalle cuenta'),node('p',p.descripcion||'','product-description'));

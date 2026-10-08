@@ -9,3 +9,6 @@
 .catalog-empty{grid-column:1/-1;font-size:14px;line-height:1.6;color:inherit}
 .catalog-empty p{margin:0 0 8px;opacity:.75}
 .catalog-empty .text-link{color:inherit;text-underline-offset:4px}
+
+.product-selected-model{display:block;font-size:.48em;line-height:1.4;margin-top:10px;color:var(--muted,#a1a49a)}
+.product-gallery-main[aria-busy=true]::after{content:'Cargando imagen…';position:absolute;bottom:12px;left:12px;padding:6px 10px;border-radius:6px;background:#171815e6;color:#efeee7;font-size:12px}

@@ -62,6 +62,8 @@ try {
     assert.equal(measured.badge,'3');assert.equal(measured.cartHref,'/carrito');assert.equal(measured.accountHref,'/mi-cuenta');
     assert.equal(measured.image,'/src/assets/email/matebreak-logo.png');assert.ok(measured.name);
     assert.ok(measured.cart.width>=44&&measured.account.width>=44);
+    assert.equal(await page.locator('[data-account-link]').innerText(),'','Account is icon only');
+    assert.equal(measured.account.x+measured.account.width,width-measured.logo.x,'Account at right content edge');
     assert.ok(measured.brand.x+measured.brand.width<=measured.cart.x, 'No brand/actions overlap');
     assert.equal(await page.locator('.order-summary,.checkout-order,.wholesale-summary').evaluateAll(es=>es.every(e=>getComputedStyle(e).position!=='sticky'||parseFloat(getComputedStyle(e).top)>=document.querySelector('.mb-public-mainbar').offsetHeight)),true,'Sticky summaries remain below the primary bar');
     await page.locator('[data-account-link]').focus();

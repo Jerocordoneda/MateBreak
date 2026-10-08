@@ -1,13 +1,14 @@
 import {getProducts,money} from '../../services/products.js';
 export function node(tag,text,cls){const el=document.createElement(tag);if(text!=null)el.textContent=text;if(cls)el.className=cls;return el;}
-export function setProductPhoto(frame,url,name){
+export function setProductPhoto(frame,url,name,{eager=false}={}){
   const placeholder=()=>{
     const label=node('span','Foto pendiente','product-photo-placeholder');
     label.setAttribute('role','img');label.setAttribute('aria-label','Foto pendiente: '+name);
-    frame.replaceChildren(label);
+    frame.replaceChildren(label);frame.removeAttribute('aria-busy');
   };
   if(typeof url!=='string'||!url.trim()){placeholder();return;}
-  const img=node('img');img.alt=name;img.loading='lazy';img.width=480;img.height=600;
+  const img=node('img');img.alt=name;img.loading=eager?'eager':'lazy';img.width=480;img.height=600;
+  if(eager){frame.setAttribute('aria-busy','true');img.addEventListener('load',()=>{if(frame.contains(img))frame.removeAttribute('aria-busy');},{once:true});}
   img.addEventListener('error',()=>{if(frame.contains(img))placeholder();},{once:true});
   img.src=url;frame.replaceChildren(img);
 }

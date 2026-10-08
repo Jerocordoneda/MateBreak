@@ -262,6 +262,10 @@ dialog::backdrop { background: #0009; }
 }
 
 /* Tablet/landscape categories retain a full row without overflowing the viewport. */
+@media (min-width: 761px) {
+  /* Bring the existing sequence 24px closer without cropping or changing frames. */
+  [data-home] [data-scroll-sequence] { margin-top: -72px; }
+}
 @media (min-width: 761px) and (max-width: 1023px) {
   .mb-commerce-header .mb-category-nav { gap: 16px; }
 }

@@ -36,7 +36,7 @@ export function mountPublicHeader(root = document) {
   cart.innerHTML = cartIcon;
   if (badge) { badge.className = 'mb-cart-count'; badge.setAttribute('aria-hidden','true'); cart.append(badge); }
   account.classList.add('mb-account-link');
-  account.innerHTML = accountIcon + '<span>Mi cuenta</span>';
+  account.innerHTML = accountIcon;
   account.setAttribute('aria-label', 'Mi cuenta');
   actions.append(extras, cart, account);
   const brandWrapper = brand.parentElement;
