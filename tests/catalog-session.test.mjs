@@ -24,8 +24,13 @@ async function fixture(t,{live=true,pause=false,images=[]}={}){
   authFactory:req=>({auth:{getUser:async()=>{if(!req.headers['x-fixture-user'])guestEntered();return {data:{user:req.headers['x-fixture-user']?{id:uid}:null}};},
   getSession:async()=>({data:{session:{access_token:access}}})}})});
  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>new Promise(r=>server.close(r)));
- return {calls,started,guestStarted,release,get:(authenticated=false)=>fetch(`http://127.0.0.1:${server.address().port}/api/productos`,{headers:authenticated?{'x-fixture-user':'1'}:{}})};
+ return {calls,started,guestStarted,release,get:(authenticated=false,query='')=>fetch(`http://127.0.0.1:${server.address().port}/api/productos${query}`,{headers:authenticated?{'x-fixture-user':'1'}:{}})};
 }
+
+test('explicit cards view preserves product links while default endpoint retains complete variants',async t=>{
+ const f=await fixture(t),cards=await (await f.get(false,'?view=cards')).json();assert.equal(cards[0].slug,'fixture');assert.equal(Object.hasOwn(cards[0],'variantes'),false);
+ const full=await (await f.get()).json();assert.equal(full[0].variantes.length,2);assert.equal(f.calls.filter(c=>c.name==='mb_catalogo_disponibilidad').length,1);
+});
 test('authenticated public catalog preserves every availability row; concurrent guest shares only a valid array',async t=>{
  const f=await fixture(t,{pause:true});const authenticated=f.get(true);await f.started;
  const guest=f.get();await f.guestStarted;await new Promise(setImmediate);f.release();

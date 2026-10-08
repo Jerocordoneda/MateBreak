@@ -14,6 +14,7 @@ const product={id_producto:'25',slug:'imperial-premium-de-boca',nombre:'IMPERIAL
 let catalogRequests=0;const writes=[];
 const app=express();app.use(express.json());
 app.get('/api/productos',(_,r)=>{catalogRequests++;r.json([product]);});
+app.get('/api/productos/:slug',(_,r)=>{catalogRequests++;r.json(product);});
 app.get('/api/sesion',(_,r)=>r.json({usuario:null}));
 app.get('/api/carrito/resumen',(_,r)=>r.json({cantidad:0}));
 app.get('/api/carrito',(_,r)=>r.json({items:[]}));

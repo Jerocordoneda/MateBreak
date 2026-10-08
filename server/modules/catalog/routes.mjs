@@ -1,4 +1,9 @@
 import {catalogImageUrl} from './images.mjs';
+// Public listing projection. The full detail and default API contract stay intact.
+export function productCardData(p){
+  const keys=['id_producto','slug','nombre','descripcion','precio','precio_original','descuento','moneda','tipo','categorias','imagen_principal','promociones','destacado','disponible'];
+  return Object.fromEntries(keys.map(key=>[key,p[key]]));
+}
 const selection = `id_producto,nombre,descripcion,precio,tipo,activo,slug,moneda,
  catalogo_producto!inner(disponible,precio_original,precio_transferencia,descuento,cuotas,envio_gratis,destacado,publicado,personalizacion,atributos),
  catalogo_producto_categoria(catalogo_categoria(id,nombre,slug,padre_id)),
@@ -45,6 +50,7 @@ export function catalogRoutes(app, {admin,config}) {
     if(term)result=result.filter(p=>(p.nombre+' '+p.descripcion).toLocaleLowerCase('es').includes(term));
     if(typeof req.query.categoria==='string')result=result.filter(p=>p.categorias.some(c=>c.slug===req.query.categoria));
     if(req.query.destacados==='true')result=result.filter(p=>p.destacado);
+    if(req.query.view==='cards')result=result.map(productCardData);
     res.json(result);
   });
   app.get('/api/productos/:slug',async(req,res)=>{

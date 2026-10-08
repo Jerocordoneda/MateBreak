@@ -1,3 +1,4 @@
+@import url('./fonts.css');
 /* One geometry contract for every public primary bar, independent of page containers. */
 header.mb-public-header {
   position: fixed; inset: 0 0 auto; z-index: 50;
@@ -11,16 +12,17 @@ header.mb-public-header .mb-public-mainbar {
   margin: 0 auto; padding: 0 64px; gap: 16px; color: #d8c3a5;
 }
 header.mb-public-header .mb-public-brand {
+  position: relative;
   display: inline-flex; align-items: center; justify-content: flex-start;
   box-sizing: border-box; flex: 0 0 226px; width: 226px; height: 48px; min-height: 48px;
   margin: 0; padding: 0; gap: 0; border: 0; color: #d8c3a5; text-decoration: none;
 }
-header.mb-public-header .mb-public-brand img { display: block; width: 48px; height: 48px; flex: 0 0 48px; margin: 0; }
+header.mb-public-header .mb-public-brand img { display: block; width: 48px; height: 48px; flex: 0 0 48px; margin: 0; filter: none; }
 header.mb-public-header .mb-public-brand > span {
   font: 400 36px/40px var(--mb-heading, 'Geist'), sans-serif;
   letter-spacing: -1.8px; white-space: nowrap; text-transform: none;
 }
-header.mb-public-header .mb-public-brand sup { position: relative; top: -.5em; font-size: .6em; line-height: 0; }
+header.mb-public-header .mb-public-brand sup { position: relative; top: -.5em; font-size: .6em; line-height: 0; margin-left: 2px; }
 header.mb-public-header .mb-public-actions,
 header.mb-public-header .mb-public-extras {
   display: flex; align-items: center; flex-wrap: nowrap; flex: 0 0 auto;
@@ -39,7 +41,6 @@ header.mb-public-header .mb-public-actions > .mb-account-link { width: 44px; }
 header.mb-public-header .mb-public-actions > a > svg { width: 25px; height: 25px; flex: 0 0 25px; }
 header.mb-public-header .mb-cart-count { top: 0; right: -4px; }
 header.mb-public-header .mb-help-nav { position: absolute; left: 50%; transform: translateX(-50%); }
-header.mb-public-header.header-dark .mb-public-mainbar { color: #6b5139; }
 header.mb-public-header a:focus-visible,
 header.mb-public-header button:focus-visible { outline: 2px solid #f4bb92; outline-offset: 3px; border-radius: 5px; }
 .mb-public-simple { padding-top: 80px; }
@@ -57,7 +58,7 @@ header.mb-public-header button:focus-visible { outline: 2px solid #f4bb92; outli
   header.mb-public-header .mb-public-mainbar { height: 64px; min-height: 64px; padding: 0 12px; gap: 2px; }
   header.mb-public-header .mb-public-brand { flex: 0 0 146px; width: 146px; height: 44px; min-height: 44px; }
   header.mb-public-header .mb-public-brand img { width: 22px; height: 22px; flex-basis: 22px; }
-  header.mb-public-header .mb-public-brand > span { font-size: 18px; line-height: 1.2; letter-spacing: -1px; }
+  header.mb-public-header .mb-public-brand > span { font-size: 18px; line-height: 1.2; letter-spacing: -.9px; }
   header.mb-public-header .mb-public-actions,
   header.mb-public-header .mb-public-extras { gap: 4px; }
   header.mb-public-header .mb-public-actions > .mb-account-link { width: 44px; }
@@ -71,4 +72,45 @@ header.mb-public-header button:focus-visible { outline: 2px solid #f4bb92; outli
   .mb-public-simple .checkout-order,
   .mb-public-simple .wholesale-summary { top: 88px; }
   .mb-public-simple :target { scroll-margin-top: 88px; }
+}
+
+/* The approved Home's two rows also work without page-specific utility CSS. */
+header.mb-public-header { backdrop-filter: blur(24px); }
+header.mb-public-header .mb-help-nav { display:flex; align-items:center; gap:40px; font:400 20px/28px 'Geist',sans-serif; letter-spacing:2px; text-transform:uppercase; }
+header.mb-public-header .mb-help-nav small {font-size:.55em;}
+header.mb-public-header .mb-categorybar {box-sizing:border-box;height:49px;border-top:1px solid #4947411a;padding:0 24px;display:flex;align-items:center;justify-content:center;}
+header.mb-public-header .mb-category-nav {display:flex;align-items:center;gap:40px;margin:0;padding:0;font:500 14px/20px 'Geist',sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#c8c5c4;}
+header.mb-public-header .mb-category-nav a {color:inherit;text-decoration:none;white-space:nowrap;}
+header.mb-public-header .mb-category-nav a:hover {color:#ebbb97;}
+header.mb-public-header .mb-category-nav .group {position:relative;display:flex;align-items:center;}
+header.mb-public-header .mb-category-nav .dropdown-menu {display:none;position:absolute;top:100%;left:50%;transform:translateX(-50%);padding-top:16px;z-index:1;}
+header.mb-public-header .mb-category-nav .group:hover > .dropdown-menu,
+header.mb-public-header .mb-category-nav .group:focus-within > .dropdown-menu {display:block;}
+header.mb-public-header .dropdown-menu > div {background:#272925;width:192px;padding:16px 0;border-radius:12px;box-shadow:0 12px 28px #0006;}
+header.mb-public-header .dropdown-menu a {display:flex;align-items:center;min-height:44px;padding:8px 24px;}
+header.mb-public-header .mb-category-nav .mb-podcast-link {display:flex;align-items:center;gap:8px;font:inherit;letter-spacing:inherit;}
+header.mb-public-header .mb-category-nav svg {width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;}
+header.mb-public-header .mb-team-label {position:absolute;left:0;top:47px;font:500 8px/10px 'Inter',sans-serif;letter-spacing:1.3px;white-space:nowrap;color:#a1a49a;}
+.mb-page-shortcuts {display:flex;gap:16px;align-items:center;margin-block:12px;font-size:12px;}
+.mb-public-simple {padding-top:129px;}
+body[data-marketing] > main {padding-top:129px;}
+.mb-public-simple .order-summary,.mb-public-simple .checkout-order,.mb-public-simple .wholesale-summary {top:152px;}
+.mb-public-simple :target {scroll-margin-top:152px;}
+@media(max-width:1023px){
+  header.mb-public-header .mb-help-nav {gap:12px;font-size:12px;letter-spacing:1.2px;}
+  header.mb-public-header .mb-category-nav {gap:16px;font-size:12px;letter-spacing:1px;}
+}
+@media(max-width:760px){
+  header.mb-public-header .mb-help-nav {display:none;}
+  header.mb-public-header .mb-public-actions > .mb-menu-toggle {box-sizing:border-box;width:44px;height:44px;flex:0 0 44px;padding:0;}
+  header.mb-public-header .mb-categorybar {display:none;position:fixed;inset:68px 12px auto;height:auto;padding:12px;max-height:calc(100dvh - 84px);overflow:auto;overscroll-behavior:contain;background:#1b1b1b;border:1px solid #d8c3a54d;border-radius:10px;}
+  header.mb-public-header.mb-nav-open .mb-categorybar {display:block;}
+  header.mb-public-header .mb-category-nav {flex-direction:column;align-items:stretch;gap:4px;width:100%;font-size:13px;}
+  header.mb-public-header .mb-category-nav .dropdown-menu {position:static;transform:none;flex-basis:100%;padding:0 0 4px 12px;}
+  header.mb-public-header .dropdown-menu > div {width:100%;padding:0;box-shadow:none;background:transparent;}
+  header.mb-public-header .mb-team-label {top:37px;font-size:7px;line-height:8px;}
+  .mb-public-simple {padding-top:64px;}
+  body[data-marketing] > main {padding-top:64px;}
+  .mb-public-simple .order-summary,.mb-public-simple .checkout-order,.mb-public-simple .wholesale-summary {top:88px;}
+  .mb-public-simple :target {scroll-margin-top:88px;}
 }

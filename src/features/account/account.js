@@ -1,4 +1,5 @@
 import {returnPath} from './return-path.mjs';
+import {setTeamHeader} from '../../js/public-header.mjs';
 const returnIntent=new URLSearchParams(location.search).get('volver');
 import {element,message,api,button,overview,setRequestScope} from './ui.mjs';
 const $=selector=>document.querySelector(selector);
@@ -15,11 +16,13 @@ function clearCustomer(){for(const id of ['emails','addresses','customer-orders'
 window.addEventListener('mb:account-session-invalid',()=>{revision++;controller?.abort();currentUser=null;clearCustomer();$('#loading').hidden=true;$('#role').textContent='';$('#identity').textContent='Ingresá para encontrar todo lo que necesitás.';});
 async function load(){
  const epoch=++revision;controller?.abort();controller=new AbortController();setRequestScope(controller.signal);clearCustomer();
+ setTeamHeader(false);
  $('#identity').textContent='Verificando tu sesión…';$('#role').textContent='';
  $('#loading').hidden=false;$('#retry').hidden=true;
  for(const panel of ['admin-area','seller-area','customer-area','signin','signin-layout','session-actions'])$('#'+panel).hidden=true;
  try{
   const {usuario}=await api('/sesion');if(epoch!==revision)return false;currentUser=usuario;
+  setTeamHeader(['administrador','vendedor'].includes(usuario?.rol));
   $('#identity').textContent=usuario?usuario.email:'Ingresá para encontrar todo lo que necesitás.';
   $('#signin').hidden=!!usuario;$('#signin-layout').hidden=!!usuario;$('#session-actions').hidden=!usuario;
   $('#account-title').replaceChildren(document.createTextNode(usuario?{cliente:'Tu espacio, tu ritual',vendedor:'Tus ventas, al día',administrador:'MateBreak, en orden'}[usuario.rol]||'Mi cuenta':'Tu próxima pausa'),element('span','.','accent'));

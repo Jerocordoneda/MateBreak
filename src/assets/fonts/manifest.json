@@ -1,0 +1,16 @@
+[
+  {
+    "family": "Geist",
+    "url": "https://fonts.gstatic.com/s/geist/v5/gyByhwUxId8gMEwcGFU.woff2",
+    "cssUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap",
+    "bytes": 29400,
+    "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+  },
+  {
+    "family": "Inter",
+    "url": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2",
+    "cssUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap",
+    "bytes": 48256,
+    "sha256": "3100e775e8616cd2611beecfa23a4263d7037586789b43f035236a2e6fbd4c62"
+  }
+]

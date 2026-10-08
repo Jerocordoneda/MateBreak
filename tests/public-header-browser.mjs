@@ -15,12 +15,16 @@ const baseline = process.argv.includes('--baseline');
 const source = process.argv.includes('--dist') ? path.join(root, 'dist') : root;
 const files = ['index.html', ...fs.readdirSync(path.join(root, 'src/pages')).filter(f => f.endsWith('.html')).map(f => 'src/pages/'+f)]
   .filter(f => fs.readFileSync(path.join(root,f),'utf8').includes('/src/js/header-account.js'));
+files.push('server/private-ui/inventory.html','server/private-ui/logistics.html');
 const app = express();
 app.get('/api/sesion', (_,res) => res.json({usuario:null}));
 app.get('/api/carrito/resumen', (_,res) => res.json({cantidad:3}));
 app.get('/api/carrito', (_,res) => res.json({items:[], resumen:{subtotal:0,total:0}}));
+app.get('/api/productos/:slug',(_,res)=>res.status(404).json({error:'Producto no encontrado'}));
 app.get('/api/*path', (_,res) => res.json([]));
 app.use('/api', (_,res) => res.sendStatus(405));
+app.get('/server/private-ui/:file', (req,res)=>res.set('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'").sendFile(path.join(root,'server/private-ui',req.params.file),{dotfiles:'allow'}));
+for(const name of ['inventory','logistics'])for(const [suffix,ext]of[['app.js','js'],['style.css','css']])app.get('/interno/'+(name==='inventory'?'inventario':'logistica')+'/'+suffix,(_,res)=>res.sendFile(path.join(root,'server/private-ui',name+'.'+ext),{dotfiles:'allow'}));
 app.use(express.static(source, {dotfiles:'allow'}));
 const server = app.listen(0,'127.0.0.1');
 const browser = await chromium.launch({channel:'chrome',headless:true});
@@ -39,7 +43,7 @@ try {
     const rect = e => {if(!e)return null;const r=e.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
     const brand = document.querySelector('.mb-public-header .mb-public-brand,.mb-brand-link,.mb-site-brand,header .brand');
     const cart = document.querySelector('[data-cart-link]'), account = document.querySelector('[data-account-link]');
-    return {logo:rect(brand?.querySelector('img')),brand:rect(brand),cart:rect(cart),account:rect(account),bar:rect(document.querySelector('.mb-public-mainbar')),
+    return {logo:rect(brand?.querySelector('img')),brand:rect(brand),cart:rect(cart),account:rect(account),bar:rect(document.querySelector('.mb-public-mainbar')),category:rect(document.querySelector('.mb-categorybar')),
       overflow:document.documentElement.scrollWidth>innerWidth+1,
       brandCount:document.querySelectorAll('.mb-public-brand').length,
       badge:cart?.querySelector('[data-cart-badge]')?.textContent,
@@ -52,18 +56,23 @@ try {
    await page.screenshot({path:path.join(output,(baseline?'before':'after')+'-'+width+'-'+path.basename(file,'.html')+'.png'),clip:{x:0,y:0,width,height:180}});
    if(!baseline) {
     const original=load(fs.readFileSync(path.join(root,file),'utf8'));
-    const navigationHrefs=original('header a,.mb-header-actions a').map((_,e)=>original(e).attr('href')).get();
-    const remainingHrefs=await page.locator('a[href]').evaluateAll(es=>es.map(e=>e.getAttribute('href')));
+    const normalized=h=>{if(!h)return h;const u=new URL(h,'http://127.0.0.1/'+file);return u.pathname+u.hash;};
+    const navigationHrefs=original('header a,.mb-header-actions a').filter((_,e)=>original(e).attr('data-path')!=='home').map((_,e)=>normalized(original(e).attr('href'))).get();
+    const remainingHrefs=(await page.locator('a[href]').evaluateAll(es=>es.map(e=>e.getAttribute('href')))).map(normalized);
     for(const href of new Set(navigationHrefs))assert.ok(remainingHrefs.filter(h=>h===href).length>=navigationHrefs.filter(h=>h===href).length,file+' lost navigation '+href);
     assert.equal(await page.evaluate(async()=>{const {mountPublicHeader}=await import('/src/js/public-header.mjs');const cart=document.querySelector('[data-cart-link]'),account=document.querySelector('[data-account-link]');mountPublicHeader();mountPublicHeader();return document.querySelector('[data-cart-link]')===cart&&document.querySelector('[data-account-link]')===account;}),true,'Idempotent mount preserves original action nodes');
     const reference=report.cases.find(c=>c.width===width);
-    for(const key of ['logo','brand','cart','account','bar'])assert.deepEqual(measured[key],reference[key],`${file} ${width}: ${key}`);
+    for(const key of ['logo','brand','cart','account','bar','category'])assert.deepEqual(measured[key],reference[key],`${file} ${width}: ${key}`);
     assert.equal(measured.brandCount,1,file);assert.equal(measured.overflow,false,file+' overflow '+width);
     assert.equal(measured.badge,'3');assert.equal(measured.cartHref,'/carrito');assert.equal(measured.accountHref,'/mi-cuenta');
     assert.equal(measured.image,'/src/assets/email/matebreak-logo.png');assert.ok(measured.name);
     assert.ok(measured.cart.width>=44&&measured.account.width>=44);
     assert.equal(await page.locator('[data-account-link]').innerText(),'','Account is icon only');
     assert.equal(measured.account.x+measured.account.width,width-measured.logo.x,'Account at right content edge');
+    assert.equal(await page.locator('.mb-category-nav > [data-path=home]').count(),0);
+    assert.equal(await page.locator('.mb-category-nav > .mb-podcast-link').count(),1);
+    assert.equal(await page.locator('.mb-help-nav a').count(),3);
+    assert.equal(await page.locator('.mb-team-label').count(),file.startsWith('server/')?1:0);
     assert.ok(measured.brand.x+measured.brand.width<=measured.cart.x, 'No brand/actions overlap');
     assert.equal(await page.locator('.order-summary,.checkout-order,.wholesale-summary').evaluateAll(es=>es.every(e=>getComputedStyle(e).position!=='sticky'||parseFloat(getComputedStyle(e).top)>=document.querySelector('.mb-public-mainbar').offsetHeight)),true,'Sticky summaries remain below the primary bar');
     await page.locator('[data-account-link]').focus();
