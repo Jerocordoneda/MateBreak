@@ -39,15 +39,17 @@ function initSequence(section) {
     let targetProgress = 0, currentProgress = 0, currentFrame = -1;
     let visible = false, rafId = null, previousTime = null;
 
-    // Only the requested frame and its nearby trajectory, with two decodes in flight.
+    // Opening the page uses two slots; active scrolling can use eight so network
+    // round trips do not strand the display behind a rapid change of direction.
     // Keep decoded images (at most the original 60) so reverse scroll never reloads them.
     function pump() {
         if (!visible || staticView.matches || document.hidden) return;
-        while (loading.size < 2) {
+        while (loading.size < (engaged ? 8 : 2)) {
             const frame = desired.find(n => !decoded.has(n) && !loading.has(n) && !failed.has(n));
             if (frame === undefined) break;
             loading.add(frame);
             const pre = new Image();
+            pre.fetchPriority = Math.abs(frame - Math.round(targetProgress * (total - 1))) <= 2 ? 'high' : 'low';
             const finish = () => { loading.delete(frame); pump(); requestLoop(); };
             pre.onload = async () => {
                 try { await pre.decode(); decoded.set(frame, pre); }
