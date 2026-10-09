@@ -21,27 +21,12 @@ export function calculateTotals({ merchandiseSubtotal, carrierCost, method }) {
     currency: 'ARS' };
 }
 
-const required = {
-  nombre: [2, 100], apellido: [2, 100], email: [3, 254], telefono: [7, 30],
-  codigo_postal: [4, 12], provincia: [2, 100], ciudad: [2, 100], calle: [2, 150], numero: [1, 20],
-};
-const optional = { piso: 20, departamento: 30, referencia: 300 };
-export function validateRecipient(value) {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) throw Error('Completá los datos del destinatario');
-  const result = {};
-  for (const [key, [min, max]] of Object.entries(required)) {
-    const text = value[key];
-    if (typeof text !== 'string' || text.trim().length < min || text.trim().length > max) throw Error(`Revisá ${key.replaceAll('_', ' ')}`);
-    result[key] = text.trim();
-  }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(result.email)) throw Error('Email inválido');
-  if (!/^[+0-9 ()-]+$/.test(result.telefono) || result.telefono.replace(/\D/g, '').length < 7) throw Error('Teléfono inválido');
-  if (!/^[A-Za-z0-9 -]+$/.test(result.codigo_postal)) throw Error('Código postal inválido');
-  if (!/^[0-9]+[A-Za-z]?$/.test(result.numero)) throw Error('Número de calle inválido');
-  for (const [key, max] of Object.entries(optional)) {
-    if (value[key] === undefined || value[key] === null || value[key] === '') { result[key] = ''; continue; }
-    if (typeof value[key] !== 'string' || value[key].trim().length > max) throw Error(`Revisá ${key}`);
-    result[key] = value[key].trim();
-  }
-  return result;
+import {validateRecipient as validateFields} from '../../src/features/checkout/recipient-validation.mjs';
+import {province,provinces} from '../shipping/provinces.mjs';
+export function validateRecipient(value,mode='correo_domicilio',choices=provinces){
+ if(mode==='correo_domicilio'){
+  try{value={...value,provincia:province(value?.provincia).name};}
+  catch{} // Collect the province error together with all other field errors.
+ }
+ return validateFields(value,mode,choices);
 }

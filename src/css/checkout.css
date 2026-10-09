@@ -13,3 +13,5 @@
 .test-mode{display:inline-block!important;margin-top:14px;padding:6px 10px;border:1px solid #665c3f;border-radius:5px;color:#f0d9a8!important;background:#332d20;font-size:11px}.test-mode[hidden]{display:none!important}
 @media(max-width:860px){.checkout-layout{grid-template-columns:1fr}.checkout-order{position:static;order:-1}.checkout-page{padding:18px 20px 70px}}
 @media(max-width:560px){.field-grid{grid-template-columns:1fr}.checkout-steps li{font-size:11px;padding:11px 8px}.checkout-card{padding:20px}.checkout-heading{margin-top:30px}.checkout-choice{flex-wrap:wrap}.checkout-choice small{margin-left:31px}}
+
+[aria-invalid="true"]{border-color:#ffad9e!important;outline:1px solid #ffad9e}.field-error{display:block;color:#ffad9e;font-size:.82rem;margin-top:.4rem;line-height:1.4}.field-error[hidden]{display:none}

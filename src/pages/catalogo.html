@@ -7,14 +7,18 @@
   <link rel="stylesheet" href="/src/css/commerce.css">
   <link rel="stylesheet" href="/src/css/site-brand.css">
   <link rel="stylesheet" href="/src/css/catalog.css">
-  <script type="module" src="/src/js/catalog-pages.js"></script>
-  <script type="module" src="/src/js/header-account.js"></script>
+  <script type="module" src="/src/features/catalog/catalog-pages.js"></script>
+
+<link rel="stylesheet" href="/src/css/header-account.css"><script type="module" src="/src/js/header-account.js"></script><link rel="stylesheet" href="/src/css/responsive.css">
+<link rel="icon" type="image/png" href="/src/assets/email/matebreak-logo.png">  <link rel="modulepreload" href="/src/features/catalog/catalog-pages.js">
+  <link rel="modulepreload" href="/src/features/catalog/catalog-ui.js">
+  <link rel="modulepreload" href="/src/services/products.js">
 </head>
 <body data-brand-shell="commerce">
   <a class="skip-link" href="#catalogo">Saltar al catálogo</a>
   <main>
-    <a data-page-brand class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio">MateBreak<sup>®</sup></a>
-    <nav class="commerce-sections" aria-label="Mi compra"><a href="/tienda" aria-current="page">Catálogo</a><a href="/carrito" data-cart-link>Mi carrito</a><a href="/mi-cuenta" data-account-link>Mi cuenta</a></nav>
+    <a data-page-brand="" class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio"><img src="/src/assets/email/matebreak-logo.png" alt="" width="48" height="48"><span>MateBreak<sup>®</sup></span></a>
+    <nav class="commerce-sections mb-header-actions" aria-label="Mi compra"><a href="/podcast" class="mb-podcast-link" aria-label="Podcast de MateBreak"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></svg><span>Podcast</span></a><a href="/tienda" aria-current="page">Catálogo</a><a href="/carrito" class="mb-cart-link" data-cart-link="" aria-label="Mi carrito, 0 unidades"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h2l2.5 12h11L21 6H6 M10 20h.01 M18 20h.01"></path></svg><span class="mb-cart-count" data-cart-badge="" aria-hidden="true">0</span></a><a href="/mi-cuenta" class="mb-account-link" data-account-link="" aria-label="Mi cuenta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2"></path></svg><span>Mi cuenta</span></a></nav>
     <section id="catalogo" class="page-panel">
       <div class="page-heading"><div><p class="eyebrow">OBJETOS PARA TU RITUAL</p><h1>Elegí tu pausa<span class="accent">.</span></h1><p class="lead">Mates y compañía para todos los días.</p></div><a href="/carrito" class="text-link continue-link">Ver mi carrito →</a></div>
       <div data-catalog="all" data-category="" data-search=""><p>Cargando catálogo…</p></div>

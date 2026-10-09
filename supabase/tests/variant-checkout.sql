@@ -35,7 +35,7 @@ begin
  if (quote->'items'->0->>'precio_unitario')::numeric=1 then raise exception 'Precio del cliente aceptado'; end if;
  if public.mb_cantidad_promo(c)=2 and exists(select 1 from public.catalogo_promocion p join public.catalogo_variante v on v.producto_id=p.producto_id where v.id=first_variant and p.texto='20% OFF Comprando 2 o más') then
   if (quote->'items'->0->>'precio_unitario')::numeric<>public.mb_precio_variante(first_variant,'transferencia',2) then raise exception 'Promoción o transferencia mal aplicadas'; end if;
-  if public.mb_precio_variante(first_variant,'transferencia',2)>=public.mb_precio_variante(first_variant,'transferencia',1) then raise exception 'No se aplicó promoción por cantidad'; end if;
+  if public.mb_precio_variante(first_variant,'transferencia',2)<>public.mb_precio_variante(first_variant,'mercadopago',1) or (quote->>'descuento_promocional')::numeric<>(quote->>'subtotal_original_productos')::numeric*0.20 then raise exception 'Dos mates no recibieron promoción global o recibieron descuento por variante'; end if;
  end if;
  order_one:=public.mb_comercio(token,u,'checkout',jsonb_build_object('idempotencia',key,'pago','transferencia','envio','retiro'));
  if (order_one->>'subtotal')::numeric<>expected or order_one->>'moneda'<>'ARS' then raise exception 'Total o moneda del pedido incorrectos'; end if;

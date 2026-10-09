@@ -1,0 +1,1315 @@
+{
+  "status": "PASS",
+  "cli": "2.118.0",
+  "target": "owned local matebreak-local-tests",
+  "commands": [
+    {
+      "command": "supabase db reset --local --no-seed --version 20260929144308",
+      "exitCode": 0,
+      "stdout": "{\"target\":\"local\",\"version\":\"20260929144308\",\"message\":\"Reset local database.\"}\n",
+      "stderr": "Resetting local database to version: 20260929144308\nRecreating database...\nInitialising schema...\nSeeding globals from roles.sql...\nApplying migration 20260907203437_bootstrap_legacy_catalog.sql...\nApplying migration 20260907203438_commerce.sql...\nApplying migration 20260907205528_restrict_rls_event_function.sql...\nApplying migration 20260908093541_inventory_admin.sql...\nApplying migration 20260908094753_inventory_query_aliases.sql...\nApplying migration 20260908103049_account_roles_sales.sql...\nApplying migration 20260909000858_account_admin_roles.sql...\nApplying migration 20260909234040_admin_commercial_dashboard.sql...\nApplying migration 20260928160916_catalog_import.sql...\nApplying migration 20260928162849_catalog_reconcile_metadata.sql...\nApplying migration 20260928162850_restore_historical_public_catalog.sql...\nApplying migration 20260928210316_ars_variant_checkout.sql...\nApplying migration 20260928232227_reconcile_camionero_algarrobo.sql...\nApplying migration 20260929000621_physical_base_reconciliation.sql...\nApplying migration 20260929000841_on_demand_and_preparation.sql...\nApplying migration 20260929001114_receiving_and_engraving_operations.sql...\nApplying migration 20260929001306_align_board_procurement.sql...\nApplying migration 20260929122500_reconcile_thermo_publications.sql...\nApplying migration 20260929130000_box_per_mate_and_combo_mapping.sql...\nApplying migration 20260929131500_box_for_manual_sales.sql...\nApplying migration 20260929133000_map_premium_personalized_knife_sheath.sql...\nApplying migration 20260929144308_checkout_minorista_preparacion.sql...\nRestarting containers...\nCreating Storage bucket: product-images\nFinished supabase db reset on branch main.\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    },
+    {
+      "command": "supabase migration repair 20260907203437 20260907203438 20260907205528 20260908093541 20260908094753 20260908103049 20260909000858 20260909234040 20260928160916 20260928162849 20260928162850 20260928210316 20260928232227 20260929000621 20260929000841 20260929001114 20260929001306 20260929122500 20260929130000 20260929131500 20260929133000 20260929144308 --status applied --local",
+      "exitCode": 0,
+      "stdout": "{\"versions\":[\"20260907203437\",\"20260907203438\",\"20260907205528\",\"20260908093541\",\"20260908094753\",\"20260908103049\",\"20260909000858\",\"20260909234040\",\"20260928160916\",\"20260928162849\",\"20260928162850\",\"20260928210316\",\"20260928232227\",\"20260929000621\",\"20260929000841\",\"20260929001114\",\"20260929001306\",\"20260929122500\",\"20260929130000\",\"20260929131500\",\"20260929133000\",\"20260929144308\"],\"status\":\"applied\",\"repairAll\":false,\"message\":\"Migration history repaired\"}\n",
+      "stderr": "Connecting to local database...\nRepaired migration history: [20260907203437 20260907203438 20260907205528 20260908093541 20260908094753 20260908103049 20260909000858 20260909234040 20260928160916 20260928162849 20260928162850 20260928210316 20260928232227 20260929000621 20260929000841 20260929001114 20260929001306 20260929122500 20260929130000 20260929131500 20260929133000 20260929144308] => applied\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    },
+    {
+      "command": "supabase migration repair 20260908093949 20260908094715 20260908103456 20260909001422 20260909234523 20260928161630 20260928162830 20260928210655 20260928232220 20260929000708 20260929001006 20260929001144 20260929001227 20260929004131 20260929005101 20260929005232 20260929020225 20260929150203 --status reverted --local",
+      "exitCode": 0,
+      "stdout": "{\"versions\":[\"20260908093949\",\"20260908094715\",\"20260908103456\",\"20260909001422\",\"20260909234523\",\"20260928161630\",\"20260928162830\",\"20260928210655\",\"20260928232220\",\"20260929000708\",\"20260929001006\",\"20260929001144\",\"20260929001227\",\"20260929004131\",\"20260929005101\",\"20260929005232\",\"20260929020225\",\"20260929150203\"],\"status\":\"reverted\",\"repairAll\":false,\"message\":\"Migration history repaired\"}\n",
+      "stderr": "Connecting to local database...\nRepaired migration history: [20260908093949 20260908094715 20260908103456 20260909001422 20260909234523 20260928161630 20260928162830 20260928210655 20260928232220 20260929000708 20260929001006 20260929001144 20260929001227 20260929004131 20260929005101 20260929005232 20260929020225 20260929150203] => reverted\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    },
+    {
+      "command": "supabase db push --local --dry-run --skip-vault",
+      "exitCode": 0,
+      "stdout": "{\"upToDate\":false,\"dryRun\":true,\"migrations\":[\"20260929204150_fix_minorista_checkout_lifecycle.sql\",\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\",\"20261001112820_logistics_admin_recovery.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
+      "stderr": "DRY RUN: migrations will *not* be pushed to the database.\nConnecting to local database...\nWould push these migrations:\n • 20260929204150_fix_minorista_checkout_lifecycle.sql\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    },
+    {
+      "command": "supabase db push --local --skip-vault --yes",
+      "exitCode": 1,
+      "stdout": "{\"_tag\":\"Error\",\"error\":{\"code\":\"DbPushApplyError\",\"message\":\"ERROR: MB_REHEARSAL_INJECTED_HARDENING_FAILURE (SQLSTATE P0001)\\nAt statement: 1\\nrevoke all on sequence public.producto_id_producto_seq, public.catalogo_categoria_id_seq,\\r\\n  public.catalogo_variante_id_seq from anon, authenticated\"}}\n",
+      "stderr": "Connecting to local database...\nDo you want to push these migrations to the local database?\n • 20260929204150_fix_minorista_checkout_lifecycle.sql\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\n [Y/n] y\nApplying migration 20260929204150_fix_minorista_checkout_lifecycle.sql...\nApplying migration 20260929214717_harden_default_privileges.sql...\n"
+    },
+    {
+      "command": "supabase db push --local --skip-vault --dry-run",
+      "exitCode": 0,
+      "stdout": "{\"upToDate\":false,\"dryRun\":true,\"migrations\":[\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\",\"20261001112820_logistics_admin_recovery.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
+      "stderr": "DRY RUN: migrations will *not* be pushed to the database.\nConnecting to local database...\nWould push these migrations:\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    },
+    {
+      "command": "supabase db push --local --skip-vault --yes",
+      "exitCode": 0,
+      "stdout": "{\"upToDate\":false,\"dryRun\":false,\"migrations\":[\"20260929214717_harden_default_privileges.sql\",\"20261001003824_micorreo_logistics_snapshots.sql\",\"20261001112820_logistics_admin_recovery.sql\"],\"seeds\":[],\"roles\":[],\"message\":\"Finished supabase db push.\"}\n",
+      "stderr": "Connecting to local database...\nDo you want to push these migrations to the local database?\n • 20260929214717_harden_default_privileges.sql\n • 20261001003824_micorreo_logistics_snapshots.sql\n • 20261001112820_logistics_admin_recovery.sql\n [Y/n] y\nApplying migration 20260929214717_harden_default_privileges.sql...\nApplying migration 20261001003824_micorreo_logistics_snapshots.sql...\nApplying migration 20261001112820_logistics_admin_recovery.sql...\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    },
+    {
+      "command": "supabase db reset --local --no-seed",
+      "exitCode": 0,
+      "stdout": "{\"target\":\"local\",\"version\":\"\",\"message\":\"Reset local database.\"}\n",
+      "stderr": "Resetting local database...\nRecreating database...\nInitialising schema...\nSeeding globals from roles.sql...\nApplying migration 20260907203437_bootstrap_legacy_catalog.sql...\nApplying migration 20260907203438_commerce.sql...\nApplying migration 20260907205528_restrict_rls_event_function.sql...\nApplying migration 20260908093541_inventory_admin.sql...\nApplying migration 20260908094753_inventory_query_aliases.sql...\nApplying migration 20260908103049_account_roles_sales.sql...\nApplying migration 20260909000858_account_admin_roles.sql...\nApplying migration 20260909234040_admin_commercial_dashboard.sql...\nApplying migration 20260928160916_catalog_import.sql...\nApplying migration 20260928162849_catalog_reconcile_metadata.sql...\nApplying migration 20260928162850_restore_historical_public_catalog.sql...\nApplying migration 20260928210316_ars_variant_checkout.sql...\nApplying migration 20260928232227_reconcile_camionero_algarrobo.sql...\nApplying migration 20260929000621_physical_base_reconciliation.sql...\nApplying migration 20260929000841_on_demand_and_preparation.sql...\nApplying migration 20260929001114_receiving_and_engraving_operations.sql...\nApplying migration 20260929001306_align_board_procurement.sql...\nApplying migration 20260929122500_reconcile_thermo_publications.sql...\nApplying migration 20260929130000_box_per_mate_and_combo_mapping.sql...\nApplying migration 20260929131500_box_for_manual_sales.sql...\nApplying migration 20260929133000_map_premium_personalized_knife_sheath.sql...\nApplying migration 20260929144308_checkout_minorista_preparacion.sql...\nApplying migration 20260929204150_fix_minorista_checkout_lifecycle.sql...\nApplying migration 20260929214717_harden_default_privileges.sql...\nApplying migration 20261001003824_micorreo_logistics_snapshots.sql...\nApplying migration 20261001112820_logistics_admin_recovery.sql...\nRestarting containers...\nCreating Storage bucket: product-images\nFinished supabase db reset on branch main.\nA new version of Supabase CLI is available: v2.119.0 (currently installed v2.118.0)\nWe recommend updating regularly for new features and bug fixes: https://supabase.com/docs/guides/cli/getting-started#updating-the-supabase-cli\n"
+    }
+  ],
+  "migrationFileSha256": {
+    "20260907203437_bootstrap_legacy_catalog.sql": "c983798cccc76f98c8843dad75fd8889b3d278a046ab94947087af7718e938ea",
+    "20260907203438_commerce.sql": "59953ab62a3be591152b07d9c37d46089f26ef599cf0402126e29445416da19f",
+    "20260907205528_restrict_rls_event_function.sql": "be330fbfd4db089308b9daea11e16b97ab256a20b5b484c0fd36feaa34562a3c",
+    "20260908093541_inventory_admin.sql": "b35a4943321bb7d469f209e5970c231bbe3723f15a1357e805fd09042e22a65e",
+    "20260908094753_inventory_query_aliases.sql": "896ad8213d160f786c81f1129cd8d8c36ca838f57977f6130136a230c259587a",
+    "20260908103049_account_roles_sales.sql": "a3fc3999d231734343b7348c1102d999b833c0e5d118dc6de9c3f7b5573ff172",
+    "20260909000858_account_admin_roles.sql": "7dcded862e3f6cf89dd8282f9d25a55f7f41fcea7b84147d036bc2d8559d68c7",
+    "20260909234040_admin_commercial_dashboard.sql": "b756c19555664e3382522e77cd901c21e9e1693b9723c8ea21b27a2656e609da",
+    "20260928160916_catalog_import.sql": "ca263db61f1888307d3ce90c190fe0b04138b9d4d2f0f883e68d3d27cc3701f9",
+    "20260928162849_catalog_reconcile_metadata.sql": "8dfefc811de54e4faaa933532c3c1c74c8f750932e52b5633fd4fc4724984e3d",
+    "20260928162850_restore_historical_public_catalog.sql": "13d2f2e2b8372d6c9dfe2822b44fb9b068a5f61c1c5b788771447a8c5e2bd324",
+    "20260928210316_ars_variant_checkout.sql": "7fb3571abf76fd3c49d34fb10f4483d117208721bb01d0a1795ae40f79a1e608",
+    "20260928232227_reconcile_camionero_algarrobo.sql": "f693d545838e6e78dc3df198626f34e4f250cd12a1d86b641aec998b16166dd9",
+    "20260929000621_physical_base_reconciliation.sql": "d8af75892d4b7636301b0c249f5252d48a5aa1ce782023bede1e56f13852de76",
+    "20260929000841_on_demand_and_preparation.sql": "ed9ddd1ca6257cdc2ec5f8678afe65bdf35c8aa28efa5b748da67b4907738866",
+    "20260929001114_receiving_and_engraving_operations.sql": "2e1cdd007da1892699d544bec7e3118dabc697110861d26c4a5a77cf764b4e2d",
+    "20260929001306_align_board_procurement.sql": "963bc44b2f169c4b94921345149f3753d188e2c78999158e2da9ed9f0172f93d",
+    "20260929122500_reconcile_thermo_publications.sql": "69a31ba6b6491e073d64e56a14b3d571cbe1cf527ed7666aec1c850d1558821d",
+    "20260929130000_box_per_mate_and_combo_mapping.sql": "024a0fc3e3cd1e7619448d164589522731762b9325ce2d0d20ff5dc8ba4d9706",
+    "20260929131500_box_for_manual_sales.sql": "f896a9c10a4e3e5b51b68cfe9d1e6db3f47ff612d42d44743ffc483067fbdf1d",
+    "20260929133000_map_premium_personalized_knife_sheath.sql": "2a312346cdd3ec0c36d9cc3b23c2b8e763194685a765c50424ac5e2280c6ad34",
+    "20260929144308_checkout_minorista_preparacion.sql": "7d237713af60851ff18230cc561e6dd1c31737db371d5e1993f321deef61d453",
+    "20260929204150_fix_minorista_checkout_lifecycle.sql": "17981494c569d705acd27bf38052b34f1d4881b371a4a74f1f519934c651c98b",
+    "20260929214717_harden_default_privileges.sql": "2e6c4391ac6f88ad7bf4895e6ec51c759e0db645ea9355f1129258aa49f0f5c5",
+    "20261001003824_micorreo_logistics_snapshots.sql": "00bca3f50c9b0064c21319fa6950f8df44d037249ceba04fffe2d5252d1a4297",
+    "20261001112820_logistics_admin_recovery.sql": "d1e7e6940b7c92551c84f9f022434f8cd1a1bcfbfca5dc67f17ff1c3c2306939"
+  },
+  "historicalSchemaComparison": {
+    "tables": {
+      "referenceCount": 47,
+      "candidateCount": 47,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "columns": {
+      "referenceCount": 302,
+      "candidateCount": 302,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "indexes": {
+      "referenceCount": 106,
+      "candidateCount": 106,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "policies": {
+      "referenceCount": 9,
+      "candidateCount": 9,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "triggers": {
+      "referenceCount": 6,
+      "candidateCount": 6,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "functions": {
+      "referenceCount": 34,
+      "candidateCount": 34,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "sequences": {
+      "referenceCount": 4,
+      "candidateCount": 4,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "constraints": {
+      "referenceCount": 220,
+      "candidateCount": 220,
+      "missing": [],
+      "added": [],
+      "changed": []
+    }
+  },
+  "historyBefore": [
+    {
+      "name": "inventory_admin",
+      "version": "20260908093949",
+      "statementCount": 1
+    },
+    {
+      "name": "inventory_query_aliases",
+      "version": "20260908094715",
+      "statementCount": 1
+    },
+    {
+      "name": "account_roles_sales",
+      "version": "20260908103456",
+      "statementCount": 1
+    },
+    {
+      "name": "account_admin_roles",
+      "version": "20260909001422",
+      "statementCount": 1
+    },
+    {
+      "name": "admin_commercial_dashboard",
+      "version": "20260909234523",
+      "statementCount": 1
+    },
+    {
+      "name": "catalog_import",
+      "version": "20260928161630",
+      "statementCount": 1
+    },
+    {
+      "name": "catalog_reconcile_metadata",
+      "version": "20260928162830",
+      "statementCount": 1
+    },
+    {
+      "name": "ars_variant_checkout",
+      "version": "20260928210655",
+      "statementCount": 1
+    },
+    {
+      "name": "reconcile_camionero_algarrobo",
+      "version": "20260928232220",
+      "statementCount": 1
+    },
+    {
+      "name": "physical_base_reconciliation",
+      "version": "20260929000708",
+      "statementCount": 1
+    },
+    {
+      "name": "on_demand_and_preparation",
+      "version": "20260929001006",
+      "statementCount": 1
+    },
+    {
+      "name": "receiving_and_engraving_operations",
+      "version": "20260929001144",
+      "statementCount": 1
+    },
+    {
+      "name": "align_board_procurement",
+      "version": "20260929001227",
+      "statementCount": 1
+    },
+    {
+      "name": "reconcile_thermo_publications",
+      "version": "20260929004131",
+      "statementCount": 1
+    },
+    {
+      "name": "box_per_mate_and_combo_mapping",
+      "version": "20260929005101",
+      "statementCount": 1
+    },
+    {
+      "name": "box_for_manual_sales",
+      "version": "20260929005232",
+      "statementCount": 1
+    },
+    {
+      "name": "map_premium_personalized_knife_sheath",
+      "version": "20260929020225",
+      "statementCount": 1
+    },
+    {
+      "name": "checkout_minorista_preparacion",
+      "version": "20260929150203",
+      "statementCount": 1
+    }
+  ],
+  "historyAfter": [
+    {
+      "name": "bootstrap_legacy_catalog",
+      "version": "20260907203437",
+      "statementCount": 19
+    },
+    {
+      "name": "commerce",
+      "version": "20260907203438",
+      "statementCount": 48
+    },
+    {
+      "name": "restrict_rls_event_function",
+      "version": "20260907205528",
+      "statementCount": 3
+    },
+    {
+      "name": "inventory_admin",
+      "version": "20260908093541",
+      "statementCount": 29
+    },
+    {
+      "name": "inventory_query_aliases",
+      "version": "20260908094753",
+      "statementCount": 1
+    },
+    {
+      "name": "account_roles_sales",
+      "version": "20260908103049",
+      "statementCount": 34
+    },
+    {
+      "name": "account_admin_roles",
+      "version": "20260909000858",
+      "statementCount": 10
+    },
+    {
+      "name": "admin_commercial_dashboard",
+      "version": "20260909234040",
+      "statementCount": 7
+    },
+    {
+      "name": "catalog_import",
+      "version": "20260928160916",
+      "statementCount": 29
+    },
+    {
+      "name": "catalog_reconcile_metadata",
+      "version": "20260928162849",
+      "statementCount": 1
+    },
+    {
+      "name": "restore_historical_public_catalog",
+      "version": "20260928162850",
+      "statementCount": 3
+    },
+    {
+      "name": "ars_variant_checkout",
+      "version": "20260928210316",
+      "statementCount": 46
+    },
+    {
+      "name": "reconcile_camionero_algarrobo",
+      "version": "20260928232227",
+      "statementCount": 4
+    },
+    {
+      "name": "physical_base_reconciliation",
+      "version": "20260929000621",
+      "statementCount": 21
+    },
+    {
+      "name": "on_demand_and_preparation",
+      "version": "20260929000841",
+      "statementCount": 30
+    },
+    {
+      "name": "receiving_and_engraving_operations",
+      "version": "20260929001114",
+      "statementCount": 14
+    },
+    {
+      "name": "align_board_procurement",
+      "version": "20260929001306",
+      "statementCount": 1
+    },
+    {
+      "name": "reconcile_thermo_publications",
+      "version": "20260929122500",
+      "statementCount": 8
+    },
+    {
+      "name": "box_per_mate_and_combo_mapping",
+      "version": "20260929130000",
+      "statementCount": 22
+    },
+    {
+      "name": "box_for_manual_sales",
+      "version": "20260929131500",
+      "statementCount": 13
+    },
+    {
+      "name": "map_premium_personalized_knife_sheath",
+      "version": "20260929133000",
+      "statementCount": 8
+    },
+    {
+      "name": "checkout_minorista_preparacion",
+      "version": "20260929144308",
+      "statementCount": 29
+    }
+  ],
+  "repairDdl": [],
+  "repairProof": {
+    "schemaUnchanged": true,
+    "objectOidsUnchanged": true,
+    "allApplicationDataDigestsUnchanged": true,
+    "defaultPrivilegesUnchanged": true,
+    "schemaSha256": "3eeaeeb812659017b6e1212073601b8ea2be62e06990e24ce39590a122a0bb5a",
+    "identitySha256": "dec326f42086ce001c92fafb9bcce4122481b2d02d98c2513d96e05aeea4229e",
+    "dataSha256": "422272ef7588f8a7e2a28732430ac38172c1007acb398bdc87c4ad3323a32f4b",
+    "tables": 47
+  },
+  "pendingDryRun": [
+    "20260929204150_fix_minorista_checkout_lifecycle.sql",
+    "20260929214717_harden_default_privileges.sql",
+    "20261001003824_micorreo_logistics_snapshots.sql",
+    "20261001112820_logistics_admin_recovery.sql"
+  ],
+  "historyAfterFailure": [
+    {
+      "name": "bootstrap_legacy_catalog",
+      "version": "20260907203437",
+      "statementCount": 19
+    },
+    {
+      "name": "commerce",
+      "version": "20260907203438",
+      "statementCount": 48
+    },
+    {
+      "name": "restrict_rls_event_function",
+      "version": "20260907205528",
+      "statementCount": 3
+    },
+    {
+      "name": "inventory_admin",
+      "version": "20260908093541",
+      "statementCount": 29
+    },
+    {
+      "name": "inventory_query_aliases",
+      "version": "20260908094753",
+      "statementCount": 1
+    },
+    {
+      "name": "account_roles_sales",
+      "version": "20260908103049",
+      "statementCount": 34
+    },
+    {
+      "name": "account_admin_roles",
+      "version": "20260909000858",
+      "statementCount": 10
+    },
+    {
+      "name": "admin_commercial_dashboard",
+      "version": "20260909234040",
+      "statementCount": 7
+    },
+    {
+      "name": "catalog_import",
+      "version": "20260928160916",
+      "statementCount": 29
+    },
+    {
+      "name": "catalog_reconcile_metadata",
+      "version": "20260928162849",
+      "statementCount": 1
+    },
+    {
+      "name": "restore_historical_public_catalog",
+      "version": "20260928162850",
+      "statementCount": 3
+    },
+    {
+      "name": "ars_variant_checkout",
+      "version": "20260928210316",
+      "statementCount": 46
+    },
+    {
+      "name": "reconcile_camionero_algarrobo",
+      "version": "20260928232227",
+      "statementCount": 4
+    },
+    {
+      "name": "physical_base_reconciliation",
+      "version": "20260929000621",
+      "statementCount": 21
+    },
+    {
+      "name": "on_demand_and_preparation",
+      "version": "20260929000841",
+      "statementCount": 30
+    },
+    {
+      "name": "receiving_and_engraving_operations",
+      "version": "20260929001114",
+      "statementCount": 14
+    },
+    {
+      "name": "align_board_procurement",
+      "version": "20260929001306",
+      "statementCount": 1
+    },
+    {
+      "name": "reconcile_thermo_publications",
+      "version": "20260929122500",
+      "statementCount": 8
+    },
+    {
+      "name": "box_per_mate_and_combo_mapping",
+      "version": "20260929130000",
+      "statementCount": 22
+    },
+    {
+      "name": "box_for_manual_sales",
+      "version": "20260929131500",
+      "statementCount": 13
+    },
+    {
+      "name": "map_premium_personalized_knife_sheath",
+      "version": "20260929133000",
+      "statementCount": 8
+    },
+    {
+      "name": "checkout_minorista_preparacion",
+      "version": "20260929144308",
+      "statementCount": 29
+    },
+    {
+      "name": "fix_minorista_checkout_lifecycle",
+      "version": "20260929204150",
+      "statementCount": 7
+    }
+  ],
+  "failureProof": {
+    "lifecycleRecorded": true,
+    "hardeningNotRecorded": true,
+    "logisticsNotRecorded": true,
+    "legacyAclUnchanged": true,
+    "defaultsUnchanged": true,
+    "dataUnchanged": true
+  },
+  "historyFinal": [
+    {
+      "name": "bootstrap_legacy_catalog",
+      "version": "20260907203437",
+      "statementCount": 19
+    },
+    {
+      "name": "commerce",
+      "version": "20260907203438",
+      "statementCount": 48
+    },
+    {
+      "name": "restrict_rls_event_function",
+      "version": "20260907205528",
+      "statementCount": 3
+    },
+    {
+      "name": "inventory_admin",
+      "version": "20260908093541",
+      "statementCount": 29
+    },
+    {
+      "name": "inventory_query_aliases",
+      "version": "20260908094753",
+      "statementCount": 1
+    },
+    {
+      "name": "account_roles_sales",
+      "version": "20260908103049",
+      "statementCount": 34
+    },
+    {
+      "name": "account_admin_roles",
+      "version": "20260909000858",
+      "statementCount": 10
+    },
+    {
+      "name": "admin_commercial_dashboard",
+      "version": "20260909234040",
+      "statementCount": 7
+    },
+    {
+      "name": "catalog_import",
+      "version": "20260928160916",
+      "statementCount": 29
+    },
+    {
+      "name": "catalog_reconcile_metadata",
+      "version": "20260928162849",
+      "statementCount": 1
+    },
+    {
+      "name": "restore_historical_public_catalog",
+      "version": "20260928162850",
+      "statementCount": 3
+    },
+    {
+      "name": "ars_variant_checkout",
+      "version": "20260928210316",
+      "statementCount": 46
+    },
+    {
+      "name": "reconcile_camionero_algarrobo",
+      "version": "20260928232227",
+      "statementCount": 4
+    },
+    {
+      "name": "physical_base_reconciliation",
+      "version": "20260929000621",
+      "statementCount": 21
+    },
+    {
+      "name": "on_demand_and_preparation",
+      "version": "20260929000841",
+      "statementCount": 30
+    },
+    {
+      "name": "receiving_and_engraving_operations",
+      "version": "20260929001114",
+      "statementCount": 14
+    },
+    {
+      "name": "align_board_procurement",
+      "version": "20260929001306",
+      "statementCount": 1
+    },
+    {
+      "name": "reconcile_thermo_publications",
+      "version": "20260929122500",
+      "statementCount": 8
+    },
+    {
+      "name": "box_per_mate_and_combo_mapping",
+      "version": "20260929130000",
+      "statementCount": 22
+    },
+    {
+      "name": "box_for_manual_sales",
+      "version": "20260929131500",
+      "statementCount": 13
+    },
+    {
+      "name": "map_premium_personalized_knife_sheath",
+      "version": "20260929133000",
+      "statementCount": 8
+    },
+    {
+      "name": "checkout_minorista_preparacion",
+      "version": "20260929144308",
+      "statementCount": 29
+    },
+    {
+      "name": "fix_minorista_checkout_lifecycle",
+      "version": "20260929204150",
+      "statementCount": 7
+    },
+    {
+      "name": "harden_default_privileges",
+      "version": "20260929214717",
+      "statementCount": 6
+    },
+    {
+      "name": "micorreo_logistics_snapshots",
+      "version": "20261001003824",
+      "statementCount": 31
+    },
+    {
+      "name": "logistics_admin_recovery",
+      "version": "20261001112820",
+      "statementCount": 12
+    }
+  ],
+  "migrationDdl": [
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "rehearsal_audit",
+          "identity": "rehearsal_audit.fail_hardening()"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_checkout_catalogo(pg_catalog.text,pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_validar_transicion_pedido()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "pedido_validar_transicion on public.pedido"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_confirmar_pago(pg_catalog.uuid,pg_catalog.text,numeric,pg_catalog.text)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_confirmar_transferencia(pg_catalog.uuid,pg_catalog.uuid,pg_catalog.text)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_checkout_minorista(pg_catalog.text,pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "DROP FUNCTION",
+      "objects": []
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "SEQUENCE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "ALTER DEFAULT PRIVILEGES",
+      "objects": [
+        {
+          "type": "TABLES",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "ALTER DEFAULT PRIVILEGES",
+      "objects": [
+        {
+          "type": "SEQUENCES",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "ALTER DEFAULT PRIVILEGES",
+      "objects": [
+        {
+          "type": "FUNCTIONS",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "ALTER DEFAULT PRIVILEGES",
+      "objects": [
+        {
+          "type": "FUNCTIONS",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "public",
+          "identity": "public.checkout_cotizacion_envio"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "public",
+          "identity": "public.pedido"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "public",
+          "identity": "public.envio"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_bulto"
+        },
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_bulto_pkey"
+        },
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_bulto_ext_order_id_key"
+        },
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_bulto"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_importacion_intento"
+        },
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_importacion_intento_pkey"
+        },
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_importacion_intento"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_bulto"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_importacion_intento"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_shipping_fingerprint(pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "ALTER FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_checkout_minorista_v1(pg_catalog.text,pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_checkout_minorista_v1(pg_catalog.text,pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_checkout_minorista(pg_catalog.text,pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_logistics_immutable()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "envio_snapshot_immutable on public.envio"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_order_quote_immutable()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "pedido_quote_immutable on public.pedido"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_quote_immutable()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "quote_immutable on public.checkout_cotizacion_envio"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_logistics_paid()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "pedido_logistics_paid on public.pedido"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_claim_shipment(pg_catalog.text)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_finish_shipment(pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_accion_admin"
+        },
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_accion_admin_pkey"
+        },
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_accion_admin"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE INDEX",
+      "objects": [
+        {
+          "type": "index",
+          "schema": "private",
+          "identity": "private.envio_accion_admin_bulto"
+        }
+      ]
+    },
+    {
+      "tag": "ALTER TABLE",
+      "objects": [
+        {
+          "type": "table",
+          "schema": "private",
+          "identity": "private.envio_accion_admin"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "TABLE",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_logistics_audit_immutable()"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE TRIGGER",
+      "objects": [
+        {
+          "type": "trigger",
+          "schema": null,
+          "identity": "envio_admin_audit_immutable on private.envio_accion_admin"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "private",
+          "identity": "private.mb_logistics_refresh(pg_catalog.uuid)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_finish_shipment(pg_catalog.uuid,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "CREATE FUNCTION",
+      "objects": [
+        {
+          "type": "function",
+          "schema": "public",
+          "identity": "public.mb_logistics_admin(pg_catalog.uuid,pg_catalog.text,pg_catalog.jsonb)"
+        }
+      ]
+    },
+    {
+      "tag": "REVOKE",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    },
+    {
+      "tag": "GRANT",
+      "objects": [
+        {
+          "type": "FUNCTION",
+          "schema": null,
+          "identity": null
+        }
+      ]
+    }
+  ],
+  "finalSchemaComparison": {
+    "tables": {
+      "referenceCount": 50,
+      "candidateCount": 50,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "columns": {
+      "referenceCount": 341,
+      "candidateCount": 341,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "indexes": {
+      "referenceCount": 111,
+      "candidateCount": 111,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "policies": {
+      "referenceCount": 9,
+      "candidateCount": 9,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "triggers": {
+      "referenceCount": 12,
+      "candidateCount": 12,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "functions": {
+      "referenceCount": 46,
+      "candidateCount": 46,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "sequences": {
+      "referenceCount": 4,
+      "candidateCount": 4,
+      "missing": [],
+      "added": [],
+      "changed": []
+    },
+    "constraints": {
+      "referenceCount": 234,
+      "candidateCount": 234,
+      "missing": [],
+      "added": [],
+      "changed": []
+    }
+  },
+  "finalProof": {
+    "schemaConverges": true,
+    "defaultPrivilegesConverge": true,
+    "counts": {
+      "tables": 50,
+      "columns": 341,
+      "indexes": 111,
+      "policies": 9,
+      "triggers": 12,
+      "functions": 46,
+      "sequences": 4,
+      "constraints": 234
+    },
+    "platformAdminDefaultsUnchanged": true,
+    "migrationFilesUnchanged": true
+  },
+  "localStackStopped": true
+}

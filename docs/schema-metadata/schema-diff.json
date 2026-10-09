@@ -1,0 +1,125 @@
+{
+  "tables": {
+    "remoteCount": 47,
+    "localCount": 47,
+    "missing": [],
+    "added": [],
+    "changed": [
+      {
+        "key": "public.combo",
+        "fields": [
+          "acl"
+        ]
+      },
+      {
+        "key": "public.combo_item",
+        "fields": [
+          "acl"
+        ]
+      },
+      {
+        "key": "public.producto",
+        "fields": [
+          "acl"
+        ]
+      }
+    ]
+  },
+  "columns": {
+    "remoteCount": 302,
+    "localCount": 302,
+    "missing": [],
+    "added": [],
+    "changed": []
+  },
+  "indexes": {
+    "remoteCount": 106,
+    "localCount": 106,
+    "missing": [],
+    "added": [],
+    "changed": []
+  },
+  "policies": {
+    "remoteCount": 9,
+    "localCount": 9,
+    "missing": [],
+    "added": [],
+    "changed": []
+  },
+  "triggers": {
+    "remoteCount": 6,
+    "localCount": 7,
+    "missing": [],
+    "added": [
+      "public.pedido.pedido_validar_transicion"
+    ],
+    "changed": []
+  },
+  "functions": {
+    "remoteCount": 34,
+    "localCount": 35,
+    "missing": [],
+    "added": [
+      "public.mb_validar_transicion_pedido"
+    ],
+    "changed": [
+      {
+        "key": "public.mb_checkout_catalogo.p_token_hash text, p_usuario_id uuid, p_datos jsonb",
+        "fields": [
+          "definition"
+        ]
+      },
+      {
+        "key": "public.mb_checkout_minorista.p_token_hash text, p_usuario_id uuid, p_datos jsonb",
+        "fields": [
+          "definition"
+        ]
+      },
+      {
+        "key": "public.mb_confirmar_pago.p_pago_id uuid, p_referencia text, p_importe numeric, p_moneda text",
+        "fields": [
+          "definition"
+        ]
+      },
+      {
+        "key": "public.mb_confirmar_transferencia.p_actor_id uuid, p_pedido_id uuid, p_referencia text",
+        "fields": [
+          "definition"
+        ]
+      }
+    ]
+  },
+  "sequences": {
+    "remoteCount": 4,
+    "localCount": 4,
+    "missing": [],
+    "added": [],
+    "changed": [
+      {
+        "key": "public.catalogo_categoria_id_seq",
+        "fields": [
+          "acl"
+        ]
+      },
+      {
+        "key": "public.catalogo_variante_id_seq",
+        "fields": [
+          "acl"
+        ]
+      },
+      {
+        "key": "public.producto_id_producto_seq",
+        "fields": [
+          "acl"
+        ]
+      }
+    ]
+  },
+  "constraints": {
+    "remoteCount": 220,
+    "localCount": 220,
+    "missing": [],
+    "added": [],
+    "changed": []
+  }
+}

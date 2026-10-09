@@ -1,11 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&display=swap');
-/* Account and cart intentionally have no navigation header. */
+@import url('./fonts.css');
+/* Shared public branding also covers account, cart and authentication pages. */
 :root{--mb-heading:'Geist',sans-serif;--mb-body:'Inter',sans-serif;--mb-logo:#d8c3a5}
 .mb-site-brand{display:inline-flex;align-items:center;gap:0;color:var(--mb-logo);text-decoration:none;flex-shrink:0;font-family:var(--mb-heading)}
 .mb-site-brand img{width:48px;height:48px;object-fit:contain;filter:sepia(.3) saturate(.8) hue-rotate(350deg) brightness(1.1)}
 .mb-site-brand>span{font:400 36px/40px var(--mb-heading);letter-spacing:-1.8px;white-space:nowrap}
 .mb-site-brand sup{font-size:.6em;position:relative;top:-.5em;vertical-align:baseline;line-height:0;margin-left:2px;letter-spacing:0}
 .mb-page-brand{margin:28px 0 8px}.mb-site-brand:hover{color:var(--mb-logo)}
+.mb-site-brand{min-height:44px}.mb-site-brand:focus-visible{outline:2px solid var(--mb-logo);outline-offset:4px;border-radius:4px}
+.mb-brand-link{min-height:44px}.mb-brand-link:focus-visible{outline:2px solid var(--mb-logo);outline-offset:4px;border-radius:4px}
+.mb-site-brand img,.mb-brand-link img{filter:drop-shadow(0 0 0 var(--mb-logo)) drop-shadow(0 0 0 var(--mb-logo))}
 .mb-footer-brand>span{font-size:23px;line-height:28px;letter-spacing:-1.1px}.mb-footer-brand img{width:30px;height:30px}
 body[data-brand-shell]{font-family:var(--mb-body)}
 .commerce-sections{display:flex;gap:26px;align-items:center;padding:18px 0 0;font:500 12px/20px var(--mb-heading);color:var(--muted)}

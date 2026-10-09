@@ -1,11 +1,15 @@
 -- Run only in a fresh disposable local PostgreSQL database as superuser.
 \set ON_ERROR_STOP on
 begin;
-create role anon nologin;
-create role authenticated nologin;
-create role service_role nologin;
-create role supabase_admin nologin;
-grant create on schema public to supabase_admin;
+do $$ declare role_name text; begin
+ foreach role_name in array array['anon','authenticated','service_role','supabase_admin'] loop
+  if not exists(select 1 from pg_roles where rolname=role_name) then
+   execute format('create role %I nologin',role_name);
+  end if;
+ end loop;
+end $$;
+grant create on schema public to supabase_admin,postgres;
+set local role postgres;
 create table public.producto (id integer);
 create table public.combo (id integer);
 create table public.combo_item (id integer);
@@ -17,13 +21,19 @@ grant all on all sequences in schema public to anon, authenticated, service_role
 alter default privileges for role postgres in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges for role postgres in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges for role postgres in schema public grant execute on functions to anon, authenticated, service_role;
+reset role;
 alter default privileges for role supabase_admin in schema public grant all on tables to anon, authenticated, service_role;
 alter default privileges for role supabase_admin in schema public grant all on sequences to anon, authenticated, service_role;
 alter default privileges for role supabase_admin in schema public grant execute on functions to anon, authenticated, service_role;
 \ir ../supabase/migrations/20260929214717_harden_default_privileges.sql
+-- Exercise the separate operator-only policy with this disposable superuser;
+-- application migrations must not require that platform capability.
+\ir ../supabase/platform/harden-admin-defaults.sql
+set local role postgres;
 create table public.future_table (id integer);
 create sequence public.future_sequence;
 create function public.future_function() returns integer language sql as 'select 1';
+reset role;
 set role supabase_admin;
 create table public.future_admin_table (id integer);
 create sequence public.future_admin_sequence;

@@ -18,6 +18,12 @@ export function createMockShipping({ originPostalCode = '7000' } = {}) {
         carrierCost: 8500, validTo: new Date(Date.now() + 15 * 60_000).toISOString(),
         estimatedDeliveryDays: 4, originPostalCode, mock: true }];
     },
-    async agencies() { return []; },
+    async agencies(provinceCode) {
+      if(!/^[ABCDEFGHJKLMNPQRSTUVWXYZ]$/.test(provinceCode))throw Error('Provincia mock inválida');
+      return [{code:`MOCK${provinceCode}01`,name:`Sucursal ficticia ${provinceCode} · solo pruebas`,status:'ACTIVE',
+        services:{pickupAvailability:true},location:{address:{provinceCode,postalCode:provinceCode==='B'?'7001':'5001',
+          city:'Ciudad ficticia',streetName:'Dirección ficticia',streetNumber:'1'}}}];
+    },
+    async importShipment() { return {createdAt:new Date().toISOString()}; },
   };
 }

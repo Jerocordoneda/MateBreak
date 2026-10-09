@@ -1,0 +1,37 @@
+# Template only: importing a Blueprint creates services/first deploy. Approval required.
+services:
+  - type: web
+    name: matebreak-api-staging
+    runtime: node
+    branch: codex/staging-preparation
+    region: oregon
+    plan: free
+    autoDeployTrigger: off
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: APP_ENV
+        value: staging
+      - key: NODE_ENV
+        value: development
+      - key: SHIPPING_MODE
+        value: mock
+      - key: PAYMENTS_MODE
+        value: mock
+      - key: MATEBREAK_STAGING_PERSIST_MOCK
+        value: '1'
+      - key: MOCK_PAYMENT_RESULT
+        value: approved
+      - key: APP_ORIGIN
+        sync: false
+      - key: SUPABASE_URL
+        value: https://rxccjczyywhewqqdfgxm.supabase.co
+      - key: SUPABASE_STAGING_PROJECT_REF
+        value: rxccjczyywhewqqdfgxm
+      - key: SUPABASE_PUBLISHABLE_KEY
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false

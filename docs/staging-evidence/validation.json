@@ -1,0 +1,23 @@
+{
+  "codeCommit": "f79c890",
+  "node": {
+    "passed": 162,
+    "failed": 0
+  },
+  "fullLocalSuite": {
+    "passed": true,
+    "nodeCasesAtExecution": 161,
+    "historicalSql": 18,
+    "concurrency": 20,
+    "minoristaLifecycle": 9
+  },
+  "fixtureGuardAndRollback": true,
+  "externalFunctionalTests": "PENDING",
+  "baselineRehearsal": "previous approved evidence preserved; no remote adoption",
+  "dependencyVulnerabilities": 0,
+  "migrationHashesUnchanged": 26,
+  "localSupabaseStopped": true,
+  "mergePerformed": false,
+  "remoteWrites": false,
+  "deployed": false
+}

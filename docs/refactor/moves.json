@@ -1,0 +1,17 @@
+{
+  "src/js/account.js": "src/features/account/account.js",
+  "src/js/account-admin.js": "src/features/account/account-admin.js",
+  "src/js/account-orders.js": "src/features/account/account-orders.js",
+  "src/js/account-team.js": "src/features/account/account-team.js",
+  "src/js/account-data.js": "src/features/account/account-data.js",
+  "src/js/sales.js": "src/features/account/sales.js",
+  "src/js/catalog-pages.js": "src/features/catalog/catalog-pages.js",
+  "src/js/catalog-ui.js": "src/features/catalog/catalog-ui.js",
+  "src/js/product-detail.js": "src/features/catalog/product-detail.js",
+  "src/js/checkout.js": "src/features/checkout/checkout.js",
+  "src/js/checkout-result.js": "src/features/checkout/checkout-result.js",
+  "src/js/commerce.js": "src/features/cart/commerce.js",
+  "server/account.mjs": "server/modules/account/routes.mjs",
+  "server/inventory.mjs": "server/modules/inventory/routes.mjs",
+  "server/catalog.mjs": "server/modules/catalog/routes.mjs"
+}

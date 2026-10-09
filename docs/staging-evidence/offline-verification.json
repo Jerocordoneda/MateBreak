@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-01T14:25:48.058Z",
+  "migrationHashesMatched": 26,
+  "buildNegativeCases": [
+    {
+      "origin": "",
+      "accepted": false
+    },
+    {
+      "origin": "http://backend.example.invalid",
+      "accepted": false
+    },
+    {
+      "origin": "https://backend.example.invalid/path",
+      "accepted": false
+    }
+  ],
+  "buildHttpsAccepted": true,
+  "gitDeployDisabled": true,
+  "syntaxFiles": 116,
+  "externalActions": false
+}

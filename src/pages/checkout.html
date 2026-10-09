@@ -7,20 +7,20 @@
   <link rel="stylesheet" href="/src/css/commerce.css">
   <link rel="stylesheet" href="/src/css/site-brand.css">
   <link rel="stylesheet" href="/src/css/checkout.css">
-  <script type="module" src="/src/js/checkout.js"></script>
-  <script type="module" src="/src/js/header-account.js"></script>
-</head>
+  <script type="module" src="/src/features/checkout/checkout.js"></script>
+
+<link rel="stylesheet" href="/src/css/header-account.css"><script type="module" src="/src/js/header-account.js"></script><link rel="stylesheet" href="/src/css/responsive.css">
+<link rel="icon" type="image/png" href="/src/assets/email/matebreak-logo.png"></head>
 <body data-brand-shell="commerce">
   <a class="skip-link" href="#checkout-main">Saltar al checkout</a>
   <main id="checkout-main" class="checkout-page">
-    <a data-page-brand class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio">MateBreak<sup>®</sup></a>
-    <nav class="commerce-sections" aria-label="Mi compra"><a href="/tienda">Catálogo</a><a href="/carrito">Carrito</a><span aria-current="step">Checkout</span></nav>
-    <header class="checkout-heading"><p class="eyebrow">TU PRÓXIMA PAUSA</p><h1>Finalizar compra<span class="accent">.</span></h1><p>Revisá tus datos antes de confirmar el pedido.</p><p id="test-mode" class="test-mode" hidden>Modo de prueba · no se cobra ni se reserva stock</p></header>
+    <a data-page-brand="" class="mb-site-brand mb-page-brand" href="/" aria-label="MateBreak, inicio"><img src="/src/assets/email/matebreak-logo.png" alt="" width="48" height="48"><span>MateBreak<sup>®</sup></span></a>
+    <nav class="commerce-sections mb-header-actions" aria-label="Mi compra"><a href="/podcast" class="mb-podcast-link" aria-label="Podcast de MateBreak"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"></path></svg><span>Podcast</span></a><a href="/tienda">Catálogo</a><a href="/carrito" class="mb-cart-link" data-cart-link="" aria-label="Mi carrito, 0 unidades"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h2l2.5 12h11L21 6H6 M10 20h.01 M18 20h.01"></path></svg><span class="mb-cart-count" data-cart-badge="" aria-hidden="true">0</span></a><span aria-current="step">Checkout</span><a href="/mi-cuenta" class="mb-account-link" data-account-link="" aria-label="Mi cuenta"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0ZM4 21v-2a8 8 0 0 1 16 0v2"></path></svg><span>Mi cuenta</span></a></nav>
+    <header class="checkout-heading"><p class="eyebrow">TU PRÓXIMA PAUSA</p><h1>Finalizar compra<span class="accent">.</span></h1><p>Revisá tus datos antes de confirmar el pedido.</p><p id="test-mode" class="test-mode" hidden>Prueba de Staging · sin cobros ni despachos reales</p></header>
     <ol class="checkout-steps"><li>Carrito <span aria-hidden="true">✓</span></li><li id="step-delivery" aria-current="step">Entrega</li><li id="step-payment">Pago</li></ol>
     <p id="checkout-error" class="checkout-error" role="alert" hidden></p>
     <div class="checkout-layout">
       <div class="checkout-flow">
-        <section id="login-panel" class="checkout-card" hidden><h2>Ingresá para continuar</h2><p>Tu selección se conserva al iniciar sesión.</p><form id="checkout-login"><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Contraseña<input name="password" type="password" autocomplete="current-password" required></label><button class="button-primary">Ingresar</button></form><a href="/mi-cuenta">Crear una cuenta</a></section>
         <section id="delivery-panel" class="checkout-card"><div class="card-heading"><span class="step-number">01</span><div><p class="eyebrow">ENTREGA</p><h2>Datos del destinatario</h2></div></div>
           <form id="recipient-form">
             <div class="field-grid">
@@ -29,7 +29,7 @@
               <label>Email<input name="email" type="email" autocomplete="email" required maxlength="254"></label>
               <label>Teléfono<input name="telefono" type="tel" autocomplete="tel" required minlength="7" maxlength="30"></label>
               <label>Código postal<input name="codigo_postal" autocomplete="postal-code" required minlength="4" maxlength="12"></label>
-              <label>Provincia<input name="provincia" autocomplete="address-level1" required minlength="2" maxlength="100"></label>
+              <label>Provincia<select name="provincia" autocomplete="address-level1" required disabled><option value="">Cargando provincias…</option></select></label>
               <label>Localidad o ciudad<input name="ciudad" autocomplete="address-level2" required minlength="2" maxlength="100"></label>
               <label>Calle<input name="calle" autocomplete="address-line1" required minlength="2" maxlength="150"></label>
               <label>Número<input name="numero" required maxlength="20"></label>
@@ -38,6 +38,8 @@
               <label class="field-wide">Referencia <span class="optional">opcional</span><input name="referencia" maxlength="300"></label>
             </div>
             <div class="delivery-choice"><h3>¿Cómo querés recibirlo?</h3><div id="delivery-options" class="choice-list"></div><p id="shipping-unavailable" class="muted" hidden>Correo Argentino quedará habilitado cuando MateBreak conecte y pruebe su cuenta. No mostramos tarifas estimadas.</p></div>
+            <div id="manual-quote" hidden><p>Este pedido requiere revisar el embalaje para conseguir un envío compacto. Tu carrito sigue guardado. Completá tus datos, descargá la solicitud y compartila con MateBreak por el canal de atención habitual. El presupuesto final se acuerda antes de pagar.</p><button type="button" id="download-manual-quote" class="button-secondary">Descargar solicitud de cotización</button><p>La solicitud contiene tus datos de entrega. No confirma un pedido ni reserva stock.</p></div>
+              <div id="pickup-selection" hidden><label>Provincia de la sucursal<select id="pickup-province"><option value="">Elegí una provincia</option></select></label><label>Sucursal<select id="pickup-agency" disabled><option value="">Elegí una provincia primero</option></select></label><p id="pickup-address"></p></div>
             <button id="continue-payment" class="button-primary">Continuar a pago →</button>
           </form>
         </section>
@@ -49,7 +51,7 @@
           <p class="muted">El total y la disponibilidad se vuelven a verificar en el servidor.</p>
         </section>
       </div>
-      <aside class="checkout-card checkout-order"><h2>Tu pedido</h2><div id="order-items"></div><div class="shipping-progress"><p id="shipping-message"></p><progress id="shipping-progress" max="80000" value="0" aria-label="Progreso hacia el envío gratis"></progress></div><div class="price-row"><span>Productos</span><strong id="merchandise-subtotal">—</strong></div><div class="price-row"><span>Descuento</span><strong id="discount">—</strong></div><div class="price-row"><span>Envío</span><strong id="shipping-cost">A seleccionar</strong></div><div class="summary-total"><span>Total</span><strong id="order-total">—</strong></div></aside>
+      <aside class="checkout-card checkout-order"><h2>Tu pedido</h2><div id="order-items"></div><div class="shipping-progress"><p id="shipping-message"></p><progress id="shipping-progress" max="80000" value="0" aria-label="Progreso hacia el envío gratis"></progress></div><div class="price-row"><span>Productos</span><strong id="merchandise-subtotal">—</strong></div><div class="price-row"><span>Promoción por 2+ mates</span><strong id="promotion-discount">—</strong></div><div class="price-row"><span>Descuento por transferencia</span><strong id="discount">—</strong></div><div class="price-row"><span>Envío</span><strong id="shipping-cost">A seleccionar</strong></div><div class="summary-total"><span>Total</span><strong id="order-total">—</strong></div></aside>
     </div>
   </main>
   <footer class="site-footer"><a href="/">MateBreak®</a><span>Una buena pausa cambia el día.</span></footer>

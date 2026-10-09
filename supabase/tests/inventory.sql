@@ -64,7 +64,9 @@ end $$;
 reset role;
 set local role authenticated;
 do $$ begin
- if has_schema_privilege(current_user,'private','usage') or has_table_privilege(current_user,'public.producto_simple','select') or has_function_privilege(current_user,'public.mb_inventario(uuid,text,jsonb)','execute') or has_function_privilege(current_user,'public.mb_inventario_autorizado(uuid)','execute') then raise exception 'FAIL public access'; end if;
+ -- Live-session RLS deliberately grants schema USAGE for its narrow helper;
+ -- it does not grant private table access or the inventory service functions.
+ if not has_function_privilege(current_user,'private.mb_current_session_live()','execute') or has_table_privilege(current_user,'private.equipo_inventario','select') or has_table_privilege(current_user,'private.security_rate_bucket','select') or has_table_privilege(current_user,'public.producto_simple','select') or has_function_privilege(current_user,'public.mb_inventario(uuid,text,jsonb)','execute') or has_function_privilege(current_user,'public.mb_inventario_autorizado(uuid)','execute') then raise exception 'FAIL public access'; end if;
 end $$;
 reset role;
 rollback;

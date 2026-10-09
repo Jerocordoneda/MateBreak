@@ -20,8 +20,10 @@ begin
  exception when raise_exception then if sqlerrm<>'Selecciona una variante del producto' then raise; end if; end;
  begin
   perform public.mb_comercio(token,null,'checkout','{}');
-  raise exception 'Guest checkout accepted';
- exception when raise_exception then if sqlerrm<>'Inicia sesion' then raise; end if; end;
+  raise exception 'Guest checkout without idempotency accepted';
+ -- Guest checkout is now approved; its required request identity is still
+ -- authoritative. Complete anonymous checkout is covered by test-guest-sql.
+ exception when raise_exception then if sqlerrm<>'Falta idempotencia' then raise; end if; end;
  result:=public.mb_comercio(token,null,'variante',jsonb_build_object('variante_id',v.id,'cantidad',0));
  if jsonb_array_length(result->'items')<>0 then raise exception 'Removal failed'; end if;
  if (select sum(stock) from public.producto_simple)<>stock_before then raise exception 'Stock changed'; end if;

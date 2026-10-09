@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {dateTime,filterRecords,saleTotals} from '../src/js/account-data.js';
+import {dateTime,filterRecords,saleTotals} from '../src/features/account/account-data.js';
 import {brandLogo,brandMarkup} from '../src/js/site-brand.js';
 test('account and cart have the home logo but no navigation header',async()=>{
  const home=await readFile(new URL('../index.html',import.meta.url),'utf8');assert.ok(home.includes(brandLogo));assert.match(home,/<header\b/);

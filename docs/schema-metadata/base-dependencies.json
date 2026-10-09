@@ -1,0 +1,335 @@
+{
+  "enums": null,
+  "tables": [
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "producto",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "checkout_cotizacion_envio",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "confirmacion_transferencia",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pago_webhook_auditoria",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "mercadopago_intento",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "venta_manual_item",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "venta_manual_evento",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "venta_manual",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "carrito",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "carrito_item",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "metodo_pago",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "metodo_envio",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pedido_stock",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "movimiento_stock",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "perfil",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "direccion",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "envio",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "combo",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "combo_item",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pago",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pedido",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pedido_item",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "equipo_inventario",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "inventario_ficha",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "inventario_ajuste",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "producto_simple",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "equipo_vendedores",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "email_contacto",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "cambio_rol",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_producto",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_categoria",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_producto_categoria",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_opcion",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_variante_componente",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_variante",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_asset",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_imagen",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_promocion",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_componente",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_revision",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "carrito_variante",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "catalogo_variante_mapeo",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pedido_abastecimiento",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "pedido_preparacion",
+      "schema": "public"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "inventario_recepcion",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "preparacion_evento",
+      "schema": "private"
+    },
+    {
+      "rls": true,
+      "kind": "r",
+      "name": "venta_manual_empaque",
+      "schema": "private"
+    }
+  ],
+  "sequences": [
+    {
+      "acl": [
+        "postgres=rwU/postgres",
+        "anon=rwU/postgres",
+        "authenticated=rwU/postgres",
+        "service_role=rwU/postgres"
+      ],
+      "max": "9223372036854775807",
+      "min": 1,
+      "name": "producto_id_producto_seq",
+      "type": "bigint",
+      "cache": 1,
+      "cycle": false,
+      "owner": "postgres",
+      "start": 1,
+      "increment": 1,
+      "owned_table": "producto",
+      "owned_column": "id_producto"
+    }
+  ],
+  "extensions": [
+    {
+      "name": "plpgsql",
+      "schema": "pg_catalog",
+      "version": "1.0"
+    },
+    {
+      "name": "pg_stat_statements",
+      "schema": "extensions",
+      "version": "1.11"
+    },
+    {
+      "name": "uuid-ossp",
+      "schema": "extensions",
+      "version": "1.1"
+    },
+    {
+      "name": "pgcrypto",
+      "schema": "extensions",
+      "version": "1.3"
+    },
+    {
+      "name": "supabase_vault",
+      "schema": "vault",
+      "version": "0.3.1"
+    }
+  ]
+}

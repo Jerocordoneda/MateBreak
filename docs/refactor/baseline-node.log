@@ -1,0 +1,203 @@
+
+> test
+> node --test tests/*.test.mjs
+
+(node:21612) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Administrator/.codex/worktrees/modular-refactor/MateBreak/src/js/account-data.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\Administrator\.codex\worktrees\modular-refactor\MateBreak\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ account and cart have the home logo but no navigation header (6.9464ms)
+✔ account and commerce styles share Geist and Inter, without old fonts (2.7926ms)
+✔ record filters handle accents and combine text with state (0.5221ms)
+✔ seller totals use cents and count reserved pieces only for pending sales (0.8979ms)
+✔ missing or malformed dates never show Invalid Date (26.6272ms)
+✔ home cart count does not create or replace a guest cookie (107.7817ms)
+✔ cart count uses cookie hash and verified user, never query identity (40.3199ms)
+✔ customer cannot grant seller role using editable metadata (56.7712ms)
+✔ seller sees own sales but cannot read inventory or change roles (36.8868ms)
+✔ sales submission validates and ignores browser totals and identity (70.0873ms)
+✔ baseline rehearsal refuses remote CLI arguments before consulting Docker (208.3ms)
+✔ baseline rehearsal refuses provider credentials before consulting Docker (209.987ms)
+✔ baseline rehearsal refuses inherited Supabase keys before consulting Docker (209.9971ms)
+✔ baseline rehearsal refuses a remote Supabase endpoint before consulting Docker (176.381ms)
+✔ variant cart accepts only the selected variant, quantity and bounded customization (195.7417ms)
+✔ extracts visible price rather than inconsistent JSON-LD; keeps unknown stock null (33.6986ms)
+✔ missing price never becomes zero; variant data is parsed without executing scripts (0.7699ms)
+✔ listing deduplicates products and exposes expected pagination count (1.7136ms)
+✔ free shipping uses pre-payment merchandise subtotal at and above ARS 80,000 (3.2469ms)
+✔ recipient fields are validated and browser-only amounts are discarded (1.2475ms)
+✔ MiCorreo adapter sends documented postal and measured parcel fields (4.0521ms)
+✔ MiCorreo lists pickup agencies using the documented response shape (1.0693ms)
+✔ Mercado Pago requires explicit enablement and signs webhook with the official manifest (4.7105ms)
+✔ catalog and cart are separate pages, and product cards open product details (0.9731ms)
+✔ Comprar ahora uses a separate HttpOnly cart credential and preserves ordinary cart (179.7196ms)
+✔ online payment preference receives only the persisted server-side order total (26.345ms)
+✔ retry of pagado order never starts another real payment (14.5483ms)
+✔ retry of cancelado order never starts another real payment (12.6654ms)
+✔ retry of expirado order never starts another real payment (13.6222ms)
+✔ expired pending reservation cannot start a real payment preference (16.6438ms)
+{"kind":"security","type":"INVALID_WEBHOOK_SIGNATURE","request_id":"f1f081e5-b0ba-4052-b320-7df5cd5beb3b","route":"/api/pagos/mercadopago/webhook","status":401}
+✔ signed Mercado Pago webhook rechecks payment with provider and retries idempotently (35.8632ms)
+✔ Mercado Pago rejected releases the order through the existing cancellation RPC (15.3607ms)
+✔ Mercado Pago cancelled releases the order through the existing cancellation RPC (11.7908ms)
+✔ anonymous inventory access is denied including HTML and private scripts (185.8655ms)
+✔ customer metadata cannot grant inventory privileges (57.7579ms)
+{"kind":"security","type":"SERVER_ERROR","request_id":"47d3809c-d5f3-46ce-8b8b-bbb103abe2ac","route":"/api/admin/inventario","status":503}
+✔ membership verification fails closed (12.1474ms)
+✖ team can access protected UI without caching or external scripts (13.2938ms)
+✔ adjustments use only verified identity and allowlisted validated fields (128.0831ms)
+{"kind":"security","type":"ORIGIN_DENIED","request_id":"85a9a0e5-21c5-410e-8504-7566754f9020","route":"/api/admin/inventario/:id/ajustes","status":403}
+✔ inventory rejects cross-site changes before authorization or data access (15.2096ms)
+✔ receipts and preparation use verified team identity and validated fields (151.745ms)
+✔ persisted mock checkout fails closed outside local Supabase and mock providers (4.2289ms)
+✔ local Supabase guard accepts only loopback URLs on known local ports (2.6633ms)
+✔ destructive local tests reject remote URLs and inherited secrets before connecting (15.943ms)
+✔ logistics API and private assets require verified database admin role (293.7124ms)
+✖ logistics private UI is uncached and has restricted CSP (21.1533ms)
+✔ logistics actions use verified actor, allowlist, explicit proof and canonical date (149.0227ms)
+{"kind":"security","type":"ORIGIN_DENIED","request_id":"f9dd0343-5604-4d23-b739-63ab3b478e6e","route":"/api/admin/logistica/:id/:id/acciones","status":403}
+✔ logistics rejects cross-origin actions and hides database/provider error details (41.5306ms)
+✔ MiCorreo Basic/Bearer and fixed host: test (4.963ms)
+✔ MiCorreo Basic/Bearer and fixed host: production (0.7666ms)
+✔ authentication does not need customerId or origin; 20 requests share one token and cache (0.9473ms)
+✔ JWT cache expires and renews; separate instances never share tokens (0.8469ms)
+✔ JWT without usable exp is not cached (0.6709ms)
+✔ rates rejects ambiguous price null (1.3927ms)
+✔ rates rejects ambiguous price  (0.4899ms)
+✔ rates rejects ambiguous price false (0.3185ms)
+✔ rates rejects ambiguous price true (0.4955ms)
+✔ rates rejects ambiguous price undefined (0.803ms)
+✔ rates rejects ambiguous price NaN (0.3192ms)
+✔ rates rejects ambiguous price Infinity (0.2965ms)
+✔ rates rejects ambiguous price -1 (0.502ms)
+✔ rates rejects ambiguous price abc (0.4548ms)
+✔ rates rejects ambiguous price  1  (0.3889ms)
+✔ rates rejects ambiguous price 0x10 (0.235ms)
+✔ rates rejects ambiguous price 1e3 (0.2611ms)
+✔ rates rejects ambiguous price  (0.276ms)
+✔ rates rejects ambiguous price [object Object] (0.2638ms)
+✔ rates accepts explicit finite numeric price 0 (0.4128ms)
+✔ rates accepts explicit finite numeric price 0 (0.2198ms)
+✔ rates accepts explicit finite numeric price 12.5 (0.224ms)
+✔ rates accepts explicit finite numeric price 12.50 (0.1696ms)
+✔ rates rejects invalid expiry bad (0.9069ms)
+✔ rates rejects invalid expiry 2020-01-01T00:00:00Z (0.2517ms)
+✔ rates rejects invalid expiry null (0.2161ms)
+✔ HTTP sanitized; safe reads limited retry 400 (0.4145ms)
+✔ HTTP sanitized; safe reads limited retry 403 (0.231ms)
+✔ HTTP sanitized; safe reads limited retry 404 (0.301ms)
+✔ HTTP sanitized; safe reads limited retry 429 (0.2755ms)
+✔ HTTP sanitized; safe reads limited retry 500 (0.2321ms)
+✔ rates malformed JSON rejected and transport errors are sanitized (0.4192ms)
+✔ timeout aborts and never exposes credentials (23.7997ms)
+✔ 401 safely renews once (0.7048ms)
+✔ dimensions official boundary and rejection before any network call (0.5419ms)
+✔ agencies exclude inactive/no pickup/wrong province/missing CP (0.7965ms)
+✔ import official shape D and createdAt only (2.1991ms)
+✔ import official shape S and createdAt only (0.4733ms)
+✔ import does not automatically replay: timeout (1.0089ms)
+✔ import does not automatically replay: malformed (0.293ms)
+✔ import does not automatically replay: duplicate (0.3525ms)
+✔ import does not automatically replay: http500 (0.3788ms)
+✔ validate uses separate ephemeral account password, not Basic credentials (0.3697ms)
+✔ job disabled for real provider by default (0.3401ms)
+✔ job sanitizes ambiguous without financial RPCs (0.3807ms)
+✔ job sanitizes already_imported without financial RPCs (0.1747ms)
+✔ job sanitizes http without financial RPCs (0.1011ms)
+✔ job sanitizes rate_limit without financial RPCs (0.1364ms)
+✔ job persists createdAt and stops when queue empty (0.1971ms)
+✔ rate_limit without an explicit 429 remains in manual review (0.2542ms)
+✔ snapshot retains server parcels, variants and canonical province (0.3813ms)
+✔ sucursal HTTP revalidates agency and rates its CP instead of residential CP (155.0637ms)
+✔ production cannot enable pickup or consult real agencies (21.6571ms)
+✔ provider secrets never enter HTTP response or internal log (15.5544ms)
+✔ safe aggregation never mixes different services or accepts expired parcels (1.4591ms)
+✔ guest checkout completes with mock shipping and approved payment (224.4856ms)
+✔ guest checkout completes with mock shipping and rejected payment (87.9459ms)
+✔ guest checkout completes with mock shipping and pending payment (64.1931ms)
+✔ simultaneous mock retries create one logical payment (12.4589ms)
+✔ one mate uses one 17 cm cube weighing 550 g (2.4704ms)
+✔ two mates use two joined small boxes weighing 1100 g (0.2436ms)
+✔ one set uses one 30 × 30 × 20 cm box weighing 1300 g (0.2457ms)
+✔ two sets share one large footprint weighing 2600 g (0.2263ms)
+✔ one set plus one loose mate produces separate conservative parcels (0.2478ms)
+✔ three sets split into two large parcels (0.2193ms)
+✔ mixed orders group sets first, then mate boxes, regardless of line order (0.2458ms)
+✔ unsupported goods need a verified single-item profile (0.2839ms)
+✔ multi-parcel total sums actual carrier quotes for the same service (2.5592ms)
+✔ checkout quotes the server-derived parcels and persists only carrier-returned cost (161.8695ms)
+✔ MiCorreo environment supports canonical name, legacy alias and fails closed on conflict (1.9057ms)
+✔ development defaults to mock and production defaults to real (3.1886ms)
+✔ provider selection keeps mock and real behind the same server interfaces (0.9703ms)
+✔ mock shipping quotes one and multiple actual package requests at an explicitly fake rate (2.952ms)
+✔ mock payment returns approved without external calls (0.8974ms)
+✔ mock payment returns rejected without external calls (0.2295ms)
+✔ mock payment returns pending without external calls (0.1451ms)
+✔ real mode fails clearly with missing credentials and never falls back to mock (0.6312ms)
+✔ registration allowlists display name only and never accepts a role (142.5608ms)
+✔ registration validates name, email and password before Auth (50.9609ms)
+✔ registration supports projects with immediate sessions (11.932ms)
+✔ customer and seller cannot list users or change roles despite metadata (17.7051ms)
+✔ admin list returns only allowed fields and roles from memberships (8.9909ms)
+✔ commercial dashboard is admin-only and accepts known periods (12.9317ms)
+✔ role changes use verified actor and selected target, not body identity (8.6179ms)
+✔ unconfirmed email cannot receive team privileges (6.0986ms)
+✔ guest cookie is HttpOnly, secure, same-site; only its hash reaches DB (114.7714ms)
+{"kind":"security","type":"ORIGIN_DENIED","request_id":"360c37a2-c9e5-4698-bc50-2b94d0ac4ea2","route":"/api/carrito/items/:id","status":403}
+✔ cross-site writes are rejected before reaching DB (26.5669ms)
+✔ parallel session reads cannot overwrite the cart cookie (14.4188ms)
+✔ legacy order endpoint cannot bypass the new checkout (30.063ms)
+✔ cart ignores browser prices and owner; accepts only quantity and product id (12.1413ms)
+✔ invalid quantities are rejected and secrets are not served as static files (55.5827ms)
+✔ security headers protect public and private responses without exposing server details (11.6284ms)
+✔ auth limiter uses socket address, rejects spoofed proxy headers and supplies retry delay (95.3237ms)
+✔ production rejects malformed origins and HTTP before creating clients (0.9789ms)
+✔ malformed content type, oversized JSON and SQL-like IDs fail before commerce RPC (14.9209ms)
+✔ empty and unexpected JSON bodies fail cleanly without invoking Auth or commerce (58.8302ms)
+✔ unsigned payment notification is rejected before provider lookup or database access (7.5008ms)
+ℹ tests 144
+ℹ suites 0
+ℹ pass 142
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1246.0258
+
+✖ failing tests:
+
+test at tests\inventory.test.mjs:32:1
+✖ team can access protected UI without caching or external scripts (13.2938ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/Administrator/.codex/worktrees/modular-refactor/MateBreak/tests/inventory.test.mjs:34:60)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\logistics-admin.test.mjs:24:1
+✖ logistics private UI is uncached and has restricted CSP (21.1533ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  404 !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/Administrator/.codex/worktrees/modular-refactor/MateBreak/tests/logistics-admin.test.mjs:27:39)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1389:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:960:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 404,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

@@ -2,7 +2,7 @@ name: Security checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, codex/staging-preparation]
   pull_request:
 
 jobs:
@@ -12,10 +12,36 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0 # Artifact audit compares the approved historical tree.
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: '22'
           cache: npm
       - run: npm ci
       - run: npm test
+      - run: node scripts/audit-baseline.mjs --check
+      - run: node scripts/check-commercial-migrations.mjs
+      - run: npm run catalog:historical:check
+      - run: npm run build:staging && node scripts/audit-guest-artifact.mjs
+        env:
+          STAGING_BACKEND_ORIGIN: https://matebreak-api-staging.onrender.com
       - run: npm audit --omit=dev --audit-level=high
+
+      - name: Isolated SQL transfer and order operations
+        run: |
+          docker run -d --name matebreak-wholesale-isolated --network none --label matebreak.test=wholesale-local --label matebreak.workdir="$PWD" -e POSTGRES_PASSWORD=disposable-local-only public.ecr.aws/supabase/postgres:17.6.1.171
+          for attempt in $(seq 1 60); do
+            if docker exec matebreak-wholesale-isolated pg_isready -h 127.0.0.1 -U supabase_admin; then break; fi
+            sleep 1
+          done
+          docker exec matebreak-wholesale-isolated pg_isready -h 127.0.0.1 -U supabase_admin
+          node scripts/test-transfer-policy-sql.mjs
+          node scripts/test-retail-operations-sql.mjs
+          node scripts/test-staging-mp-live-sql.mjs
+          node scripts/test-payment-completion-sql.mjs
+          node scripts/test-staging-qa-stock-sql.mjs
+      - name: Stop isolated SQL test container
+        if: always()
+        run: docker stop matebreak-wholesale-isolated || true

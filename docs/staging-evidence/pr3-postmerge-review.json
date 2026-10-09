@@ -1,0 +1,77 @@
+{
+  "checkedAt": "2026-10-01T14:29:01.740Z",
+  "pr3": {
+    "baseRefName": "local-supabase-validation",
+    "headRefOid": "7e02c3e11ae164f43567b5165b270684986640c7",
+    "mergeCommit": {
+      "oid": "16b8a45cbe9b9955d2b844690836030335006d44"
+    },
+    "mergedAt": "2026-10-01T14:23:28Z",
+    "state": "MERGED",
+    "url": "https://github.com/Jerocordoneda/MateBreak/pull/3"
+  },
+  "pr2": {
+    "baseRefName": "main",
+    "headRefOid": "16b8a45cbe9b9955d2b844690836030335006d44",
+    "mergeable": "MERGEABLE",
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T14:24:03Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/Jerocordoneda/MateBreak/actions/runs/36875968149/job/110415359371",
+        "name": "node",
+        "startedAt": "2026-10-01T14:23:38Z",
+        "status": "COMPLETED",
+        "workflowName": "Security checks"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-01T14:23:30Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://supabase.com/dashboard/project/nwpdfqwqxrkokluqqqfs/branches",
+        "name": "Supabase Preview",
+        "startedAt": "2026-10-01T14:23:30Z",
+        "status": "COMPLETED",
+        "workflowName": ""
+      }
+    ],
+    "url": "https://github.com/Jerocordoneda/MateBreak/pull/2"
+  },
+  "consolidatedHead": "16b8a45cbe9b9955d2b844690836030335006d44",
+  "consolidatedTreeIdenticalToApprovedRefactor": true,
+  "mainUnchanged": true,
+  "originalMigrationHashesMatchedInStaging": 26,
+  "consolidatedGitBlobsIdenticalToApprovedRefactor": 26,
+  "normalizedCheckoutHashesMatched": 26,
+  "physicalLineEndingDifferences": [
+    "supabase/migrations/20260907203437_bootstrap_legacy_catalog.sql",
+    "supabase/migrations/20260928162850_restore_historical_public_catalog.sql",
+    "supabase/migrations/20261001003824_micorreo_logistics_snapshots.sql",
+    "supabase/migrations/20261001112820_logistics_admin_recovery.sql"
+  ],
+  "consolidatedNodeTests": 159,
+  "stagingNodeTests": 162,
+  "stagingIntegrationCommit": "34b732f1109e000dfe02326d0329cf578d675fff",
+  "originalStagingCommitsPreserved": [
+    "f79c890",
+    "476a174"
+  ],
+  "supabaseIntegration": {
+    "verifiedInAuthenticatedDashboard": true,
+    "deployToProduction": false,
+    "automaticBranching": false,
+    "vercelConnected": false,
+    "settingsChanged": false
+  },
+  "externalAutomationReview": {
+    "githubHooks": [],
+    "githubDeployments": [],
+    "workflow": "tests and audits only",
+    "scope": "repository-visible automations and authenticated Supabase integration"
+  },
+  "remoteMigrations": false,
+  "deploymentsPerformed": false,
+  "pr2Merged": false
+}
