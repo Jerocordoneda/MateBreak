@@ -80,8 +80,6 @@ dialog::backdrop { background: #0009; }
   .summary-edit-row p { overflow-wrap: anywhere; }
   .summary-edit-row button { min-height: 44px; min-width: 60px; }
   .catalog-grid, .catalog-home .catalog-grid { gap: 12px; }
-  .catalog-image { aspect-ratio: 1 / 1; }
-  .catalog-card-body { padding: 12px; }
   .catalog-title h3 { font-size: 14px; overflow-wrap: anywhere; }
   .catalog-price { font-size: 16px; overflow-wrap: anywhere; }
   .catalog-card .button-secondary { min-height: 44px; width: 100%; padding: 10px 8px; text-align: center; font-size: 12px; }
@@ -153,11 +151,7 @@ dialog::backdrop { background: #0009; }
 }
 
 @media (max-width: 374px) {
-  .catalog-grid, .catalog-home .catalog-grid, .wholesale-catalog { grid-template-columns: minmax(0, 1fr); }
-  .catalog-card { display: grid; grid-template-columns: 96px minmax(0, 1fr); border-radius: 12px; }
-  .catalog-image { height: 100%; min-height: 180px; aspect-ratio: auto; }
-  .catalog-card-body { min-width: 0; gap: 6px; }
-  .catalog-image img { object-fit: cover; }
+  .wholesale-catalog { grid-template-columns: minmax(0, 1fr); }
   .catalog-old { font-size: 12px; }
   .product-gallery-main { max-height: 290px; }
   .result-nav nav { gap: 4px; }
@@ -238,13 +232,6 @@ dialog::backdrop { background: #0009; }
 
 .mb-category-nav .mb-subnav-dismissed > .dropdown-menu { display: none !important; }
 
-@media (max-width: 540px) {
-  .catalog-grid, .catalog-home .catalog-grid { grid-template-columns: minmax(0, 1fr); }
-  .catalog-card { display: grid; grid-template-columns: clamp(96px, 28vw, 140px) minmax(0, 1fr); border-radius: 12px; }
-  .catalog-image { height: 100%; min-height: 180px; aspect-ratio: auto; }
-  .catalog-card-body { min-width: 0; gap: 6px; }
-  .catalog-transfer, .catalog-installments, .catalog-shipping { font-size: 12px; line-height: 1.5; }
-}
 @media (max-width: 430px) { .wholesale-catalog { grid-template-columns: minmax(0, 1fr); } }
 
 .transfer-confirm-form label { display: grid; gap: 8px; min-width: 0; font-size: 13px; }

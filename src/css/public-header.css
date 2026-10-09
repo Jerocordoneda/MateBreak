@@ -1,4 +1,5 @@
 @import url('./fonts.css');
+@import url('./global-search.css');
 /* One geometry contract for every public primary bar, independent of page containers. */
 header.mb-public-header {
   position: fixed; inset: 0 0 auto; z-index: 50;
@@ -39,6 +40,8 @@ header.mb-public-header .mb-public-actions > a {
 header.mb-public-header .mb-public-actions > .mb-cart-link { width: 44px; }
 header.mb-public-header .mb-public-actions > .mb-account-link { width: 44px; }
 header.mb-public-header .mb-public-actions > a > svg { width: 25px; height: 25px; flex: 0 0 25px; }
+header.mb-public-header .mb-search-toggle {display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;flex:0 0 44px;width:44px;height:44px;padding:0;margin:0;border:0;background:none;color:inherit;cursor:pointer;}
+header.mb-public-header .mb-search-toggle svg {width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.5;}
 header.mb-public-header .mb-cart-count { top: 0; right: -4px; }
 header.mb-public-header .mb-help-nav { position: absolute; left: 50%; transform: translateX(-50%); }
 header.mb-public-header a:focus-visible,

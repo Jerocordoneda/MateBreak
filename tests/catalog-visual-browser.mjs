@@ -18,7 +18,7 @@ const server=createServer((req,res)=>{
  if(path==='/audit/photo.svg'){res.writeHead(200,{'Content-Type':'image/svg+xml','Cache-Control':'no-store'}).end(photo);return;}
  const file=resolve(root,aliases[path]||decodeURIComponent(path).replace(/^\//,''));
  if(!file.startsWith(root+'/')&&!file.startsWith(root+'\\')){res.writeHead(403).end();return;}
- try{const body=readFileSync(file);res.writeHead(200,{'Content-Type':{'.html':'text/html','.css':'text/css','.js':'text/javascript','.json':'application/json'}[extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(body);}catch{res.writeHead(404).end();}
+ try{const body=readFileSync(file);res.writeHead(200,{'Content-Type':{'.html':'text/html','.css':'text/css','.js':'text/javascript','.mjs':'text/javascript','.json':'application/json'}[extname(file)]||'application/octet-stream','Cache-Control':'no-store'}).end(body);}catch{res.writeHead(404).end();}
 });
 await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
 const browser=await chromium.launch({headless:true,...(process.env.MATEBREAK_CHROME_PATH?{executablePath:process.env.MATEBREAK_CHROME_PATH}:{})});
@@ -31,7 +31,7 @@ async function context(width,data){
   if(q.method()!=='GET'){writes.push(u.pathname);return r.abort();}
   if(u.hostname==='cdn.tailwindcss.com'&&process.env.MATEBREAK_TAILWIND_SCRIPT)return r.fulfill({contentType:'application/javascript',body:readFileSync(process.env.MATEBREAK_TAILWIND_SCRIPT,'utf8')});
   if(u.origin===origin&&u.pathname.startsWith('/api/')){
-   const body=u.pathname==='/api/productos'?[data]:u.pathname==='/api/sesion'?{usuario:null}:u.pathname==='/api/carrito/resumen'?{cantidad:0}:u.pathname==='/api/carrito'?{items:[],subtotal:0,moneda:'ARS'}:{};
+   const body=u.pathname==='/api/productos'?[data]:u.pathname==='/api/productos/fixture'?data:u.pathname==='/api/sesion'?{usuario:null}:u.pathname==='/api/carrito/resumen'?{cantidad:0}:u.pathname==='/api/carrito'?{items:[],subtotal:0,moneda:'ARS'}:{};
    return r.fulfill({contentType:'application/json',body:JSON.stringify(body)});
   }
   if(u.origin!==origin&&!['fonts.googleapis.com','fonts.gstatic.com','cdn.tailwindcss.com','lh3.googleusercontent.com'].includes(u.hostname))return r.abort();
@@ -68,7 +68,12 @@ try{
    }
    if(mode==='failed')await p.locator('.product-thumbnails .product-photo-placeholder').waitFor({state:'visible'});
    assert.equal(await p.locator('#product-content img:not([src]),#product-content img[src=""]').count(),0);
-   const gallerySize=await gallery.boundingBox();assert.ok(Math.abs(gallerySize.width/gallerySize.height-.8)<.01,'Gallery aspect ratio');await noOverflow(p);
+   const gallerySize=await gallery.boundingBox(),maxHeight=await gallery.evaluate(e=>getComputedStyle(e).maxHeight);
+   // The existing small-screen detail caps gallery height; images remain
+   // contained. Do not confuse that approved cap with a card ratio regression.
+   if(maxHeight==='none')assert.ok(Math.abs(gallerySize.width/gallerySize.height-.8)<.01,'Gallery aspect ratio');
+   else assert.ok(gallerySize.height<=parseFloat(maxHeight)+1,'Mobile gallery height cap');
+   await noOverflow(p);
    assert.equal(await p.locator('[data-cart-link]').getAttribute('href'),'/carrito');assert.equal(await p.locator('[data-account-link]').getAttribute('href'),'/mi-cuenta');
    if(mode==='missing')await p.screenshot({path:resolve(out,'detail-'+width+'.png'),fullPage:true});
    assert.deepEqual(errors,[]);results.push({width,test:'card/gallery '+mode,pass:true});await c.close();

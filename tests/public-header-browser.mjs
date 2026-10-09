@@ -68,6 +68,11 @@ try {
     assert.equal(measured.badge,'3');assert.equal(measured.cartHref,'/carrito');assert.equal(measured.accountHref,'/mi-cuenta');
     assert.equal(measured.image,'/src/assets/email/matebreak-logo.png');assert.ok(measured.name);
     assert.ok(measured.cart.width>=44&&measured.account.width>=44);
+    assert.equal(await page.locator('.mb-search-toggle').count(),1);
+    const searchBox=await page.locator('.mb-search-toggle').boundingBox();
+    assert.ok(searchBox.width>=44&&searchBox.height>=44);
+    assert.ok(searchBox.x+searchBox.width<=measured.cart.x,'Search immediately precedes cart without overlap');
+    assert.ok(measured.brand.x+measured.brand.width<=searchBox.x,'Brand does not overlap search');
     assert.equal(await page.locator('[data-account-link]').innerText(),'','Account is icon only');
     assert.equal(measured.account.x+measured.account.width,width-measured.logo.x,'Account at right content edge');
     if(width>760){

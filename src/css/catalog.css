@@ -12,3 +12,25 @@
 
 .product-selected-model{display:block;font-size:.48em;line-height:1.4;margin-top:10px;color:var(--muted,#a1a49a)}
 .product-gallery-main[aria-busy=true]::after{content:'Cargando imagen…';position:absolute;bottom:12px;left:12px;padding:6px 10px;border-radius:6px;background:#171815e6;color:#efeee7;font-size:12px}
+/* Shared product presentation: listing, featured and global search. */
+.catalog-card{position:relative;background:#1d1e1b;border:1px solid #d8c3a52e;border-radius:22px;overflow:visible;box-shadow:0 4px 16px #0002;transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease;}
+.catalog-image{position:relative;aspect-ratio:4/5;border-radius:21px 21px 0 0;overflow:hidden;background:#22231f;}
+.catalog-image::after{content:'';position:absolute;inset:50% 0 0;background:linear-gradient(transparent,#17181580);pointer-events:none;}
+/* Original catalogue shots have varied framing: contain preserves handles,
+   bombillas and sets rather than cropping real product parts to fill a card. */
+.catalog-image img{display:block;width:100%;height:100%;object-fit:contain;transition:transform .3s ease;}
+.catalog-card-body{position:relative;box-sizing:border-box;margin:-32px 12px 12px;padding:18px 16px 68px;border:1px solid #d8c3a52e;border-radius:15px;background:#1a1c19f5;gap:10px;min-height:205px;box-shadow:0 6px 18px #0003;}
+.catalog-title h3{font-size:17px;line-height:1.35;}
+.catalog-description{font-size:13px;line-height:1.5;margin:0;color:#b6b9af;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:39px;}
+.catalog-card-pricing{display:flex;flex-direction:column;gap:4px;margin-top:auto;}
+.catalog-price{font-size:21px;color:#efeee7;line-height:1.3;}
+.catalog-card-action{position:absolute;right:16px;bottom:16px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;width:44px;height:44px;border-radius:50%;border:1px solid #ebbb9780;background:#ebbb97;color:#302219;text-decoration:none;font-size:26px;line-height:1;}
+.catalog-card :focus-visible{outline:2px solid #f4bb92;outline-offset:3px;}
+.catalog-card .stock-warning{margin:0;font-size:12px;color:#d8c3a5;}
+.catalog-featured-heading{display:flex;justify-content:space-between;align-items:center;gap:20px;}
+.catalog-featured-heading h3{margin:0;}
+.catalog-view-all{display:inline-flex;align-items:center;gap:10px;min-height:44px;white-space:nowrap;font:500 13px/1.3 var(--mb-heading,Geist),sans-serif;letter-spacing:1px;color:#ebbb97;text-decoration:none;}
+.catalog-view-all span{display:inline-block;transition:transform .2s ease;}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.catalog-card:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 10px 25px #ebbb9714;border-color:#ebbb9766;}.catalog-card:hover .catalog-image img{transform:scale(1.035);}.catalog-view-all:hover span{transform:translateX(4px);}}
+@media(max-width:620px){.catalog-card{border-radius:17px;}.catalog-image{border-radius:16px 16px 0 0;}.catalog-card-body{margin:-20px 6px 6px;padding:12px 10px 62px;min-height:198px;gap:8px;}.catalog-title h3{font-size:14px;}.catalog-description{font-size:12px;line-height:1.5;min-height:36px;}.catalog-price{font-size:16px;}.catalog-card-action{right:10px;bottom:10px;}.catalog-featured-heading{align-items:flex-start;flex-wrap:wrap;gap:8px;}.catalog-view-all{margin-left:auto;}}
+@media(prefers-reduced-motion:reduce){.catalog-card,.catalog-image img,.catalog-view-all span{transition:none;}.catalog-image:hover img{transform:none;}}

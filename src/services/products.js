@@ -5,7 +5,7 @@ async function readCatalog(url){
 }
 // Only public card data is reused across navigation for 15 seconds. No session,
 // cart, quote or detail responses are stored; checkout always requotes on the server.
-const cardsKey='matebreak-public-cards-v1',cardsLifetime=15000;
+const cardsKey='matebreak-public-cards-v2',cardsLifetime=15000;
 export async function getProducts(){
   try{const saved=JSON.parse(sessionStorage.getItem(cardsKey));if(saved&&Date.now()>=saved.time&&Date.now()-saved.time<cardsLifetime&&Array.isArray(saved.data))return saved.data;}catch{}
   const data=await readCatalog('/api/productos?view=cards');

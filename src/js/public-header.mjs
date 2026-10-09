@@ -51,7 +51,15 @@ export function mountPublicHeader(root = document) {
     if(link.classList.contains('mb-podcast-link'))link.remove();
   }
   if(extras.childElementCount){extras.className='mb-page-shortcuts';root.querySelector('main')?.prepend(extras);}
-  actions.append(cart, account);
+  const search=root.createElement('button');search.type='button';search.className='mb-search-toggle';search.setAttribute('aria-label','Buscar productos');search.setAttribute('aria-haspopup','dialog');
+  search.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="m16 16 5 5"></path></svg>';
+  search.addEventListener('click',async()=>{
+    if(search.disabled)return;search.disabled=true;
+    try{const {openGlobalSearch}=await import('./global-search.mjs');openGlobalSearch(search,root);}
+    catch{search.setAttribute('aria-label','Buscar productos; no se pudo abrir, volvé a intentar');}
+    finally{search.disabled=false;}
+  });
+  actions.append(search,cart, account);
   let help=header.querySelector('.mb-help-nav');
   if(!help){help=root.createElement('nav');help.className='mb-help-nav';help.innerHTML=helpMarkup;}
   help.setAttribute('aria-label','Información');

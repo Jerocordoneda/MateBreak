@@ -2,7 +2,15 @@ import {catalogImageUrl} from './images.mjs';
 // Public listing projection. The full detail and default API contract stay intact.
 export function productCardData(p){
   const keys=['id_producto','slug','nombre','descripcion','precio','precio_original','descuento','moneda','tipo','categorias','imagen_principal','promociones','destacado','disponible'];
-  return Object.fromEntries(keys.map(key=>[key,p[key]]));
+  const card=Object.fromEntries(keys.map(key=>[key,p[key]]));
+  const priced=(p.variantes||[]).filter(v=>Number.isFinite(Number(v.precio))&&Number(v.precio)>0);
+  if(priced.length){
+    const lowest=priced.reduce((a,b)=>Number(a.precio)<=Number(b.precio)?a:b);
+    card.precio_card=Number(lowest.precio);
+    card.precio_card_original=Number(lowest.precio_original)||null;
+    card.precio_desde=priced.some(v=>Number(v.precio)!==card.precio_card);
+  }
+  return card;
 }
 const selection = `id_producto,nombre,descripcion,precio,tipo,activo,slug,moneda,
  catalogo_producto!inner(disponible,precio_original,precio_transferencia,descuento,cuotas,envio_gratis,destacado,publicado,personalizacion,atributos),
