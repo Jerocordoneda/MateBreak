@@ -1,4 +1,5 @@
-import {getProducts,money} from '../../services/products.js';
+import {getProducts,getProductBySlug,money} from '../../services/products.js';
+import {addCartItem,directCardVariant} from '../cart/add-item.js';
 export function node(tag,text,cls){const el=document.createElement(tag);if(text!=null)el.textContent=text;if(cls)el.className=cls;return el;}
 export function setProductPhoto(frame,url,name,{eager=false}={}){
   const placeholder=()=>{
@@ -26,12 +27,31 @@ export function productCard(p,{eager=false}={}) {
   const price=p.precio_card??p.precio,original=p.precio_card!=null?p.precio_card_original:p.precio_original;
   const pricing=node('div',null,'catalog-card-pricing');
   if(original>price)pricing.append(node('del',money(original,p.moneda),'catalog-old'));
-  pricing.append(node('strong',(p.precio_desde?'Desde ':'')+money(price,p.moneda),'catalog-price'));
-  text.append(pricing);
+  pricing.append(node('strong',money(price,p.moneda),'catalog-price'));
+  const footer=node('div',null,'catalog-card-footer');footer.append(pricing);text.append(footer);
   if(p.disponible===false)text.append(node('p','Sin stock','stock-warning'));
-  // Always select options on the canonical detail; never choose an arbitrary
-  // model/bombilla or write a cart from a listing card.
-  const more=node('a','+','catalog-card-action');more.href=link.href;more.setAttribute('aria-label','Elegir opciones de '+p.nombre);text.append(more);card.append(text);return card;
+  // Cards use a lightweight DTO. Inspect the canonical detail before choosing
+  // a single variant; configurable products retain their selection flow.
+  const more=node('a','+','catalog-card-action');more.href=link.href;more.setAttribute('aria-label','Agregar o elegir opciones de '+p.nombre);
+  const feedback=node('span',null,'catalog-card-feedback');feedback.setAttribute('role','status');
+  let busy=false;
+  if(p.disponible===false)more.setAttribute('aria-disabled','true');
+  more.onclick=async event=>{
+    if(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+    event.preventDefault();if(busy||p.disponible===false)return;
+    busy=true;more.setAttribute('aria-busy','true');more.setAttribute('aria-disabled','true');feedback.textContent='Consultando producto…';
+    try{
+      const product=await getProductBySlug(p.slug),variant=directCardVariant(product);
+      if(!product)throw Error('Producto no disponible.');
+      if(!variant){location.assign(link.href);return;}
+      if(!variant.comprable||!variant.con_stock||variant.precio==null)throw Error('Producto no disponible para agregar.');
+      await addCartItem(variant.id);feedback.textContent='Agregado al carrito';
+    }catch(error){feedback.textContent=error.message;}
+    finally{busy=false;more.removeAttribute('aria-busy');more.removeAttribute('aria-disabled');}
+  };
+  footer.append(more);text.append(feedback);card.append(text);
+  card.addEventListener('click',event=>{if(event.target.closest('a,button')||window.getSelection()?.toString())return;location.assign(link.href);});
+  return card;
 }
 export async function mountCatalog(container,{category='',search='',featured=false,limit=null,filters=true}={}){
   container.replaceChildren(node('p','Cargando catálogo…'));

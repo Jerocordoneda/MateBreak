@@ -34,3 +34,28 @@
 @media(hover:hover) and (prefers-reduced-motion:no-preference){.catalog-card:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 10px 25px #ebbb9714;border-color:#ebbb9766;}.catalog-card:hover .catalog-image img{transform:scale(1.035);}.catalog-view-all:hover span{transform:translateX(4px);}}
 @media(max-width:620px){.catalog-card{border-radius:17px;}.catalog-image{border-radius:16px 16px 0 0;}.catalog-card-body{margin:-20px 6px 6px;padding:12px 10px 62px;min-height:198px;gap:8px;}.catalog-title h3{font-size:14px;}.catalog-description{font-size:12px;line-height:1.5;min-height:36px;}.catalog-price{font-size:16px;}.catalog-card-action{right:10px;bottom:10px;}.catalog-featured-heading{align-items:flex-start;flex-wrap:wrap;gap:8px;}.catalog-view-all{margin-left:auto;}}
 @media(prefers-reduced-motion:reduce){.catalog-card,.catalog-image img,.catalog-view-all span{transition:none;}.catalog-image:hover img{transform:none;}}
+
+/* Compact cards retain complete product photos and the real card-price DTO. */
+.catalog-grid{grid-auto-rows:1fr;}
+.catalog-card{display:flex;flex-direction:column;overflow:hidden;border-radius:18px;cursor:pointer;}
+.catalog-image{border-radius:0;aspect-ratio:1/1;}
+.catalog-image::after{display:none;}
+.catalog-card-body{flex:1;margin:0;padding:18px;border:0;border-radius:0;min-height:174px;box-shadow:none;background:transparent;gap:8px;}
+.catalog-title h3{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em;}
+.catalog-card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-top:auto;}
+.catalog-card-pricing{margin:0;min-width:0;}
+.catalog-price{color:#ebbb97;font-size:20px;white-space:nowrap;}
+.catalog-card-action{position:static;flex:0 0 44px;cursor:pointer;transition:background .2s,transform .2s;}
+.catalog-card-action:hover{background:#f4c9a9;transform:scale(1.05);}
+.catalog-card-action[aria-disabled=true]{opacity:.5;cursor:default;transform:none;}
+.catalog-results{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.catalog-card-feedback{font-size:11px;line-height:1.4;color:#d8c3a5;min-height:1.4em;}
+.catalog-card:has(.catalog-card-action[aria-busy=true]){cursor:progress;}
+@media(max-width:620px){.catalog-card-body{padding:12px;min-height:164px;}.catalog-price{font-size:15px;}.catalog-card-footer{gap:6px;}.catalog-card-action{font-size:24px;}}
+@media(max-width:540px){
+  .catalog-grid,.catalog-home .catalog-grid{grid-template-columns:minmax(0,1fr);}
+  .catalog-card{display:grid;grid-template-columns:clamp(84px,28vw,132px) minmax(0,1fr);}
+  .catalog-image{height:100%;aspect-ratio:auto;}
+  .catalog-card-body{min-width:0;gap:6px;}
+  .catalog-price{font-size:clamp(14px,3.6vw,18px);}
+}

@@ -256,3 +256,13 @@ dialog::backdrop { background: #0009; }
 @media (min-width: 761px) and (max-width: 1023px) {
   .mb-commerce-header .mb-category-nav { gap: 16px; }
 }
+
+/* Home polish does not alter the approved hero or mate geometry. */
+.mb-collection-dot{animation:collectionGlow 2.8s ease-in-out infinite;}
+.mb-collection-badge{min-height:40px;padding-inline:34px;max-width:100%;}
+@keyframes collectionGlow{0%,100%{box-shadow:0 0 0 0 #ebbb9740;opacity:.65;}50%{box-shadow:0 0 0 6px #ebbb9700;opacity:1;}}
+[data-home-actions] a{display:inline-flex;align-items:center;justify-content:center;min-height:56px;min-width:240px;border:1px solid #f4c9a966;background:linear-gradient(135deg,#f4c9a9,#d6996d);color:#302219;font-weight:600;}
+[data-home-actions] a:focus-visible{outline:2px solid #f4c9a9;outline-offset:5px;}
+@media(prefers-reduced-motion:reduce){.mb-collection-dot{animation:none;}}
+.matebreak-transition{height:clamp(128px,18vw,260px);margin-top:-40px;z-index:1;isolation:isolate;pointer-events:none;}
+.matebreak-curve{height:140%;bottom:-65%;border-radius:50% 50% 0 0 / 24% 24% 0 0;transform:translateX(-50%) translateY(var(--curve-move,0px));border-top:1px solid #d8c3a566;box-shadow:0 -8px 32px #d8c3a510;}

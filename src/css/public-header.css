@@ -97,6 +97,16 @@ header.mb-public-header .mb-category-nav svg {width:20px;height:20px;fill:none;s
 header.mb-public-header .mb-team-label {position:absolute;left:0;top:47px;font:500 8px/10px 'Inter',sans-serif;letter-spacing:1.3px;white-space:nowrap;color:#a1a49a;}
 .mb-page-shortcuts {display:flex;gap:16px;align-items:center;margin-block:12px;font-size:12px;}
 .mb-public-simple {padding-top:129px;}
+/* Anchor dropdowns below and slightly right; leave the approved bar geometry intact. */
+@media(min-width:761px){header.mb-public-header .mb-category-nav .dropdown-menu{left:calc(50% + 12px);padding-top:22px;animation:none;}}
+header.mb-public-header.header-dark .mb-public-mainbar,
+header.mb-public-header.header-dark .mb-public-brand span,
+header.mb-public-header.header-dark .mb-category-nav,
+header.mb-public-header.header-dark .mb-help-nav a{color:#3e1f0b;}
+header.mb-public-header.header-dark .mb-categorybar{border-color:#80553326;}
+header.mb-public-header.header-dark .mb-categorybar,
+header.mb-public-header.header-dark .dropdown-menu > div{background:#fff;}
+header.mb-public-header.header-dark .mb-public-brand img{filter:sepia(.3) saturate(.8) brightness(.35);}
 body[data-marketing] > main {padding-top:129px;}
 .mb-public-simple .order-summary,.mb-public-simple .checkout-order,.mb-public-simple .wholesale-summary {top:152px;}
 .mb-public-simple :target {scroll-margin-top:152px;}
