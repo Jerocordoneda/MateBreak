@@ -1,5 +1,6 @@
 import {getProductBySlug,money} from '../../services/products.js';
 import {node,setProductPhoto} from './catalog-ui.js';
+import {addCartItem} from '../cart/add-item.js';
 const root=document.querySelector('#product-content');
 async function init(){
   try{
@@ -49,11 +50,7 @@ async function init(){
           const result=await response.json();if(!response.ok)throw Error(result.error||'No pudimos iniciar la compra');
           location.assign(result.next);return;
         }
-        const current=await fetch('/api/carrito',{credentials:'same-origin'});if(!current.ok)throw Error('No se pudo recuperar el carrito');const cart=await current.json();
-        const old=cart.items.find(i=>i.variante_id===v.id);
-        const response=await fetch('/api/carrito/variantes/'+v.id,{method:'PUT',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({cantidad:(old?.cantidad||0)+units,...(custom?{personalizacion:custom.value}:{})})});
-        const result=await response.json();if(!response.ok)throw Error(result.error||'No pudimos agregar el producto');
-        window.dispatchEvent(new CustomEvent('mb:cart',{detail:result.items.reduce((n,i)=>n+i.cantidad,0)}));status.textContent='Producto agregado. Tu selección está guardada.';
+        await addCartItem(v.id,units,custom?.value);status.textContent='Producto agregado. Tu selección está guardada.';
       }catch(e){status.textContent=e.message;}finally{update();}
     };
     layout.append(gallery,info);
