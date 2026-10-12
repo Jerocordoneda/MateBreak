@@ -107,6 +107,14 @@ header.mb-public-header.header-dark .mb-categorybar{border-color:#80553326;}
 header.mb-public-header.header-dark .mb-categorybar,
 header.mb-public-header.header-dark .dropdown-menu > div{background:#fff;}
 header.mb-public-header.header-dark .mb-public-brand img{filter:sepia(.3) saturate(.8) brightness(.35);}
+/* Home contact changes contrast only, preserving every approved header box. */
+[data-home] header.mb-public-header.header-dark .mb-public-mainbar,
+[data-home] header.mb-public-header.header-dark .mb-public-brand span,
+[data-home] header.mb-public-header.header-dark .mb-category-nav,
+[data-home] header.mb-public-header.header-dark .mb-category-nav a,
+[data-home] header.mb-public-header.header-dark .mb-help-nav a,
+[data-home] header.mb-public-header.header-dark .mb-public-actions a,
+[data-home] header.mb-public-header.header-dark .mb-public-actions button{color:#171815!important;}
 body[data-marketing] > main {padding-top:129px;}
 .mb-public-simple .order-summary,.mb-public-simple .checkout-order,.mb-public-simple .wholesale-summary {top:152px;}
 .mb-public-simple :target {scroll-margin-top:152px;}

@@ -65,7 +65,7 @@ try{
         const y=await page.locator('.matebreak-transition').evaluate(e=>e.getBoundingClientRect().top+scrollY);
         for(const offset of [-250,-60,100,300]){
           await page.evaluate(y=>scrollTo(0,y),y+offset);await page.waitForTimeout(100);
-          const theme=await page.evaluate(()=>{const h=document.querySelector('header'),r=h.getBoundingClientRect(),t=document.querySelector('.matebreak-transition'),c=document.querySelector('.matebreak-curve');return {actual:h.classList.contains('header-dark'),expected:Math.max(t.getBoundingClientRect().top,c.getBoundingClientRect().top)<=r.top+r.height/2};});
+          const theme=await page.evaluate(()=>{const h=document.querySelector('header'),r=h.getBoundingClientRect(),c=document.querySelector('.matebreak-curve');return {actual:h.classList.contains('header-dark'),expected:c.getBoundingClientRect().top<=r.bottom};});
           assert.equal(theme.actual,theme.expected);
           const background=await page.locator('header').evaluate(e=>getComputedStyle(e).backgroundImage);assert.ok(background.includes(theme.actual?'255, 255, 255':'23, 24, 21'));
           await page.screenshot({path:path.join(out,`transition-${width}-${offset}.png`)});

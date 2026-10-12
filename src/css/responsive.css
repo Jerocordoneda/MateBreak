@@ -266,3 +266,7 @@ dialog::backdrop { background: #0009; }
 @media(prefers-reduced-motion:reduce){.mb-collection-dot{animation:none;}}
 .matebreak-transition{height:clamp(128px,18vw,260px);margin-top:-40px;z-index:1;isolation:isolate;pointer-events:none;}
 .matebreak-curve{height:140%;bottom:-65%;border-radius:50% 50% 0 0 / 24% 24% 0 0;transform:translateX(-50%) translateY(var(--curve-move,0px));border-top:1px solid #d8c3a566;box-shadow:0 -8px 32px #d8c3a510;}
+/* Let the Home apex invade the dark surface; clip only sides and bottom so
+   the light layer cannot cover the following section's content. */
+[data-home] .matebreak-transition{overflow-x:clip;overflow-y:visible;clip-path:inset(-100vh 0 0);}
+[data-home] .matebreak-curve{border-top:2px solid rgba(216,195,165,.75);box-shadow:0 -4px 10px rgba(216,195,165,.8),0 -15px 35px rgba(216,195,165,.35),0 -35px 80px rgba(216,195,165,.15);}
