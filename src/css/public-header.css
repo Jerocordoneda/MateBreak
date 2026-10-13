@@ -98,7 +98,7 @@ header.mb-public-header .mb-team-label {position:absolute;left:0;top:47px;font:5
 .mb-page-shortcuts {display:flex;gap:16px;align-items:center;margin-block:12px;font-size:12px;}
 .mb-public-simple {padding-top:129px;}
 /* Anchor dropdowns below and slightly right; leave the approved bar geometry intact. */
-@media(min-width:761px){header.mb-public-header .mb-category-nav .dropdown-menu{left:calc(50% + 12px);padding-top:22px;animation:none;}}
+@media(min-width:761px){header.mb-public-header .mb-category-nav .dropdown-menu{left:100%;transform:none;translate:none;padding-top:8px;animation:none;}}
 header.mb-public-header.header-dark .mb-public-mainbar,
 header.mb-public-header.header-dark .mb-public-brand span,
 header.mb-public-header.header-dark .mb-category-nav,
@@ -131,7 +131,7 @@ body[data-marketing] > main {padding-top:129px;}
   header.mb-public-header .mb-categorybar {display:none;position:fixed;inset:68px 12px auto;width:auto;max-width:none;margin:0;height:auto;padding:12px;max-height:calc(100dvh - 84px);overflow:auto;overscroll-behavior:contain;background:#1b1b1b;border:1px solid #d8c3a54d;border-radius:10px;}
   header.mb-public-header.mb-nav-open .mb-categorybar {display:block;}
   header.mb-public-header .mb-category-nav {flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;width:100%;font-size:13px;}
-  header.mb-public-header .mb-category-nav .dropdown-menu {position:static;transform:none;flex-basis:100%;padding:0 0 4px 12px;}
+  header.mb-public-header .mb-category-nav .dropdown-menu {position:static;transform:none;translate:none;flex-basis:calc(100% - 20px);margin-left:20px;padding:0 0 4px;}
   header.mb-public-header .dropdown-menu > div {width:100%;padding:0;box-shadow:none;background:transparent;}
   header.mb-public-header .mb-team-label {top:37px;font-size:7px;line-height:8px;}
   .mb-public-simple {padding-top:64px;}

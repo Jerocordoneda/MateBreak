@@ -111,7 +111,6 @@ async function loadTransfers(){
 const refreshTransfersEvent=()=>loadTransfers().catch(cause=>message(cause.message,true));
 export async function mountAdmin(currentUser){
   const loadInventory=async()=>{const stock=await api('/admin/inventario');renderInventory(stock,loadInventory);};
-  $('#refresh-inventory').onclick=()=>loadInventory().catch(e=>message(e.message,true));
   mountAdminWorkspace(async()=>{await Promise.all([loadDashboard(),loadInventory()]);});
   mountRetailOrders().catch(cause=>message(cause.message,true));
   document.removeEventListener('retail-transfers-refresh',refreshTransfersEvent);

@@ -3,6 +3,7 @@ import {parseCookieHeader,serializeCookieHeader} from '@supabase/ssr';
 import { accountRole } from '../account/routes.mjs';
 import {registration,persistRegistration} from '../../wholesale/profile.mjs';
 import {provinces} from '../../shipping/provinces.mjs';
+import {authFieldErrors} from '../../../src/features/account/auth-validation.mjs';
 const fail = (status, message) => Object.assign(new Error(message), { status });
 export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, verifyLiveSession }) {
   const secure=config.origin.startsWith('https:'),returnCookie=(secure?'__Host-':'')+'mb_auth_return';
@@ -11,6 +12,8 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, v
   app.get('/api/sesion', async (req, res) => res.json({ usuario: req.user ? { id: req.user.id, email: req.user.email, rol: await accountRole(admin,req.user) } : null }));
   app.post('/api/auth/registro', async (req, res) => {
     const { email, password, nombre } = req.body ?? {};
+    const fields=authFieldErrors(req.body??{},{register:true,provinceNames:provinces.map(p=>p.name)});
+    if(Object.keys(fields).length)throw Object.assign(fail(400,'Revisá los campos indicados para crear tu cuenta.'),{code:'INVALID_AUTH_INPUT',fields});
     if (typeof nombre !== 'string' || nombre.trim().length < 2 || nombre.length > 150) throw fail(400,'Indicá tu nombre y apellido');
     if (typeof email !== 'string' || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || typeof password !== 'string' || password.length < 10 || password.length > 128) throw fail(400, 'Indicá email y contraseña de al menos 10 caracteres');
     const volver=returnPath(req.body?.volver)?req.body.volver:null;
@@ -19,6 +22,8 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, v
     // Only display data is accepted. No role or membership is created here.
     const { data, error } = await req.auth.auth.signUp({ email:email.trim().toLowerCase(), password, options: { data:{nombre:commercial?.nombre||nombre.trim(),...(commercial?{mayorista:commercial}:{})}, emailRedirectTo: config.origin + '/auth/callback'+returnQuery(volver) } });
     if (error) {
+      if(error.code==='weak_password')throw Object.assign(fail(400,'La contraseña no cumple los requisitos. Elegí una contraseña más segura.'),{code:'INVALID_AUTH_INPUT',fields:{password:'Usá una contraseña más segura de al menos 10 caracteres.'}});
+      if(error.code==='email_address_invalid')throw Object.assign(fail(400,'El email no es válido. Revisalo para continuar.'),{code:'INVALID_AUTH_INPUT',fields:{email:'El proveedor rechazó este email. Revisá su escritura.'}});
       if(error.code==='email_address_not_authorized'||error.code==='over_email_send_rate_limit'||error.status===429)throw fail(503,'La confirmación por correo no está disponible en este momento. Esperá antes de reintentar o contactá a MateBreak.');
       throw fail(400, 'No se pudo registrar. Revisá los datos o intentá más tarde.');
     }
@@ -27,9 +32,11 @@ export function authRoutes(app, { admin, config, authFactory, rpc, rotateCart, v
   });
   app.post('/api/auth/login', async (req, res) => {
     const { email, password } = req.body ?? {};
+    const fields=authFieldErrors(req.body??{});
+    if(Object.keys(fields).length)throw Object.assign(fail(400,'Revisá email y contraseña para ingresar.'),{code:'INVALID_AUTH_INPUT',fields});
     if (typeof email !== 'string' || typeof password !== 'string') throw fail(400, 'Faltan credenciales');
     const { data, error } = await req.auth.auth.signInWithPassword({ email, password });
-    if (error) throw fail(401, 'Email o contraseña incorrectos');
+    if (error) throw Object.assign(fail(401, 'Email o contraseña incorrectos. Revisá ambos e intentá nuevamente.'),{code:'INVALID_AUTH_INPUT',fields:{email:'Revisá el email con el que creaste tu cuenta.',password:'Revisá tu contraseña o usá «Olvidé mi contraseña».'}});
     req.user = data.user;
     await verifyLiveSession(req,admin);
     await persistRegistration(req.auth,data.user);

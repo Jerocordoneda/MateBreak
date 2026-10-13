@@ -55,7 +55,11 @@ export function accountRoutes(app,{admin}) {
   });
   const sales = async (req,action,data={}) => {
     const result=await admin.rpc('mb_ventas',{p_usuario_id:req.user.id,p_accion:action,p_datos:data});
-    if (result.error) throw fail(result.error.code==='42501'?403:409,['42501','P0001'].includes(result.error.code)?result.error.message:'No se pudo registrar la operación');
+    if (result.error) {
+      console.warn(JSON.stringify({kind:'sales',event:'rpc_failed',request_id:req.id,action,sql_code:result.error.code,
+        ...(['42501','P0001'].includes(result.error.code)?{reason:result.error.message}:{} )}));
+      throw fail(result.error.code==='42501'?403:409,['42501','P0001'].includes(result.error.code)?result.error.message:'No se pudo registrar la operación');
+    }
     return result.data;
   };
   app.get('/api/ventas/productos',async (req,res) => res.json(await sales(req,'productos')));

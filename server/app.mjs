@@ -143,7 +143,7 @@ export function createApp(config, overrides = {}) {
       return res.status(503).json({error:'No pudimos consultar Correo Argentino. Intentá nuevamente.'});
     }
     if (!error.status || error.status >= 500) securityEvent('SERVER_ERROR', req, { status: error.status ?? 500 });
-    res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor', ...(error.code==='INVALID_RECIPIENT'?{code:error.code,fields:error.fields}:{}) });
+    res.status(error.status ?? 500).json({ error: error.status ? error.message : 'Error temporal del servidor', ...(['INVALID_RECIPIENT','INVALID_AUTH_INPUT'].includes(error.code)?{code:error.code,fields:error.fields}:{}) });
   });
   return { app, admin, workers, providers };
 }

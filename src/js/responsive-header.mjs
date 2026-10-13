@@ -13,8 +13,9 @@ export function mountResponsiveHeader(root = document) {
     toggle.setAttribute('aria-label', 'Abrir navegación');
     toggle.setAttribute('aria-controls', bar.id); toggle.setAttribute('aria-expanded', 'false');
     actions.append(toggle);
+    const setSubmenu=(button,open)=>{if(!button)return;button.setAttribute('aria-expanded',String(open));button.textContent=open?'⌄':'>';};
     const close = (focus = false) => {
-      for (const group of nav.querySelectorAll('.mb-subnav-open')) { group.classList.remove('mb-subnav-open'); group.querySelector('.mb-subnav-toggle')?.setAttribute('aria-expanded', 'false'); }
+      for (const group of nav.querySelectorAll('.mb-subnav-open')) { group.classList.remove('mb-subnav-open'); setSubmenu(group.querySelector('.mb-subnav-toggle'),false); }
       header.classList.remove('mb-nav-open'); toggle.setAttribute('aria-expanded', 'false');
       toggle.setAttribute('aria-label', 'Abrir navegación'); toggle.textContent = '☰';
       if (focus) toggle.focus();
@@ -36,12 +37,13 @@ export function mountResponsiveHeader(root = document) {
       button.addEventListener('click', () => {
         group.classList.remove('mb-subnav-dismissed');
         const open = !group.classList.contains('mb-subnav-open');
+        group.classList.toggle('mb-subnav-dismissed',!open);
         for (const other of nav.querySelectorAll('.mb-subnav-open')) {
           if (other === group) continue;
           other.classList.remove('mb-subnav-open');
-          other.querySelector('.mb-subnav-toggle')?.setAttribute('aria-expanded', 'false');
+          setSubmenu(other.querySelector('.mb-subnav-toggle'),false);
         }
-        group.classList.toggle('mb-subnav-open', open); button.setAttribute('aria-expanded', String(open));
+        group.classList.toggle('mb-subnav-open', open); setSubmenu(button,open);
       });
       group.addEventListener('pointerenter', () => group.classList.remove('mb-subnav-dismissed'));
       button.addEventListener('keydown', event => {
@@ -50,9 +52,9 @@ export function mountResponsiveHeader(root = document) {
           for (const other of nav.querySelectorAll('.mb-subnav-open')) {
             if (other === group) continue;
             other.classList.remove('mb-subnav-open');
-            other.querySelector('.mb-subnav-toggle')?.setAttribute('aria-expanded', 'false');
+            setSubmenu(other.querySelector('.mb-subnav-toggle'),false);
           }
-          group.classList.remove('mb-subnav-dismissed'); group.classList.add('mb-subnav-open'); button.setAttribute('aria-expanded', 'true'); menu.querySelector('a')?.focus();
+          group.classList.remove('mb-subnav-dismissed'); group.classList.add('mb-subnav-open'); setSubmenu(button,true); menu.querySelector('a')?.focus();
         }
       });
     }
@@ -64,7 +66,7 @@ export function mountResponsiveHeader(root = document) {
       const submenuButton = event.target.closest('.group')?.querySelector('.mb-subnav-toggle');
       for (const group of nav.querySelectorAll('.mb-subnav-open')) {
         group.classList.add('mb-subnav-dismissed');
-        group.classList.remove('mb-subnav-open'); group.querySelector('.mb-subnav-toggle')?.setAttribute('aria-expanded', 'false');
+        group.classList.remove('mb-subnav-open'); setSubmenu(group.querySelector('.mb-subnav-toggle'),false);
       }
       if (header.classList.contains('mb-nav-open')) close(true);
       else submenuButton?.focus();

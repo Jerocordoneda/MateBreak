@@ -29,10 +29,6 @@
 .kpi-criteria summary{cursor:pointer;font-size:12px;color:var(--copper)}
 .kpi-criteria p,.kpi-criteria dd{font-size:12px;line-height:1.8;color:var(--muted);margin:12px 0 20px}
 .kpi-criteria dt{font-size:12px;color:var(--ink)}
-.admin-stock-list{display:grid;gap:14px;margin-top:18px}
-.admin-stock-row{border:1px solid var(--border);padding:18px;border-radius:10px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:center}
-.admin-stock-row h3{font-size:14px;overflow-wrap:anywhere}.admin-stock-row small{font-size:10px;color:var(--copper)}.admin-stock-row p{font-size:11px;color:var(--muted);margin-top:8px}
-.stock-cost-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:10px}.stock-cost-form button{grid-column:1/-1;justify-self:end}
 #admin-area input,#admin-area select{min-width:0;max-width:100%}
 #admin-area .inventory-secondary{margin-top:0;opacity:1}
 #admin-area .wholesale-admin-row{border-radius:12px;border-color:var(--border);padding:22px}
@@ -41,7 +37,9 @@
 #retail-orders-panel .customer-order>div p{font-size:12px;color:var(--muted);margin-top:12px;overflow-wrap:anywhere}
 #retail-orders-panel .customer-order button{margin:16px 8px 0 0}#retail-orders-panel .customer-order ul{font-size:11px;color:var(--muted);padding-left:16px;overflow-wrap:anywhere}
 @keyframes admin-reveal{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
-@media(max-width:850px){.admin-navigation{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-stock-row{grid-template-columns:1fr}}
-@media(max-width:520px){.admin-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-navigation a:first-child{grid-column:1/-1}#admin-area .account-card{padding:18px}#admin-area .dashboard-kpi{min-height:155px;padding:17px 12px}#admin-area .dashboard-kpi>span{font-size:9px}#admin-area .dashboard-kpi small{font-size:10px}.stock-cost-form{grid-template-columns:1fr}.stock-cost-form button{justify-self:stretch}.admin-stock-row{padding:14px}#admin-area .dashboard-list-row:has(.transfer-confirm-form){flex-direction:column;align-items:stretch}}
+@media(max-width:850px){.admin-navigation{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.admin-navigation{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-navigation a:first-child{grid-column:1/-1}#admin-area .account-card{padding:18px}#admin-area .dashboard-kpi{min-height:155px;padding:17px 12px}#admin-area .dashboard-kpi>span{font-size:9px}#admin-area .dashboard-kpi small{font-size:10px}#admin-area .dashboard-list-row:has(.transfer-confirm-form){flex-direction:column;align-items:stretch}}
 @media(max-width:350px){#admin-area .admin-kpis{grid-template-columns:1fr}#admin-area .dashboard-kpi{min-height:125px}}
 @media(prefers-reduced-motion:reduce){[data-admin-panel]{animation:none}}
+
+.auth-field-error{display:block;color:#ffc0b0;font-size:12px;line-height:1.6;margin-top:7px}.signin-card [aria-invalid=true]{border-color:#df8874}.signin-card #auth-error-summary{padding:10px 12px;border:1px solid #df887450;border-radius:6px;background:#40211a55}

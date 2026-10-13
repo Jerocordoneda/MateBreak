@@ -46,13 +46,13 @@ export async function mountSales(){
   event.preventDefault();if(busy)return;
   const form=event.currentTarget,data=new FormData(form),items=[...document.querySelectorAll('.sale-line')].map(row=>({producto_id:row.querySelector('[name=producto_id]').value,cantidad:Number(row.querySelector('[name=cantidad]').value),precio_unitario:row.querySelector('[name=precio_unitario]').value,personalizacion:row.querySelector('[name=personalizacion]').value}));
   const body=Object.fromEntries(['cliente','telefono','estado','metodo_pago','notas'].map(k=>[k,data.get(k)]));body.items=items;
-  if(body.estado==='por_grabar'&&!items.some(i=>i.personalizacion.trim())){message('Indicá el diseño o grabado solicitado.',true);return;}
+  if(body.estado==='por_grabar'&&!items.some(i=>i.personalizacion.trim())){const notice='Completá «Grabado / diseño solicitado» o elegí «Por entregar» si la venta no requiere grabado.';message(notice,true);$('#sale-result').textContent=notice;document.querySelector('.sale-line [name=personalizacion]').focus();return;}
   const signature=JSON.stringify(body);if(pending?.signature!==signature)pending={signature,id:crypto.randomUUID()};body.idempotencia=pending.id;
   busy=true;const controls=[...form.elements];controls.forEach(c=>c.disabled=true);let saved=false;
   $('#save-sale').textContent='Guardando venta…';$('#sale-result').textContent='Guardando venta y actualizando existencias…';
-  try{const sale=await api('/ventas','POST',body);saved=true;pending=null;form.reset();$('#sale-lines').replaceChildren();addLine();total();const notice=`Venta ${sale.id.slice(0,8).toUpperCase()} guardada. ${sale.estado==='entregada'?'Stock descontado.':'Piezas reservadas.'} El administrador recibirá la actualización automáticamente.`;message(notice);$('#sale-result').textContent=notice;}
-  catch(e){message(e.message,true);}
-  finally{busy=false;controls.forEach(c=>c.disabled=false);$('#save-sale').textContent='Guardar venta';if(!saved)$('#sale-result').textContent='La operación no quedó confirmada. Podés reintentar con los mismos datos sin duplicarla.';}
+  try{let sale;try{sale=await api('/ventas','POST',body);}catch(error){if(error.status&&error.status<500)throw error;sale=await api('/ventas','POST',body);}saved=true;pending=null;form.reset();$('#sale-lines').replaceChildren();addLine();total();const notice=`Venta ${sale.id.slice(0,8).toUpperCase()} guardada. ${sale.estado==='entregada'?'Stock descontado.':'Piezas reservadas.'} El administrador recibirá la actualización automáticamente.`;message(notice);$('#sale-result').textContent=notice;}
+  catch(e){message(e.message,true);$('#sale-result').textContent=e.status&&e.status<500?'No se guardó la venta: '+e.message:'No pudimos confirmar la respuesta. Reintentá con los mismos datos para recuperar la venta sin duplicarla.';}
+  finally{busy=false;controls.forEach(c=>c.disabled=false);$('#save-sale').textContent='Guardar venta';}
   if(saved)await list().catch(()=>message('La venta se guardó. Usá Actualizar para consultar el listado.',true));
  };
 }

@@ -112,7 +112,10 @@ try {
     assert.equal(micBox.x,podcastBox.x+10,'Microphone begins at the links padding');
     await page.screenshot({path:path.join(output,'mobile-menu-'+width+'.png')});
     await page.getByRole('button',{name:'Subcategorías de Mates',exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'Subcategorías de Mates',exact:true}).innerText(),'⌄');
     await page.getByRole('button',{name:'Subcategorías de Termos',exact:true}).click();
+    assert.equal(await page.getByRole('button',{name:'Subcategorías de Mates',exact:true}).innerText(),'>');
+    assert.equal(await page.getByRole('button',{name:'Subcategorías de Termos',exact:true}).innerText(),'⌄');
     assert.equal(await page.locator('.mb-subnav-open').count(),1);
     await page.keyboard.press('Escape');
     assert.equal(await page.getByRole('button',{name:'Abrir navegación',exact:true}).getAttribute('aria-expanded'),'false');
