@@ -10,7 +10,7 @@ export async function mountRetailOrders(){
  let page=1;
  const previous=element('button','Pedidos anteriores','button-secondary'),next=element('button','Pedidos siguientes','button-secondary'),position=element('p');
  panel.append(previous,position,next);
- document.querySelector('#pending-transfers').parentElement.append(panel);
+ document.querySelector('#retail-orders-host').append(panel);
  const money=v=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS'}).format(Number(v));
  async function load(){
   const orders=await api('/admin/pedidos?pagina='+page);

@@ -49,9 +49,10 @@ export async function mountSales(){
   if(body.estado==='por_grabar'&&!items.some(i=>i.personalizacion.trim())){message('Indicá el diseño o grabado solicitado.',true);return;}
   const signature=JSON.stringify(body);if(pending?.signature!==signature)pending={signature,id:crypto.randomUUID()};body.idempotencia=pending.id;
   busy=true;const controls=[...form.elements];controls.forEach(c=>c.disabled=true);let saved=false;
-  try{const sale=await api('/ventas','POST',body);saved=true;pending=null;form.reset();$('#sale-lines').replaceChildren();addLine();total();message(`Venta ${sale.id.slice(0,8).toUpperCase()} guardada. ${sale.estado==='entregada'?'Stock descontado.':'Piezas reservadas.'}`);}
+  $('#save-sale').textContent='Guardando venta…';$('#sale-result').textContent='Guardando venta y actualizando existencias…';
+  try{const sale=await api('/ventas','POST',body);saved=true;pending=null;form.reset();$('#sale-lines').replaceChildren();addLine();total();const notice=`Venta ${sale.id.slice(0,8).toUpperCase()} guardada. ${sale.estado==='entregada'?'Stock descontado.':'Piezas reservadas.'} El administrador recibirá la actualización automáticamente.`;message(notice);$('#sale-result').textContent=notice;}
   catch(e){message(e.message,true);}
-  finally{busy=false;controls.forEach(c=>c.disabled=false);}
+  finally{busy=false;controls.forEach(c=>c.disabled=false);$('#save-sale').textContent='Guardar venta';if(!saved)$('#sale-result').textContent='La operación no quedó confirmada. Podés reintentar con los mismos datos sin duplicarla.';}
   if(saved)await list().catch(()=>message('La venta se guardó. Usá Actualizar para consultar el listado.',true));
  };
 }

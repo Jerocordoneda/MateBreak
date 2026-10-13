@@ -3,6 +3,7 @@ import {api,element,message} from './ui.mjs';
 import {dateTime} from './account-data.js';
 import {mountTeam} from './account-team.js';
 import {mountWholesaleAdmin} from './account-wholesale.js';
+import {mountAdminWorkspace,renderInventory} from './admin-workspace.js';
 
 const $=s=>document.querySelector(s);
 const money=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0});
@@ -36,11 +37,11 @@ function renderDashboard(data){
   $('#dashboard-period-note').textContent=`Resultados de ${periodLabels[data.periodo]}. Actualizado ${new Date(data.hasta).toLocaleString('es-AR')}.`;
   $('#admin-overview').replaceChildren(
     metric('Facturación entregada',money.format(t.facturacion_entregada),`${number.format(t.entregadas)} ventas realizadas`,'primary'),
-    metric('Total registrado',money.format(t.facturacion_registrada),`${number.format(t.ventas)} ventas cargadas`),
+    metric('Facturación neta',data.costos?.facturacion_neta==null?'Sin calcular':money.format(data.costos.facturacion_neta),data.costos?.facturacion_neta==null?`${number.format(data.costos?.unidades_sin_costo??0)} unidades sin costo histórico completo`:'Total vendido menos costo de productos'),
     metric('Pendiente de entrega',money.format(t.monto_pendiente),`${number.format(t.por_grabar+t.por_entregar)} operaciones abiertas`,'pending'),
     metric('Clientes',number.format(t.clientes),`${number.format(t.clientes_nuevos)} nuevos · ${number.format(t.clientes_anteriores)} anteriores`),
     metric('Clientes recurrentes',number.format(t.clientes_recurrentes),'Compraron más de una vez en el historial'),
-    metric('Ticket entregado',money.format(t.ticket_promedio_entregado),`${number.format(t.unidades)} unidades registradas`)
+    metric('Ticket promedio',money.format(t.ticket_promedio_entregado),'Importe entregado ÷ ventas entregadas')
   );
   $('#dashboard-chart-total').textContent=money.format(t.facturacion_entregada);renderChart(data.serie);
   $('#dashboard-states').replaceChildren(
@@ -69,10 +70,12 @@ function renderDashboard(data){
   }));if(!data.recientes.length)recent.append(empty('Sin ventas recientes para mostrar.'));
 }
 
+let dashboardRevision=0;
 async function loadDashboard(){
+  const revision=++dashboardRevision;
   const button=$('#refresh-dashboard');button.disabled=true;
-  try{renderDashboard(await api('/admin/dashboard?periodo='+encodeURIComponent($('#dashboard-period').value)));}
-  finally{button.disabled=false;}
+  try{const data=await api('/admin/dashboard?periodo='+encodeURIComponent($('#dashboard-period').value));if(revision===dashboardRevision)renderDashboard(data);}
+  finally{if(revision===dashboardRevision)button.disabled=false;}
 }
 
 let transferPage=1;
@@ -107,6 +110,9 @@ async function loadTransfers(){
 
 const refreshTransfersEvent=()=>loadTransfers().catch(cause=>message(cause.message,true));
 export async function mountAdmin(currentUser){
+  const loadInventory=async()=>{const stock=await api('/admin/inventario');renderInventory(stock,loadInventory);};
+  $('#refresh-inventory').onclick=()=>loadInventory().catch(e=>message(e.message,true));
+  mountAdminWorkspace(async()=>{await Promise.all([loadDashboard(),loadInventory()]);});
   mountRetailOrders().catch(cause=>message(cause.message,true));
   document.removeEventListener('retail-transfers-refresh',refreshTransfersEvent);
   document.addEventListener('retail-transfers-refresh',refreshTransfersEvent);
@@ -116,9 +122,6 @@ export async function mountAdmin(currentUser){
   $('#dashboard-period').onchange=async()=>{try{await loadDashboard();}catch(e){message(e.message,true);}};
   const dashboard=loadDashboard();
   const team=mountTeam(currentUser);
-  const inventory=api('/admin/inventario').then(stock=>{
-    const total=key=>stock.reduce((sum,item)=>sum+Number(item[key]||0),0);
-    $('#inventory-summary').textContent=`${number.format(total('disponible'))} unidades disponibles · ${number.format(total('reservado'))} reservadas · abrir control de stock y movimientos.`;
-  });
+  const inventory=loadInventory();
   await Promise.all([dashboard,team,inventory,loadTransfers().catch(e=>$('#pending-transfers').replaceChildren(empty(e.message)))]);
 }

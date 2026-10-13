@@ -15,6 +15,7 @@ let currentUser,revision=0,controller;
 function clearCustomer(){for(const id of ['emails','addresses','customer-orders','customer-overview'])$('#'+id).replaceChildren();$('#profile').reset();$('#access-email').value='';}
 window.addEventListener('mb:account-session-invalid',()=>{revision++;controller?.abort();currentUser=null;clearCustomer();$('#loading').hidden=true;$('#role').textContent='';$('#identity').textContent='Ingresá para encontrar todo lo que necesitás.';});
 async function load(){
+ window.dispatchEvent(new Event('mb:account-session-reset'));
  const epoch=++revision;controller?.abort();controller=new AbortController();setRequestScope(controller.signal);clearCustomer();
  setTeamHeader(false);
  $('#identity').textContent='Verificando tu sesión…';$('#role').textContent='';

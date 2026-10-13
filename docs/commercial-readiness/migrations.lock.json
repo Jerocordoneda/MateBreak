@@ -227,6 +227,11 @@
       "file": "20261006224006_payment_reconciliation_completion.sql",
       "status": "staging-payment-completion",
       "sha256LF": "c175c706978420abe2098f654c81ff8ebf876ccc5d3de432a530ed16aba172e5"
+    },
+    {
+      "file": "20261013115607_admin_inventory_sale_costs.sql",
+      "status": "published-staging-admin-costs",
+      "sha256LF": "8daaa9965f9655f4a988a0f187fa9b1af40205a38aca109297bb63b2ae993638"
     }
   ]
 }

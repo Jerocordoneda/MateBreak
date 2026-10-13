@@ -33,6 +33,15 @@ export function inventoryRoutes(app, { admin, authFactory, verifyLiveSession }) 
   };
   app.use('/api/admin', protect);
   app.get('/api/admin/inventario', async (req, res) => res.json(await rpc(req, 'listar')));
+  app.put('/api/admin/inventario/:id/costo', async (req,res) => {
+    const b=req.body??{}, amount=v=>typeof v==='string'&&/^\d{1,9}(?:\.\d{1,2})?$/.test(v);
+    if(!/^[1-9][0-9]{0,18}$/.test(req.params.id)||!amount(b.costo_unitario)||
+      !(b.costo_esperado===null||amount(b.costo_esperado))||!uuid(b.idempotencia)||
+      typeof b.motivo!=='string'||b.motivo.trim().length<3||b.motivo.trim().length>500)
+      throw fail(400,'Revisá costo unitario ARS y motivo');
+    res.json(await rpc(req,'costo',{producto_id:req.params.id,costo_unitario:b.costo_unitario,
+      costo_esperado:b.costo_esperado,idempotencia:b.idempotencia,motivo:b.motivo.trim()}));
+  });
   app.get('/api/admin/inventario/historial', async (req, res) => {
     const id = req.query.producto_id;
     if (id !== undefined && (typeof id !== 'string' || !/^[1-9][0-9]{0,18}$/.test(id))) throw fail(400, 'Artículo inválido');
