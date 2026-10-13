@@ -53,3 +53,9 @@ El formulario de ventas conserva el motivo específico de un rechazo; un fallo d
 Submenús: se elimina la traslación independiente de Tailwind que desplazaba el panel; en desktop aparecen debajo y a la derecha. La flecha cambia al abrir, cerrar, cambiar de grupo o usar Escape.
 
 Validación adicional: 346 pruebas Node, 261 mediciones de header, nueve tamaños/navegaciones y pruebas de orden del registro, errores simultáneos, rechazo de credenciales, recuperación automática y rechazo por stock.
+
+## Accesorios explícitos en ventas del vendedor
+
+Las ventas manuales reservan únicamente los productos agregados por el vendedor: no incluyen una caja automática por mate. Cajas y bombillas se agregan como líneas de producto cuando corresponde. El checkout minorista conserva sus reglas de empaque. Las reservas de cajas históricas permanecen hasta su entrega; no se modifican retroactivamente.
+
+Por indicación del usuario se realizó un conteo auditado de 1.000 cajas físicas en Staging, conservando las 21 reservas existentes: 979 disponibles. El costo se mantiene sin confirmar; no se creó una recepción con costo cero.

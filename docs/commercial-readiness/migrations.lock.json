@@ -232,6 +232,11 @@
       "file": "20261013115607_admin_inventory_sale_costs.sql",
       "status": "published-staging-admin-costs",
       "sha256LF": "8daaa9965f9655f4a988a0f187fa9b1af40205a38aca109297bb63b2ae993638"
+    },
+    {
+      "file": "20261013131229_manual_sale_explicit_accessories.sql",
+      "status": "published-staging-explicit-manual-accessories",
+      "sha256LF": "8e95e71a631a19879a6facf2544fafd433003603e5cc8186e36ff78b24d1bfc0"
     }
   ]
 }
