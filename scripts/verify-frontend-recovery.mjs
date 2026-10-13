@@ -92,15 +92,15 @@ try{
   const card=page.locator('.catalog-card').filter({has:page.locator('a.catalog-image[href="/productos/'+simple.slug+'"]')}),plus=card.locator('.catalog-card-action');
   await plus.evaluate(e=>{e.click();e.click();});await card.getByText('Agregado al carrito').waitFor();assert.equal(candidate.writes.length,1);assert.equal(candidate.writes[0].cantidad,1);
   await plus.click();await page.waitForFunction(()=>document.querySelector('[data-cart-badge]').textContent==='2');assert.equal(candidate.writes.length,2);assert.equal(candidate.writes[1].cantidad,2);
-  const configurable=products.find(p=>p.opciones.length);await page.locator('.catalog-card').filter({has:page.locator('a.catalog-image[href="/productos/'+configurable.slug+'"]')}).locator('.catalog-card-action').click();await page.waitForURL('**/productos/'+configurable.slug);assert.equal(candidate.writes.length,2);
+  const configurable=products.find(p=>p.opciones.length);await page.locator('.catalog-card').filter({has:page.locator('a.catalog-image[href="/productos/'+configurable.slug+'"]')}).locator('.catalog-card-action').click();await page.locator('.catalog-card-options').waitFor();assert.equal(new URL(page.url()).pathname,'/tienda');assert.equal(candidate.writes.length,2);
   const detailURL='**/api/productos/'+simple.slug;
   await page.route(detailURL,route=>route.fulfill({json:{...simple,variantes:[{...simple.variantes[0],con_stock:false}]}}));
   await page.goto(candidate.origin+'/tienda');await page.locator('.catalog-card').first().waitFor();
   await plus.click();await card.getByText('Producto no disponible para agregar.').waitFor();assert.equal(candidate.writes.length,2);
   await page.unroute(detailURL);
   await page.route(detailURL,route=>route.fulfill({json:{...simple,atributos:{...simple.atributos,personalizable_explicitamente:true}}}));
-  await page.goto(candidate.origin+'/tienda');await page.locator('.catalog-card').first().waitFor();await plus.click();await page.waitForURL('**/productos/'+simple.slug);
-  await page.locator('.product-options textarea').fill('Grabado para la demo');await page.getByRole('button',{name:'Agregar al carrito +',exact:true}).click();await page.getByText('Producto agregado. Tu selección está guardada.').waitFor();
+  await page.goto(candidate.origin+'/tienda');await page.locator('.catalog-card').first().waitFor();await plus.click();await page.locator('.catalog-card-options').waitFor();assert.equal(new URL(page.url()).pathname,'/tienda');
+  await page.locator('.catalog-card-options textarea').fill('Grabado para la demo');await page.getByRole('button',{name:'Agregar al carrito',exact:true}).click();await card.getByText('Agregado al carrito').waitFor();
   assert.equal(candidate.writes.length,3);assert.equal(candidate.writes[2].personalizacion,'Grabado para la demo');assert.equal(candidate.writes[2].cantidad,3);
   await page.unroute(detailURL);
   await page.goto(candidate.origin+'/tienda');await page.locator('.catalog-card').first().waitFor();await page.locator('.catalog-card-body').first().click({position:{x:3,y:3}});await page.waitForURL('**/productos/*');

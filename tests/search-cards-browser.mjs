@@ -15,7 +15,7 @@ try{
  for(const width of [1440,1024,768,390,360]){
   const context=await browser.newContext({viewport:{width,height:900}}),p=await context.newPage();p.on('pageerror',e=>errors.push(e.message));
   await p.goto(origin+'/tienda');await p.locator('.catalog-card').first().waitFor();assert.equal(await p.locator('.catalog-card').count(),106);
-  const card=p.locator('.catalog-card').first();assert.equal(new URL(await card.locator('.catalog-card-action').getAttribute('href'),origin).pathname,new URL(await card.locator('.catalog-image').getAttribute('href'),origin).pathname);
+  const card=p.locator('.catalog-card').first();assert.equal(await card.locator('.catalog-card-action').evaluate(e=>e.tagName),'BUTTON');assert.equal(await card.locator('.catalog-card-action').getAttribute('type'),'button');
   assert.equal(await card.locator('img').evaluate(i=>getComputedStyle(i).objectFit),'contain');assert.equal(await p.locator('.catalog-card img[loading=lazy]').count(),104);
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);await p.screenshot({path:path.join(out,'cards-'+width+'.png')});
   await p.getByRole('button',{name:'Buscar productos',exact:true}).click();const input=p.getByRole('searchbox',{name:'Buscar productos'});await input.fill('calabáza');await p.locator('.mb-search-status').filter({hasText:/productos/}).waitFor();assert.ok(await p.locator('.mb-search-results .catalog-card').count()>0);
