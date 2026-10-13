@@ -81,7 +81,7 @@ export function mountPublicHeader(root = document) {
   const navigation=root.createElement('nav');navigation.className='mb-category-nav';navigation.setAttribute('aria-label','Colecciones');navigation.innerHTML=categoryMarkup;categoryBar.replaceChildren(navigation);
   header.classList.add('mb-commerce-header');
   mountResponsiveHeader(root);
-  const toggle=actions.querySelector('.mb-menu-toggle');if(toggle)actions.prepend(toggle);
+  const toggle=actions.querySelector('.mb-menu-toggle');if(toggle)actions.append(toggle);
 }
 
 // Label the already-authorized team screen; this does not grant access or roles.

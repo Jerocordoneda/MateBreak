@@ -125,6 +125,8 @@ body[data-marketing] > main {padding-top:129px;}
 }
 @media(max-width:760px){
   header.mb-public-header .mb-help-nav {display:none;}
+  header.mb-public-header .mb-category-nav > .mb-podcast-link {justify-content:flex-start;}
+  header.mb-public-header .mb-category-nav > .mb-podcast-link > span {display:inline;}
   header.mb-public-header .mb-public-actions > .mb-menu-toggle {box-sizing:border-box;width:44px;height:44px;flex:0 0 44px;padding:0;}
   header.mb-public-header .mb-categorybar {display:none;position:fixed;inset:68px 12px auto;width:auto;max-width:none;margin:0;height:auto;padding:12px;max-height:calc(100dvh - 84px);overflow:auto;overscroll-behavior:contain;background:#1b1b1b;border:1px solid #d8c3a54d;border-radius:10px;}
   header.mb-public-header.mb-nav-open .mb-categorybar {display:block;}
@@ -136,4 +138,8 @@ body[data-marketing] > main {padding-top:129px;}
   body[data-marketing] > main {padding-top:64px;}
   .mb-public-simple .order-summary,.mb-public-simple .checkout-order,.mb-public-simple .wholesale-summary {top:88px;}
   .mb-public-simple :target {scroll-margin-top:88px;}
+}
+@media(max-width:350px){
+  header.mb-public-header .mb-public-brand {flex:0 1 146px;min-width:0;}
+  header.mb-public-header .mb-public-actions {gap:2px;}
 }

@@ -30,7 +30,7 @@ const server = app.listen(0,'127.0.0.1');
 const browser = await chromium.launch({channel:'chrome',headless:true});
 const report = {baseline, files, cases:[], errors:[], navigation:[]};
 try {
- for (const width of [1440,1024,768,390,360]) {
+ for (const width of [1440,1024,768,430,414,390,375,360,320]) {
   const ctx = await browser.newContext({viewport:{width,height:900}});
   const page = await ctx.newPage();
   page.on('pageerror', e => report.errors.push({page:page.url(),error:e.message}));
@@ -74,7 +74,11 @@ try {
     assert.ok(searchBox.x+searchBox.width<=measured.cart.x,'Search immediately precedes cart without overlap');
     assert.ok(measured.brand.x+measured.brand.width<=searchBox.x,'Brand does not overlap search');
     assert.equal(await page.locator('[data-account-link]').innerText(),'','Account is icon only');
-    assert.equal(measured.account.x+measured.account.width,width-measured.logo.x,'Account at right content edge');
+    if(width<=760){
+     const toggle=await page.locator('.mb-menu-toggle').boundingBox();
+     assert.ok(toggle.x>=measured.account.x+measured.account.width,'Menu immediately follows account');
+     assert.equal(toggle.x+toggle.width,width-measured.logo.x,'Menu at right content edge');
+    }else assert.equal(measured.account.x+measured.account.width,width-measured.logo.x,'Account at right content edge');
     if(width>760){
      assert.equal(measured.items.length,6,'Six visible categories');
      assert.ok(Math.abs(measured.items[0].x-measured.logo.x)<1,'Mates starts at logo edge');
@@ -100,6 +104,13 @@ try {
    await page.locator('.mb-public-header').waitFor();
    if(width<=760) {
     await page.getByRole('button',{name:'Abrir navegación',exact:true}).click();
+    const podcast=page.locator('.mb-category-nav > .mb-podcast-link'),wholesale=page.locator('.mb-category-nav > [data-path=regalos]');
+    assert.equal(await podcast.locator('span').isVisible(),true,'Podcast label visible in mobile menu');
+    const podcastBox=await podcast.boundingBox(),wholesaleBox=await wholesale.boundingBox(),micBox=await podcast.locator('svg').boundingBox();
+    assert.ok(podcastBox.y>=wholesaleBox.y+wholesaleBox.height,'Podcast below wholesale');
+    assert.equal(podcastBox.x,wholesaleBox.x,'Podcast aligned with menu links');
+    assert.equal(micBox.x,podcastBox.x+10,'Microphone begins at the links padding');
+    await page.screenshot({path:path.join(output,'mobile-menu-'+width+'.png')});
     await page.getByRole('button',{name:'Subcategorías de Mates',exact:true}).click();
     await page.getByRole('button',{name:'Subcategorías de Termos',exact:true}).click();
     assert.equal(await page.locator('.mb-subnav-open').count(),1);
