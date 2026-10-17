@@ -39,6 +39,7 @@
   },
   "devDependencies": {
     "@tailwindcss/node": "4.3.3",
+    "motion": "14.3.0",
     "supabase": "2.118.0",
     "tailwindcss": "4.3.3"
   },
