@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let raf = null;
   function update() {
     raf = null;
+    // home-motion.js drives the Home curve (and mb:transition) while active.
+    if (home && document.documentElement.hasAttribute('data-mb-home-motion')) return;
     const rect = transition.getBoundingClientRect();
     const progress = Math.max(0, Math.min(1, (innerHeight - rect.top) / (innerHeight + rect.height)));
     // Home's light surface rises from its centre without inertia or a clipped
