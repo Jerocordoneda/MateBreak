@@ -13,9 +13,7 @@ function initSequence(section) {
     const counter = section.querySelector('[data-seq-counter]');
     if (!img) return;
     const homeExperience = section.closest('[data-home]') !== null;
-    const staticView = matchMedia(homeExperience
-        ? '(max-width: 760px)'
-        : '(max-width: 760px), (prefers-reduced-motion: reduce)');
+    const staticView = matchMedia('(max-width: 760px), (prefers-reduced-motion: reduce)');
     if (staticView.matches) {
         const activate = () => {
             if (!staticView.matches) { staticView.removeEventListener('change', activate); initSequence(section); }
@@ -122,7 +120,17 @@ function initSequence(section) {
     function requestLoop() {
         if (rafId === null && visible && !staticView.matches && !document.hidden) rafId = requestAnimationFrame(loop);
     }
-    window.addEventListener('scroll', () => { if (visible) engaged = true; update(); }, {passive: true});
+    // Motion batches Home scroll observation with the pose and golden curve.
+    if (homeExperience && window.Motion) {
+        let previousScroll = window.scrollY;
+        window.Motion.scroll(() => {
+            if (visible && window.scrollY !== previousScroll) engaged = true;
+            previousScroll = window.scrollY; update();
+        },
+            {target: section, offset: ['start end', 'end end']});
+    } else {
+        window.addEventListener('scroll', () => { if (visible) engaged = true; update(); }, {passive: true});
+    }
     window.addEventListener('resize', update, {passive: true});
     document.addEventListener('visibilitychange', update);
     staticView.addEventListener('change', update);

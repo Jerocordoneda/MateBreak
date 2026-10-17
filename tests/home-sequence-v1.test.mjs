@@ -14,7 +14,7 @@ function sequence({width=1440,reduced=false,home=true,fail=false}={}) {
  const drain=async()=>{for(let n=0;n<120;n++){await Promise.resolve();await Promise.resolve();const current=[...queue.values()];queue.clear();clock+=1000/60;current.forEach(f=>f(clock));}assert.equal(queue.size,0,'RAF stops after settling');};
  return {img,counter,queries,preloaded,queue,context,drain,get peak(){return peak;},scroll(topValue){top=topValue;events.scroll?.();},mobile(){media[0].matches=true;media[0].change();},hidden(){document.hidden=true;events.visibilitychange();}};
 }
-for(const reduced of [false,true])test(`Home desktop frame 060, bounded preload, reverse and no flicker; reduced motion ${reduced}`,async()=>{
+for(const reduced of [false])test(`Home desktop frame 060, bounded preload, reverse and no flicker; reduced motion ${reduced}`,async()=>{
  const r=sequence({reduced});await r.drain();assert.ok(r.preloaded.length<=13,'Opening Home does not request all 60');assert.equal(r.peak,2);
  r.scroll(-899);await r.drain();assert.match(r.img.src,/frame-060-removebg-preview.webp$/);assert.equal(r.counter.textContent,'60');
  r.scroll(899);await r.drain();assert.match(r.img.src,/frame-001-removebg-preview.webp$/);assert.equal(r.img.style.opacity,undefined);
@@ -25,7 +25,7 @@ test('Time smoothing is independent of refresh rate',()=>{
  const r=sequence();for(const hz of [60,120,144]){let p=0;for(let n=0;n<hz;n++)p+=(1-p)*r.context.sequenceInterpolationAlpha(1000/hz);assert.ok(Math.abs(p-(1-Math.exp(-1000/18)))<1e-9);}
 });
 test('Home mobile and other reduced-motion pages do not preload',async()=>{
- for(const config of [{width:390},{width:760},{reduced:true,home:false}]){const r=sequence(config);r.scroll(-899);await r.drain();assert.equal(r.img.src,'first.webp');assert.equal(r.preloaded.length,0);}
+ for(const config of [{width:390},{width:760},{reduced:true,home:false},{reduced:true,home:true}]){const r=sequence(config);r.scroll(-899);await r.drain();assert.equal(r.img.src,'first.webp');assert.equal(r.preloaded.length,0);}
 });
 test('Failed images keep the displayed image; hidden tab and resize stop work',async()=>{
  const failed=sequence({fail:true});await failed.drain();assert.equal(failed.img.src,'first.webp');assert.ok(failed.preloaded.length<=13);

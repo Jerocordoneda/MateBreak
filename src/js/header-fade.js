@@ -14,7 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
       ? Math.max(transition.getBoundingClientRect().top, curve.getBoundingClientRect().top)
       : document.querySelector('section.bg-white, footer.bg-white')?.getBoundingClientRect().top;
     const light = boundary != null && boundary <= (homeCurve ? rect.bottom : rect.top + rect.height / 2);
-    if (homeCurve && light === lastLight) return;
+    if (homeCurve) {
+      const progress = Math.min(1, Math.max(0, window.scrollY / 180));
+      header.style.setProperty('--home-header-blur', `${(progress * 14).toFixed(2)}px`);
+      header.style.setProperty('--home-header-edge', progress.toFixed(3));
+      header.style.setProperty('--home-header-background', light
+        ? 'rgba(255,255,255,.94)' : `rgba(19,19,19,${(1 - progress * .12).toFixed(3)})`);
+      header.classList.toggle('header-dark', light);
+      lastLight = light;
+      return;
+    }
     lastLight = light;
     header.classList.toggle('header-dark', light);
     const color=light?'255,255,255':'23,24,21';
@@ -23,11 +32,10 @@ document.addEventListener('DOMContentLoaded', () => {
     header.style.background = `linear-gradient(rgba(${color},.98),rgba(${color},.98))`;
   }
   const schedule = () => {if (raf === null) raf = requestAnimationFrame(() => {raf=null;paint();});};
-  // Home paints in the same frame, after script.js moves the curve.
-  if (!homeCurve) {
-    window.addEventListener('scroll', schedule, {passive:true});
-    window.addEventListener('resize', schedule, {passive:true});
-  }
+  // Header translucency also changes before the curve enters the viewport.
+  // mb:transition repaints after the curve moves, keeping color contact aligned.
+  window.addEventListener('scroll', schedule, {passive:true});
+  window.addEventListener('resize', schedule, {passive:true});
   window.addEventListener('pageshow', schedule);
   document.addEventListener('mb:transition', paint);
   document.addEventListener('visibilitychange', () => {if (!document.hidden) schedule();});
