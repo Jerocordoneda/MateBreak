@@ -171,11 +171,10 @@ dialog::backdrop { background: #0009; }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 
-@media (min-width: 761px) and (prefers-reduced-motion: reduce) {
-  [data-home] [data-seq-img] {
-    animation: mateFloat 4s ease-in-out infinite !important;
-    transition: opacity 150ms ease-out, filter 150ms ease-out !important;
-  }
+/* Reduced motion keeps the scroll-driven photograph sequence (it follows the
+   visitor's own scrolling) but no idle float, parallax, glow or easing. */
+@media (prefers-reduced-motion: reduce) {
+  [data-home] [data-seq-img] { animation: none !important; }
 }
 
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
