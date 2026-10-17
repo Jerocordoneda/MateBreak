@@ -27,15 +27,7 @@
 }
 [data-home] header.mb-public-header .mb-categorybar,
 [data-home] header.mb-public-header .dropdown-menu > div { transition: background-color 360ms ease, border-color 360ms ease; }
-[data-home] [data-seq-img] { animation: none !important; transition: none !important; }
-.mb-curve-glow {
-  position: absolute; inset: -2px 0 0; pointer-events: none; opacity: 0;
-  border-radius: inherit; border-top: 2px solid #f4dcaf;
-  box-shadow: 0 -5px 18px #d8c3a570, 0 -14px 36px #d8c3a530;
-}
 @media (prefers-reduced-motion: reduce) {
   [data-home] > header.fixed,
   [data-home] header.mb-public-header * { transition: none !important; }
-  [data-home] [data-seq-img] { transform: none !important; }
-  .mb-curve-glow { display: none; }
 }

@@ -25,10 +25,7 @@
     "test:staging:fixtures:local": "node scripts/test-staging-fixtures-local.mjs",
     "configure:staging:frontend": "node scripts/configure-staging-frontend.mjs",
     "test:wholesale:account": "node scripts/test-wholesale-account.mjs",
-    "test:wholesale:account:browser": "node tests/wholesale-account-browser.mjs",
-    "build:motion": "node scripts/build-motion.mjs",
-    "predev": "npm run build:motion",
-    "prestart": "npm run build:motion"
+    "test:wholesale:account:browser": "node tests/wholesale-account-browser.mjs"
   },
   "engines": {
     "node": "22.x"
@@ -38,8 +35,7 @@
     "@supabase/supabase-js": "2.116.0",
     "cheerio": "1.1.2",
     "express": "5.2.1",
-    "mathjs": "^15.2.0",
-    "motion": "14.3.0"
+    "mathjs": "^15.2.0"
   },
   "devDependencies": {
     "@tailwindcss/node": "4.3.3",

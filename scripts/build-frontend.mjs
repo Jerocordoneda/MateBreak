@@ -2,7 +2,6 @@
 import {mkdirSync,cpSync,copyFileSync,readFileSync,readdirSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 const root=resolve(import.meta.dirname,'..'), output=resolve(root,'dist');
-if(readFileSync(resolve(root,'index.html'),'utf8').includes('/src/js/vendor/motion-'))await import('./build-motion.mjs');
 if(readFileSync(resolve(root,'index.html'),'utf8').includes('/src/css/utilities-'))await import('./build-utilities.mjs');
 mkdirSync(output,{recursive:true});
 copyFileSync(resolve(root,'index.html'),resolve(output,'index.html'));

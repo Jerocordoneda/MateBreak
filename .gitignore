@@ -9,5 +9,3 @@ supabase/.temp/
 dist/
 vercel.staging.generated.json
 .vercel/
-
-/src/js/vendor/

@@ -17,11 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.dispatchEvent(new Event('mb:transition'));
   }
   const schedule = () => {if (raf === null) raf = requestAnimationFrame(update);};
-  if (home && window.Motion) {
-    window.Motion.scroll(update, {target: transition, offset: ['start end', 'end start']});
-  } else {
-    window.addEventListener('scroll', schedule, {passive:true});
-  }
+  window.addEventListener('scroll', schedule, {passive:true});
   window.addEventListener('resize', schedule, {passive:true});
   reduced.addEventListener('change', schedule);
   window.addEventListener('pageshow', schedule);
