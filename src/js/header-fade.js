@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const rect = header.getBoundingClientRect();
     // The Home curve's apex is the first visible border point to touch the
     // full-width header. Its top is no longer clipped by the dark container.
-    const boundary = homeCurve ? curve.getBoundingClientRect().top : curve && transition
+    const boundary = homeCurve ? (curve.querySelector('[data-curve-apex]') || curve).getBoundingClientRect().top : curve && transition
       ? Math.max(transition.getBoundingClientRect().top, curve.getBoundingClientRect().top)
       : document.querySelector('section.bg-white, footer.bg-white')?.getBoundingClientRect().top;
     const light = boundary != null && boundary <= (homeCurve ? rect.bottom : rect.top + rect.height / 2);

@@ -99,12 +99,16 @@
           <feGaussianBlur stdDeviation="9"/>
         </filter>
       </defs>
-      <path d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"
-        fill="none" stroke="#d8b779" stroke-width="10" opacity=".4" filter="url(#mb-ridge-glow)"/>
+      <g filter="url(#mb-ridge-glow)"><g data-wave-shape><path d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"
+        fill="none" stroke="#d8b779" stroke-width="10" opacity=".4" vector-effect="non-scaling-stroke"/></g></g>
+      <path d="M0 640 H1920 V676 H0 Z" fill="#fff"/>
+      <g data-wave-shape>
       <path d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640 L1920 676 H0 Z" fill="#fff"/>
       <path data-curve-ridge d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"
         fill="none" stroke="url(#mb-ridge-gold)" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      </g>
     </svg>
+    <span data-curve-apex aria-hidden="true"></span>
   </div>
 </div>
 

@@ -60,7 +60,8 @@ const sample = page => page.evaluate(() => {
     frame: Number((img.src.match(/frame-(\d+)/) || [])[1] || 0),
     pose: pose === 'none' ? null : pose.slice(7, -1).split(',').map(Number),
     move: parseFloat(getComputedStyle(curve).getPropertyValue('--curve-move')) || 0,
-    apex: Math.round(curve.getBoundingClientRect().top),
+    apex: Math.round((curve.querySelector('[data-curve-apex]') || curve).getBoundingClientRect().top),
+    wave: Number(curve.dataset.waveAmplitude || 1),
     light: header.classList.contains('header-dark'),
     glint: glint ? (() => { const m = new DOMMatrix(getComputedStyle(glint).transform), cs = getComputedStyle(curve).borderTopLeftRadius.split(' ');
       const px = (v, size) => v.endsWith('%') ? parseFloat(v) / 100 * size : parseFloat(v);
@@ -72,6 +73,8 @@ const sample = page => page.evaluate(() => {
         let lo = 0, hi = ridge.getTotalLength();
         for (let i = 0; i < 20; i++) { const mid = (lo + hi) / 2; if (ridge.getPointAtLength(mid).x < x) lo = mid; else hi = mid; }
         result.expectedY = ridge.getPointAtLength((lo + hi) / 2).y / box.height * curve.offsetHeight;
+        const baseline = curve.offsetHeight * 640 / 676;
+        result.expectedY = baseline + (result.expectedY - baseline) * Number(curve.dataset.waveAmplitude || 1);
       }
       return result; })() : null,
     floating: img.getAnimations().some(a => a.playState === 'running'),
@@ -133,7 +136,11 @@ for (const viewport of viewports) {
     });
     if (reduced === 'no-preference') {
       check(`${label} mate pose is scroll-linked`, () => assert.ok(poses.size >= 8, `distinct poses ${poses.size}`));
-      check(`${label} curve rises its full travel without flattening`, () => assert.ok(Math.abs(last.move + travel) < 1.5, `${last.move} vs -${travel}`));
+      check(`${label} curve rises its full travel`, () => assert.ok(Math.abs(last.move + travel) < 1.5, `${last.move} vs -${travel}`));
+      check(`${label} wave opens from lower edge into full mountain`, () => {
+        assert.ok(first.wave < .02); assert.equal(last.wave, 1);
+        assert.ok(rows.some(r => r.wave > .15 && r.wave < .85));
+      });
       check(`${label} halo and glint layers exist and float runs`, () => {
         assert.equal(first.haloLayers, 2);
         assert.ok(rows.some(r => r.floating) || first.floating, 'float animation never ran');
@@ -172,7 +179,7 @@ for (const viewport of viewports) {
       }
     } else {
       check(`${label} reduced: no pose, halo, glint, float or curve travel`, () => {
-        assert.ok(rows.every(r => r.pose === null && r.haloLayers === 0 && !r.floating && r.move === 0), 'motion leaked');
+        assert.ok(rows.every(r => r.pose === null && r.haloLayers === 0 && !r.floating && r.move === 0 && r.wave === 1), 'motion leaked');
       });
       if (wide) check(`${label} reduced: scroll-driven photograph sequence still plays`, () => assert.equal(last.frame, 60));
     }

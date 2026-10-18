@@ -80,12 +80,14 @@
       // The glint follows the local SVG ridge, or the legacy ellipse where no
       // ridge is present. Only transform and opacity change per animation frame.
       let arc = {rx: 1, ry: 0, half: 1, gw: 0, gh: 0};
+      let waveAmplitude = 1, sweepPosition = -1;
       const ridge = curve.querySelector?.('[data-curve-ridge]');
       const radius = (value, size) => value.endsWith('%') ? parseFloat(value) / 100 * size : parseFloat(value);
       const measureArc = () => {
         const [rx, ry] = getComputedStyle(curve).borderTopLeftRadius.split(' ');
         arc = {rx: radius(rx, curve.offsetWidth) || 1, ry: radius(ry || rx, curve.offsetHeight) || 0,
-          half: innerWidth * .56, gw: glint.offsetWidth, gh: glint.offsetHeight};
+          half: innerWidth * .56, gw: glint.offsetWidth, gh: glint.offsetHeight,
+          baseline: curve.offsetHeight * 640 / 676};
         if (ridge) {
           const box = ridge.ownerSVGElement.viewBox.baseVal;
           const length = ridge.getTotalLength();
@@ -98,11 +100,13 @@
         }
       };
       const place = t => {
+        sweepPosition = t;
         if (arc.points) {
           const position = clamp(0, 1, (t + 1) / 2) * (arc.points.length - 1);
           const a = Math.floor(position), b = Math.min(a + 1, arc.points.length - 1);
           const x = lerp(arc.points[a].x, arc.points[b].x, position - a);
-          const y = lerp(arc.points[a].y, arc.points[b].y, position - a);
+          const ridgeY = lerp(arc.points[a].y, arc.points[b].y, position - a);
+          const y = arc.baseline + (ridgeY - arc.baseline) * waveAmplitude;
           glint.style.transform = `translate3d(${(x - arc.gw / 2).toFixed(1)}px,${(y - arc.gh / 2).toFixed(1)}px,0)`;
           return;
         }
@@ -116,14 +120,17 @@
       root.setAttribute('data-mb-home-motion', '');
       own(() => root.removeAttribute('data-mb-home-motion'));
       const travelRatio = Number(transition.dataset?.curveTravel || .65);
-      let travel = transition.offsetHeight * travelRatio;
-      const measure = new ResizeObserver(() => { travel = transition.offsetHeight * travelRatio; measureArc(); });
+      let height = transition.offsetHeight;
+      let travel = height * travelRatio;
+      const measure = new ResizeObserver(() => { height = transition.offsetHeight; travel = height * travelRatio; measureArc(); });
       measure.observe(transition);
       own(() => measure.disconnect());
       follow(transition, p => {
         // Same configured travel and easing as script.js; the
         // header reads the rendered apex on mb:transition, so contact stays exact.
         curve.style.setProperty('--curve-move', `${(-travel * smoothstep(p)).toFixed(2)}px`);
+        waveAmplitude = curve.mbSetWave?.(p, false, height) ?? 1;
+        if (ridge) place(sweepPosition);
         const peak = Math.sin(Math.PI * clamp(0, 1, p * 1.15));
         halo.style.opacity = (.4 + .6 * peak).toFixed(3);
         glint.style.opacity = ((ridge ? .4 : 1) * (.5 + .5 * peak)).toFixed(3);

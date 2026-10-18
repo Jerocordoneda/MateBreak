@@ -8,7 +8,7 @@ import express from 'express';
 import {productCardData} from '../server/modules/catalog/routes.mjs';
 const out=process.env.MATEBREAK_CURVE_PROOF;assert.ok(out);fs.mkdirSync(out,{recursive:true});
 const products=JSON.parse(fs.readFileSync(process.env.MATEBREAK_CATALOG_SNAPSHOT));
-const changed=['index.html','src/js/home-motion.js','src/js/script.js'];
+const changed=['index.html','src/js/home-motion.js','src/js/script.js','src/js/header-fade.js'];
 const before=Object.fromEntries(changed.map(file=>[file,execFileSync('git',['show','ff1cf5e:'+file],{encoding:'utf8'})]));
 const servers=[];
 for(const version of ['before','after']){
@@ -65,7 +65,7 @@ if(!process.argv.includes('--serve')){
           assert.notEqual(state.pose,pose,'Mate keeps its scroll-linked pose');
           for(const y of [top-120,top,top+600,top-120,0]){
             await page.evaluate(y=>scrollTo({top:y,behavior:'instant'}),y);await page.waitForTimeout(400);
-            assert.ok(await page.evaluate(()=>{const h=document.querySelector('header'),c=document.querySelector('.matebreak-curve');return h.classList.contains('header-dark')===(c.getBoundingClientRect().top<=h.getBoundingClientRect().bottom);}), 'Header follows actual apex');
+            assert.ok(await page.evaluate(()=>{const h=document.querySelector('header'),c=document.querySelector('[data-curve-apex]');return h.classList.contains('header-dark')===(c.getBoundingClientRect().top<=h.getBoundingClientRect().bottom);}), 'Header follows actual apex');
           }
           await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(300);
           assert.ok(await page.evaluate(()=>!document.documentElement.hasAttribute('data-mb-home-motion')&&getComputedStyle(document.querySelector('[data-seq-img]').parentElement).transform==='none'));

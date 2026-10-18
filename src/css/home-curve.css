@@ -12,6 +12,10 @@
   display: block; position: relative; z-index: 1;
   width: 100%; height: 100%; overflow: visible;
 }
+.mb-curve-mountain [data-curve-apex] {
+  position: absolute; left: 50%; top: var(--wave-apex, 0%);
+  width: 1px; height: 1px; pointer-events: none;
+}
 /* The translated SVG always joins the following white section, including on
    resize and with Motion disabled. The container clips this extension below. */
 .mb-curve-mountain::after {
