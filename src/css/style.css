@@ -188,18 +188,6 @@ header.header-dark .dropdown-menu a:hover {
 
 /* ===== Header que se funde con el fondo ===== */
 
-/* Capa de blur con máscara: se desvanece hacia abajo junto al degradado */
-.header-fade-blur {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, #000 30%, transparent 100%);
-}
-
 /* Sin fondo sólido, sin borde inferior y sin sombra dura:
    el degradado (puesto por header-fade.js) hace la transición */
 body > header.fixed {

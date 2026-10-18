@@ -61,8 +61,12 @@ export function mountPublicHeader(root = document) {
   });
   actions.append(search,cart, account);
   let help=header.querySelector('.mb-help-nav');
-  if(!help){help=root.createElement('nav');help.className='mb-help-nav';help.innerHTML=helpMarkup;}
+  if(!help){help=root.createElement('nav');help.className='mb-help-nav';}
+  // Same links and URLs on every page (the Podcast reference); only the current
+  // page is marked. Ayuda and FAQs share a URL, so the last match wins.
+  help.innerHTML=helpMarkup;
   help.setAttribute('aria-label','Información');
+  [...help.querySelectorAll('a')].filter(link=>link.pathname===root.location?.pathname).at(-1)?.setAttribute('aria-current','page');
   const brandWrapper = brand.parentElement;
   bar.prepend(brand);
   bar.append(help);

@@ -1,5 +1,6 @@
 import {mountPublicBranding} from './public-branding.mjs';
 import {mountPublicHeader} from './public-header.mjs';
+import './header-fade.js';
 mountPublicBranding();
 mountPublicHeader();
 // Enhance navigation separately; commerce state continues through the existing cart module.

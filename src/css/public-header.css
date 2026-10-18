@@ -5,7 +5,19 @@ header.mb-public-header {
   position: fixed; inset: 0 0 auto; z-index: 50;
   width: 100%; max-width: none; margin: 0; padding: 0;
   display: block; border: 0; color: #efeee7;
-  background: #171815; box-shadow: 0 1px 8px #0002;
+  /* Podcast reference: the header blends into the page instead of a solid band
+     or hard shadow. The tint is the page's own background (set by header-fade.js),
+     so it is invisible at rest and only keeps text legible over scrolled content;
+     it and the masked blur layer (::before) fade out below the navigation. */
+  --mb-header-tint: 19, 19, 19;
+  background: linear-gradient(to bottom, rgba(var(--mb-header-tint), .94) 0%, rgba(var(--mb-header-tint), .92) 80%, rgba(var(--mb-header-tint), 0) 100%);
+  box-shadow: none;
+}
+header.mb-public-header::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 80%, transparent 100%);
 }
 header.mb-public-header .mb-public-mainbar {
   position: relative; display: flex; align-items: center; justify-content: space-between;
@@ -78,9 +90,11 @@ header.mb-public-header button:focus-visible { outline: 2px solid #f4bb92; outli
 }
 
 /* The approved Home's two rows also work without page-specific utility CSS. */
-header.mb-public-header { backdrop-filter: blur(24px); }
 header.mb-public-header .mb-help-nav { display:flex; align-items:center; gap:40px; font:400 20px/28px 'Geist',sans-serif; letter-spacing:2px; text-transform:uppercase; }
 header.mb-public-header .mb-help-nav small {font-size:.55em;}
+header.mb-public-header .mb-help-nav a {color:inherit;text-decoration:none;}
+header.mb-public-header .mb-help-nav a:hover,
+header.mb-public-header .mb-help-nav a[aria-current="page"] {color:#ebbb97;}
 header.mb-public-header .mb-categorybar {box-sizing:border-box;width:100%;max-width:1280px;margin:0 auto;height:49px;border-top:1px solid #4947411a;padding:0 64px;display:flex;align-items:center;}
 header.mb-public-header .mb-category-nav {display:flex;align-items:center;justify-content:space-between;width:100%;gap:0;margin:0;padding:0;font:500 14px/20px 'Geist',sans-serif;letter-spacing:1.4px;text-transform:uppercase;color:#c8c5c4;}
 header.mb-public-header .mb-category-nav > a,header.mb-public-header .mb-category-nav > .group {flex-shrink:0;}

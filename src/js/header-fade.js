@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Loaded once for every page through header-account.js.
+  if (window.mbHeaderTheme) return;
+  window.mbHeaderTheme = true;
   const header = document.querySelector('header.mb-public-header, header');
   if (!header) return;
   const transition = document.querySelector('.matebreak-transition');
@@ -6,6 +9,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const homeCurve = document.body.hasAttribute('data-home') && transition && curve;
   let raf = null;
   let lastLight = null;
+  // Tint the shared header with the page's own dark background so it blends in.
+  if (!homeCurve) for (const element of [document.body, document.documentElement]) {
+    const [r, g, b, a = 1] = (getComputedStyle(element).backgroundColor.match(/[\d.]+/g) || []).map(Number);
+    if (!(a > .5)) continue;
+    if (.2126 * r + .7152 * g + .0722 * b < 60) header.style.setProperty('--mb-header-tint', `${r}, ${g}, ${b}`);
+    break;
+  }
   function paint() {
     const rect = header.getBoundingClientRect();
     // The Home curve's apex is the first visible border point to touch the
@@ -26,10 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     lastLight = light;
     header.classList.toggle('header-dark', light);
-    const color=light?'255,255,255':'23,24,21';
-    // Marketing's legacy CSS clears background-color with !important;
-    // an opaque gradient paints both approved rows without changing geometry.
-    header.style.background = `linear-gradient(rgba(${color},.98),rgba(${color},.98))`;
+    // Over dark content the shared Podcast surface applies (transparent + masked
+    // blur in public-header.css). Over a light section the text turns dark, so the
+    // header needs an opaque light surface to keep its contrast.
+    header.style.background = light ? 'linear-gradient(rgba(255,255,255,.98),rgba(255,255,255,.98))' : '';
   }
   const schedule = () => {if (raf === null) raf = requestAnimationFrame(() => {raf=null;paint();});};
   // Header translucency also changes before the curve enters the viewport.
