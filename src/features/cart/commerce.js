@@ -1,4 +1,5 @@
 import {money as formatMoney} from '../../services/products.js';
+import {pageTitle} from '../../js/page-meta.mjs';
 const direct=new URLSearchParams(location.search).get('directa')==='1';
 const $ = selector => document.querySelector(selector);
 const money = value => formatMoney(value,cart.moneda||'ARS');
@@ -31,7 +32,7 @@ function showPage(focus = false) {
   for (const link of document.querySelectorAll('[data-nav]')) {
     if (link.dataset.nav === name) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
   }
-  document.title = (direct&&name==='carrito'?'Compra inmediata':({ carrito: 'Tu carrito', catalogo: 'Catálogo', cuenta: 'Mi cuenta', pedidos: 'Mis pedidos' })[name]) + ' · MateBreak';
+  document.title = pageTitle(direct&&name==='carrito'?'Compra inmediata':({ carrito: 'Tu carrito', catalogo: 'Catálogo', cuenta: 'Mi cuenta', pedidos: 'Mis pedidos' })[name]);
   if(direct){$('#carrito h1').textContent='Tu compra inmediata.';}
   if (focus) { const title = $('#' + name + ' h1'); title.tabIndex = -1; title.focus({ preventScroll: true }); window.scrollTo({ top: 0 }); }
 }

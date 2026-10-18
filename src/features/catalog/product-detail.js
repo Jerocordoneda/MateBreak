@@ -2,12 +2,13 @@ import {getProductBySlug,money} from '../../services/products.js';
 import {node,setProductPhoto} from './catalog-ui.js';
 import {resolveProductSelection} from './product-selection.mjs';
 import {addCartItem} from '../cart/add-item.js';
+import {setPageMeta,summarize} from '../../js/page-meta.mjs';
 const root=document.querySelector('#product-content');
 async function init(){
   try{
     const slug=decodeURIComponent(location.pathname.split('/').filter(Boolean).at(-1));
     const p=await getProductBySlug(slug);if(!p){root.replaceChildren(node('h1','Producto no encontrado'));return;}
-    document.title=p.nombre+' · MateBreak';
+    setPageMeta({name:p.nombre,description:summarize(p.descripcion)||undefined,path:'/productos/'+encodeURIComponent(p.slug||slug)});
     const crumbs=node('nav',null,'product-breadcrumb');crumbs.setAttribute('aria-label','Ubicación');const back=node('a','← Todo el catálogo');back.href='/tienda';crumbs.append(back);
     for(const c of p.categorias){const a=node('a',c.nombre);a.href='/tienda?categoria='+encodeURIComponent(c.slug);crumbs.append(node('span','/'),a);}
     const layout=node('div',null,'product-detail'),gallery=node('div'),hero=node('div',null,'product-gallery-main'),thumbs=node('div',null,'product-thumbnails');
