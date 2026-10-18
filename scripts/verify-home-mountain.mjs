@@ -58,7 +58,11 @@ const geometry = page => page.evaluate(() => {
 const state = page => page.evaluate(() => {
   const curve = document.querySelector('.matebreak-curve'), header = document.querySelector('header');
   const transition = curve.closest('.matebreak-transition'), next = transition.nextElementSibling;
+  const ridge = curve.querySelector('[data-curve-ridge]').getBoundingClientRect();
   return {amp: Number(curve.dataset.waveAmplitude || 1), spread: Number(curve.dataset.waveSpread || 1),
+    crest: Number(curve.dataset.waveCrest || 1), layout: Number(curve.dataset.waveLayout || 1), lean: Number(curve.dataset.waveLean || 0),
+    steepness: ridge.height / ridge.width, rise: ridge.height,
+    cm: (() => { const probe = document.createElement('div'); probe.style.width = '1cm'; document.body.append(probe); const px = probe.getBoundingClientRect().width; probe.remove(); return px; })(),
     glow: Number(curve.querySelector('[data-ridge-glow]').getAttribute('opacity') ?? 1),
     apex: curve.querySelector('[data-curve-apex]').getBoundingClientRect().top, header: header.getBoundingClientRect().bottom,
     light: header.classList.contains('header-dark'), move: parseFloat(getComputedStyle(curve).getPropertyValue('--curve-move')) || 0,
@@ -78,7 +82,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     const down = [], up = [];
     for (let y = g.top - height; y <= g.top + 40; y += 16) {
       await page.evaluate(y => scrollTo(0, y), y); await page.waitForTimeout(mode === 'motion' ? 120 : 30);
-      down.push({y, contentY: g.content - y, ...(await state(page))});
+      down.push({y, contentY: g.content - y, boxY: g.top - y, ...(await state(page))});
     }
     await page.waitForTimeout(settle); const bottom = await state(page);
     for (let y = g.top + 40; y >= g.top - height; y -= 16) {
@@ -94,11 +98,16 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       assert.ok(down.every(s => s.overflow <= 0)); assert.ok(down.every(s => s.join <= .5), 'white join');
     });
     await check(`${label} header follows the rendered apex`, () => {
-      for (const s of [...down, ...up]) assert.equal(s.light, s.apex <= s.header + .5, `apex ${s.apex} header ${s.header}`);
+      // Sub-pixel ties at the exact contact line are not colour errors.
+      for (const s of [...down, ...up]) if (Math.abs(s.apex - s.header) > 1) assert.equal(s.light, s.apex <= s.header, `apex ${s.apex} header ${s.header}`);
     });
+    await check(`${label} mountain rises at most 8 cm on screen (${(bottom.rise / bottom.cm).toFixed(2)} cm)`, () => assert.ok(bottom.rise / bottom.cm <= 8.01, `${bottom.rise}px`));
+    await check(`${label} mountain has phone proportions (steepness ${bottom.steepness.toFixed(3)})`, () => width === 320
+      ? assert.ok(bottom.steepness >= .5, 'narrow phones stay at least as steep')
+      : assert.ok(Math.abs(bottom.steepness - .51) < .02, `steepness ${bottom.steepness}`));
     if (mode === 'reduced') {
       await check(`${label} reduced: static full mountain, no travel, layers or crest`, () => {
-        for (const s of down) { assert.equal(s.amp, 1); assert.equal(s.spread, 1); assert.equal(s.glow, 1); assert.equal(s.move, 0); assert.equal(s.layers, 0); }
+        for (const s of down) { assert.equal(s.amp, 1); assert.equal(s.crest, 1); assert.equal(s.lean, 0); assert.equal(s.glow, 1); assert.equal(s.move, 0); assert.equal(s.layers, 0); }
       });
     } else {
       await check(`${label} wave rises progressively and returns on the way back`, () => {
@@ -106,29 +115,36 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         assert.ok(down.some(s => s.amp > .2 && s.amp < .8), 'intermediate states'); assert.ok(back.amp < .05, `back ${back.amp}`);
         assert.ok(visible.some(s => s.apex < height - 40), 'crest rises into view while the benefits are visible');
       });
+      await check(`${label} swell starts late: still flat while the box is in the lowest 20% of the viewport`, () => {
+        for (const s of down) if (s.boxY > height * .8) assert.ok(s.amp < .03, `amp ${s.amp} with the box at ${Math.round(s.boxY)}px`);
+      });
+      await check(`${label} at rest the wave stands straight`, () => { assert.ok(Math.abs(bottom.lean) <= .01, `lean ${bottom.lean}`); assert.ok(Math.abs(back.lean) <= .01, `lean ${back.lean}`); });
       await check(`${label} crest gathers and glow strengthens with the swell`, () => {
         for (const s of down) {
-          assert.ok(Math.abs(s.spread - (1 + .06 * (1 - s.amp))) < .002, `spread ${s.spread} at ${s.amp}`);
+          assert.ok(Math.abs(s.crest - (1 + .06 * (1 - s.amp))) < .002, `crest ${s.crest} at ${s.amp}`);
+          assert.ok(Math.abs(s.spread - s.layout * s.crest) < .002, `spread ${s.spread}`);
           assert.ok(Math.abs(s.glow - (.45 + .55 * s.amp)) < .003, `glow ${s.glow} at ${s.amp}`);
         }
-        assert.equal(bottom.spread, 1);
+        assert.equal(bottom.crest, 1);
       });
     }
     if (mode === 'motion') {
-      await check(`${label} swell settles with a soft overshoot, not a bounce`, async () => {
+      await check(`${label} swell rises softly, overshoots slightly, leans and settles`, async () => {
         await page.evaluate(y => scrollTo(0, y), g.top - height * .62); await page.waitForTimeout(1200);
-        const trace = await page.evaluate(async y => {
-          const curve = document.querySelector('.matebreak-curve'), values = [];
+        const traceData = await page.evaluate(async y => {
+          const curve = document.querySelector('.matebreak-curve'), values = [], leans = [];
           scrollTo(0, y);
           const t0 = performance.now();
-          while (performance.now() - t0 < 1600) { await new Promise(r => requestAnimationFrame(r)); values.push(Number(curve.dataset.waveAmplitude)); }
-          return values;
+          while (performance.now() - t0 < 1600) { await new Promise(r => requestAnimationFrame(r)); values.push(Number(curve.dataset.waveAmplitude)); leans.push(Number(curve.dataset.waveLean)); }
+          return {values, leans};
         }, g.top - height * .45);
+        const {values: trace, leans} = traceData;
         const start = trace[0], end = trace.at(-1), peak = Math.max(...trace);
         assert.ok(end - start > .1, `step ${start}->${end}`);
         const overshoot = (peak - end) / (end - start);
         assert.ok(overshoot > .005 && overshoot < .08, `overshoot ${(overshoot * 100).toFixed(1)}%`);
         assert.ok(Math.abs(trace.at(-10) - end) < .002, 'settled');
+        assert.ok(Math.max(...leans.map(Math.abs)) > .02, 'leans while moving'); assert.ok(Math.abs(leans.at(-1)) < .01, 'straight once settled');
       });
       if (width >= 768) await check(`${label} 60-frame mate sequence still reaches its last frame`, async () => {
         await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);

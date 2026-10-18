@@ -95,15 +95,22 @@
           <stop offset=".5" stop-color="#f2dfb6"/><stop offset=".68" stop-color="#dcc295"/>
           <stop offset="1" stop-color="#b98d48"/>
         </linearGradient>
-        <filter id="mb-ridge-glow" x="-10%" y="-100%" width="120%" height="300%" color-interpolation-filters="sRGB">
-          <feGaussianBlur stdDeviation="9"/>
+        <!-- Two soft layers: a close luminous edge and a wide diffuse halo. -->
+        <filter id="mb-ridge-glow" x="-15%" y="-150%" width="130%" height="400%" color-interpolation-filters="sRGB">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="5" result="near"/>
+          <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="far"/>
+          <feMerge><feMergeNode in="far"/><feMergeNode in="far"/><feMergeNode in="near"/></feMerge>
         </filter>
       </defs>
-      <g filter="url(#mb-ridge-glow)" data-ridge-glow><g data-wave-shape><path d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"
-        fill="none" stroke="#d8b779" stroke-width="10" opacity=".4" vector-effect="non-scaling-stroke"/></g></g>
-      <path d="M0 640 H1920 V676 H0 Z" fill="#fff"/>
+      <g filter="url(#mb-ridge-glow)" data-ridge-glow><g data-wave-shape><path d="M-600 640 H0 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640 H2520"
+        fill="none" stroke="#ecc988" stroke-width="7" opacity=".62" vector-effect="non-scaling-stroke"/></g></g>
+      <!-- Fixed white base (not transformed); it reaches below the box so the
+           diffuse glow never shows under the baseline. The box clips it. -->
+      <path d="M-600 640 H2520 V1400 H-600 Z" fill="#fff"/>
       <g data-wave-shape>
-      <path d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640 L1920 676 H0 Z" fill="#fff"/>
+      <path d="M-600 640 H0 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640 H2520 L2520 676 H-600 Z" fill="#fff"/>
+      <!-- Flat gold shoulders beyond the bell; the ridge itself is sampled by the glint. -->
+      <path d="M-600 640 H0 M1920 640 H2520" fill="none" stroke="#b98d48" stroke-width="2" vector-effect="non-scaling-stroke"/>
       <path data-curve-ridge d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"
         fill="none" stroke="url(#mb-ridge-gold)" stroke-width="2" vector-effect="non-scaling-stroke"/>
       </g>

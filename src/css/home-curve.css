@@ -1,12 +1,16 @@
 /* Home only: local vector mountain, with room for its subtle 18% rise. */
 [data-home] .matebreak-transition.mb-mountain-transition {
-  height: clamp(210px, 35.2vw, 620px);
+  /* The mountain (baseline to crest = 640/676 of the box) rises at most 8 cm on
+     screen at 100% zoom: CSS cm = 37.8 px, so the box is capped at 8.45cm. Phones
+     (210 px box, ~5.3 cm) are unchanged; wide screens keep the phone steepness. */
+  height: min(clamp(210px, 35.2vw, 620px), 8.45cm);
   /* The box's upper part is empty dark space reserved for the rising wave, so it
      overlaps the benefits section's bottom padding and the two sections read as
      one. What remains above the box is just what the risen apex needs to stay
-     clear of the benefits text (its travel is ~10% of the box height), plus a
+     clear of the benefits text (its travel is ~10% of the box height, so this
+     tracks the capped height), plus a
      margin; scripts/verify-home-mountain.mjs measures that clearance. */
-  --mb-wave-clearance: calc(22px + clamp(21px, 3.52vw, 62px));
+  --mb-wave-clearance: calc(22px + min(clamp(21px, 3.52vw, 62px), .845cm));
   margin-top: calc(var(--mb-wave-clearance) - 120px);
 }
 @media (max-width: 1023px) {
@@ -36,6 +40,6 @@
 .mb-curve-mountain .mb-curve-glint {
   /* Keep the glint below the opaque SVG fill: light can only tint the dark
      side of the ridge, including on its steep shoulders. */
-  z-index: 0; left: 0; width: clamp(70px, 16vw, 220px); height: 34px;
+  z-index: 0; left: 0; width: clamp(70px, 16vw, 140px); height: 34px;
   background: radial-gradient(closest-side, #fff5d9aa, #dcc29544 45%, #dcc29500);
 }

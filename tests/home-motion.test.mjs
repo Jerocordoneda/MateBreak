@@ -131,16 +131,31 @@ test('With motion allowed the layer builds once, pauses idle loops offscreen, an
   assert.equal(h.log.scroll, 2);
 });
 
-test('Mountain integration: closer sections, organic crest, glow tied to the swell and a livelier wave spring', () => {
+test('Mountain: close sections, phone proportions everywhere, delayed swell, lean, two-layer glow and a soft wave spring', () => {
   const curveCss = read('src/css/home-curve.css'), painter = read('src/js/script.js');
   // Only the clearance the risen apex needs remains above the box (padding: 120px, or clamp(36px, 6vw, 60px) below 1024px).
-  assert.match(curveCss, /--mb-wave-clearance: calc\(22px \+ clamp\(21px, 3\.52vw, 62px\)\);\n\s*margin-top: calc\(var\(--mb-wave-clearance\) - 120px\);/);
+  // The mountain rises at most 8 cm at 100% zoom (CSS cm): the box is capped at 8.45cm, 640/676 of it is the mountain.
+  assert.match(curveCss, /height: min\(clamp\(210px, 35\.2vw, 620px\), 8\.45cm\);/);
+  assert.match(curveCss, /--mb-wave-clearance: calc\(22px \+ min\(clamp\(21px, 3\.52vw, 62px\), \.845cm\)\);\n\s*margin-top: calc\(var\(--mb-wave-clearance\) - 120px\);/);
   assert.match(curveCss, /@media \(max-width: 1023px\) \{\n\s*\/\*[^*]*\*\/\n\s*\[data-home\] \.matebreak-transition\.mb-mountain-transition \{ margin-top: calc\(var\(--mb-wave-clearance\) - clamp\(36px, 6vw, 60px\)\); \}/);
-  assert.match(painter, /const start = \.06;/);
-  assert.match(painter, /const spread = still \? 1 : 1 \+ \.06 \* \(1 - amplitude\);/);
-  assert.match(painter, /scale\(\$\{spread\.toFixed\(5\)\} \$\{amplitude\.toFixed\(5\)\}\)/);
+  // Same steepness as on a 390 px phone; phones keep their shape (layout capped at 1).
+  assert.match(painter, /const PHONE_STEEPNESS = 1\.53;/);
+  assert.match(painter, /const layout = Math\.min\(1, \(box\.height \/ 676\) \/ \(\(box\.width \|\| 1\) \/ 1920\) \/ PHONE_STEEPNESS\);/);
+  assert.match(painter, /const start = \.22 \* innerHeight \/ \(innerHeight \+ height\);/);
+  assert.match(painter, /const crest = still \? 1 : 1 \+ \.06 \* \(1 - amplitude\);/);
+  assert.match(painter, /const tilt = still \? 0 : lean;/);
+  assert.match(painter, /\[spread, 0, tilt \* amplitude \* layout, amplitude, 0, 0\]/);
   assert.match(painter, /ridgeGlow\?\.setAttribute\('opacity', still \? '1' : \(\.45 \+ \.55 \* amplitude\)\.toFixed\(3\)\);/);
+  assert.doesNotMatch(painter, /offsetWidth[^;]*;\s*\n\s*const start/, 'no layout reads inside the per-frame painter');
+  // Markup: flat shoulders, a fixed white base below the baseline and the two-layer glow.
   assert.match(home, /<g filter="url\(#mb-ridge-glow\)" data-ridge-glow>/);
-  assert.match(motionSource, /if \(curve\.mbSetWave\) follow\(transition, p => \{[\s\S]*?\}, \{stiffness: 120, damping: 15, mass: \.9/);
-  assert.match(motionSource, /\(lerp\(arc\.points\[a\]\.x, arc\.points\[b\]\.x, position - a\) - centre\) \* waveSpread/);
+  assert.match(home, /<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="near"\/>/);
+  assert.match(home, /<feGaussianBlur in="SourceGraphic" stdDeviation="18" result="far"\/>/);
+  assert.match(home, /<path d="M-600 640 H2520 V1400 H-600 Z" fill="#fff"\/>/);
+  assert.match(home, /<path d="M-600 640 H0 M1920 640 H2520" fill="none" stroke="#b98d48"/);
+  assert.match(home, /<path data-curve-ridge d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"/);
+  // Motion: lean from the wave spring's own velocity; soft underdamped spring.
+  assert.match(motionSource, /waveLean = waveSmooth \? clamp\(-\.07, \.07, -waveSmooth\.getVelocity\(\) \* \.06\) : 0;/);
+  assert.match(motionSource, /if \(curve\.mbSetWave\) waveSmooth = follow\(transition, p => \{[\s\S]*?\}, \{stiffness: 45, damping: 9, mass: \.9/);
+  assert.match(motionSource, /\(lerp\(arc\.points\[a\]\.x, arc\.points\[b\]\.x, position - a\) - centre\) \* waveSpread\n\s*\+ waveLean \* waveLayout \* rise/);
 });

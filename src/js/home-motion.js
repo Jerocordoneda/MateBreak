@@ -80,13 +80,13 @@
       // The glint follows the local SVG ridge, or the legacy ellipse where no
       // ridge is present. Only transform and opacity change per animation frame.
       let arc = {rx: 1, ry: 0, half: 1, gw: 0, gh: 0};
-      let waveAmplitude = 1, waveSpread = 1, sweepPosition = -1;
+      let waveAmplitude = 1, waveSpread = 1, waveLayout = 1, waveLean = 0, sweepPosition = -1;
       const ridge = curve.querySelector?.('[data-curve-ridge]');
       const radius = (value, size) => value.endsWith('%') ? parseFloat(value) / 100 * size : parseFloat(value);
       const measureArc = () => {
         const [rx, ry] = getComputedStyle(curve).borderTopLeftRadius.split(' ');
         arc = {rx: radius(rx, curve.offsetWidth) || 1, ry: radius(ry || rx, curve.offsetHeight) || 0,
-          half: innerWidth * .56, gw: glint.offsetWidth, gh: glint.offsetHeight,
+          half: innerWidth * .56, gw: glint.offsetWidth, gh: glint.offsetHeight, w: curve.offsetWidth, h: curve.offsetHeight,
           baseline: curve.offsetHeight * 640 / 676};
         if (ridge) {
           const box = ridge.ownerSVGElement.viewBox.baseVal;
@@ -104,10 +104,14 @@
         if (arc.points) {
           const position = clamp(0, 1, (t + 1) / 2) * (arc.points.length - 1);
           const a = Math.floor(position), b = Math.min(a + 1, arc.points.length - 1);
-          const centre = curve.offsetWidth / 2;
-          const x = centre + (lerp(arc.points[a].x, arc.points[b].x, position - a) - centre) * waveSpread;
+          const centre = arc.w / 2;
           const ridgeY = lerp(arc.points[a].y, arc.points[b].y, position - a);
-          const y = arc.baseline + (ridgeY - arc.baseline) * waveAmplitude;
+          const rise = (ridgeY - arc.baseline) * waveAmplitude;
+          // Same transform as the SVG: phone proportions × crest, plus the lean
+          // (an x shift proportional to height, in viewBox units).
+          const x = centre + (lerp(arc.points[a].x, arc.points[b].x, position - a) - centre) * waveSpread
+            + waveLean * waveLayout * rise * (676 / arc.h) * (arc.w / 1920);
+          const y = arc.baseline + rise;
           glint.style.transform = `translate3d(${(x - arc.gw / 2).toFixed(1)}px,${(y - arc.gh / 2).toFixed(1)}px,0)`;
           return;
         }
@@ -135,16 +139,23 @@
         glint.style.opacity = ((ridge ? .4 : 1) * (.5 + .5 * peak)).toFixed(3);
         document.dispatchEvent(new Event('mb:transition'));
       }, {stiffness: 150, damping: 28, mass: .8, restDelta: .0003, restSpeed: .002});
-      // The swell has its own, slightly underdamped spring (damping ratio ~0.7):
-      // it settles with a soft overshoot instead of stopping dead and eases back
-      // when scrolling up. The curve travel above, which the header contact also
+      // The swell has its own soft, slightly underdamped spring (natural frequency
+      // ~7 rad/s, damping ratio ~0.7): it rises in ~0.3 s, settles with a soft
+      // overshoot instead of stopping dead, and undoes itself the same way when
+      // scrolling up. The curve travel above, which the header contact also
       // follows, keeps its calmer spring.
-      if (curve.mbSetWave) follow(transition, p => {
-        waveAmplitude = curve.mbSetWave(p, false, height);
+      // While the swell moves it leans with its own speed (progress/s), like a
+      // wave carried forward, and straightens as the spring settles: a light
+      // undulation that only exists while the visitor scrolls.
+      let waveSmooth = null;
+      if (curve.mbSetWave) waveSmooth = follow(transition, p => {
+        waveLean = waveSmooth ? clamp(-.07, .07, -waveSmooth.getVelocity() * .06) : 0;
+        waveAmplitude = curve.mbSetWave(p, false, height, waveLean);
         waveSpread = Number(curve.dataset.waveSpread || 1);
+        waveLayout = Number(curve.dataset.waveLayout || 1);
         if (ridge) place(sweepPosition);
         document.dispatchEvent(new Event('mb:transition'));
-      }, {stiffness: 120, damping: 15, mass: .9, restDelta: .0003, restSpeed: .002});
+      }, {stiffness: 45, damping: 9, mass: .9, restDelta: .0003, restSpeed: .002});
 
       const sweep = animate(-1, 1, {
         duration: 5.6, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.4, onUpdate: place

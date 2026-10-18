@@ -9,23 +9,33 @@ document.addEventListener('DOMContentLoaded', () => {
   // One shared painter for Motion's spring and the ordinary scroll fallback.
   // SVG transforms keep the ridge/fill attached to the lower white edge. The
   // stroke uses non-scaling-stroke; its gold line never thins as the wave opens.
-  if (waveShapes.length) curve.mbSetWave = (progress, still = false, height = transition.offsetHeight) => {
-    // The swell starts as soon as the transition enters the viewport, so its
-    // white crest rises into view right under the benefits instead of after a
-    // long empty band; it still reaches the full mountain at the same point.
-    const start = .06;
+  // The box size is cached (no layout reads per frame).
+  let box = {width: curve.offsetWidth, height: curve.offsetHeight};
+  if (waveShapes.length) new ResizeObserver(() => { box = {width: curve.offsetWidth, height: curve.offsetHeight}; }).observe(curve);
+  // Phone proportions on every screen: the stretched viewBox makes the bell this
+  // steep on a 390 px phone. Wider boxes narrow the bell to the same steepness and
+  // the flat gold shoulders fill the rest; phones keep their exact shape.
+  const PHONE_STEEPNESS = 1.53; // (210 / 676) / (390 / 1920)
+  if (waveShapes.length) curve.mbSetWave = (progress, still = false, height = transition.offsetHeight, lean = 0) => {
+    // Starts once the transition is ~22% into the viewport, not on first sight.
+    const start = .22 * innerHeight / (innerHeight + height);
     const finish = Math.max(start + .2, innerHeight * .82 / (innerHeight + height));
     const phase = Math.max(0, Math.min(1, (progress - start) / (finish - start)));
     const amplitude = still ? 1 : .015 + .985 * phase * phase * (3 - 2 * phase);
+    const layout = Math.min(1, (box.height / 676) / ((box.width || 1) / 1920) / PHONE_STEEPNESS);
     // Organic crest: the swell starts up to 6% broader and gathers into the
-    // mountain as it rises; the ridge glow strengthens with it. Both settle at
-    // the exact mountain and full glow (also the static reduced-motion state).
-    const spread = still ? 1 : 1 + .06 * (1 - amplitude);
-    for (const shape of waveShapes) shape.setAttribute('transform', `translate(960 640) scale(${spread.toFixed(5)} ${amplitude.toFixed(5)}) translate(-960 -640)`);
+    // mountain as it rises. While it moves it leans slightly with its speed (lean
+    // comes from Motion's spring velocity) and straightens as it settles. Reduced
+    // motion and the resting state are the exact mountain with full glow.
+    const crest = still ? 1 : 1 + .06 * (1 - amplitude);
+    const tilt = still ? 0 : lean;
+    const spread = layout * crest;
+    const matrix = [spread, 0, tilt * amplitude * layout, amplitude, 0, 0].map(n => +n.toFixed(5)).join(' ');
+    for (const shape of waveShapes) shape.setAttribute('transform', `translate(960 640) matrix(${matrix}) translate(-960 -640)`);
     ridgeGlow?.setAttribute('opacity', still ? '1' : (.45 + .55 * amplitude).toFixed(3));
-    curve.dataset.waveSpread = spread.toFixed(5);
     curve.style.setProperty('--wave-apex', `${(640 / 676 * (1 - amplitude) * 100).toFixed(5)}%`);
-    curve.dataset.waveAmplitude = amplitude.toFixed(5);
+    Object.assign(curve.dataset, {waveAmplitude: amplitude.toFixed(5), waveCrest: crest.toFixed(5),
+      waveLayout: layout.toFixed(5), waveSpread: spread.toFixed(5), waveLean: tilt.toFixed(5)});
     return amplitude;
   };
   let raf = null;

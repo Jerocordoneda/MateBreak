@@ -70,3 +70,27 @@ wave rises (≥ 8 px), progressive rise and return, crest/glow, spring settle, t
 white join, header contact, reduced motion and the Motion-less fallback at 320–1920
 px. `verify-home-curve-design.mjs` now asserts that clearance instead of
 "no box overlap", because the overlap of the empty padding is intentional.
+
+## Polish on `warp/home-mountain-polish` (from `43af699`)
+
+- **Height: at most 8 cm on screen** at 100% zoom (CSS `cm`, 37.8 px): the box is
+  `min(clamp(210px, 35.2vw, 620px), 8.45cm)` and the mountain is 640/676 of it.
+  It used to reach 15.5 cm at 1920 px and 12.7 cm at 1440 px; phones are unchanged
+  (~5.3 cm). The clearance above the box follows the capped height.
+- **Phone proportions on every screen.** On a 390 px phone the stretched viewBox
+  makes the bell 1.53× steeper than the artwork; wider boxes now narrow the bell to
+  that same steepness and flat gold shoulders fill the width. Phones keep their
+  exact shape.
+- **Later start:** the swell begins once the transition is ~22% into the viewport.
+- **Natural wave.** The swell's own spring is softer (≈7 rad/s, damping ≈0.7): it
+  rises in ~0.3 s, overshoots slightly and settles in under a second, and undoes
+  itself the same way on the way back. While it moves it leans with its speed
+  (Motion's spring velocity) and straightens as it settles.
+- **Glow:** two soft layers (a close luminous edge and a wide diffuse halo) in a
+  brighter gold; the fixed white base reaches below the baseline so the halo never
+  shows under it. The glint still travels the ridge, sized to the smaller bell.
+- Reduced motion: the static mountain (same proportions and height), full glow,
+  no lean, travel or decorative layers.
+
+`scripts/verify-home-mountain.mjs` adds the 8 cm cap, phone steepness at every
+width, the late start, and lean only while moving.
