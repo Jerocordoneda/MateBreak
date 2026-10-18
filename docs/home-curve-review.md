@@ -108,3 +108,13 @@ width, the late start, and lean only while moving.
   no spring, lean, crest morph, curve travel, glint/halo or glow change. (The
   development PC reports `prefers-reduced-motion: reduce` because Windows
   animations are off, which is why the rise was not visible there.)
+
+## v4 on `warp/home-mountain-v4` (from `38e12dc`)
+
+- **Phones start the swell 3.5 cm of scroll later**, not earlier (v3 misread the
+  request): once the transition is `22% of the viewport + 3.5cm` inside it (~9.4 cm
+  on an 844 px phone; it was ~6 cm before v3 and ~2.5 cm in v3).
+- **Wider wave everywhere:** the bell is 1.3 times the screen width on phones,
+  tablets and desktop. Its body fills most of the width and its sides meet the
+  baseline just past the edges (clipped by the box). The 8 cm height cap is
+  unchanged.

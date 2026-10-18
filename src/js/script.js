@@ -9,14 +9,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // One shared painter for Motion's spring and the ordinary scroll fallback.
   // SVG transforms keep the ridge/fill attached to the lower white edge. The
   // stroke uses non-scaling-stroke; its gold line never thins as the wave opens.
-  // The box size is cached (no layout reads per frame).
-  let box = {width: curve.offsetWidth, height: curve.offsetHeight};
-  if (waveShapes.length) new ResizeObserver(() => { box = {width: curve.offsetWidth, height: curve.offsetHeight}; }).observe(curve);
-  // Bell steepness: phones keep the shape the stretched viewBox gives a 390 px
-  // phone; from tablets up the bell is wider (~1000 px across at its 8 cm
-  // height), with flat gold shoulders filling the rest of the width.
-  const PHONE_STEEPNESS = 1.53; // (210 / 676) / (390 / 1920)
-  const WIDE_STEEPNESS = .9;
+  // Width: on every screen the bell is 1.3 times the screen width, so the body of
+  // the wave fills most of the width and its sides meet the baseline just past
+  // the edges (they are clipped by the box).
+  const BELL_WIDTH = 1.3;
   const CM = 96 / 2.54; // CSS px per cm at 100% zoom
   // reduced: prefers-reduced-motion. The rise still follows the visitor's own
   // scrolling (like the mate's photograph sequence) but without spring, lean,
@@ -24,13 +20,13 @@ document.addEventListener('DOMContentLoaded', () => {
   if (waveShapes.length) curve.mbSetWave = (progress, reduced = false, height = transition.offsetHeight, lean = 0) => {
     const phone = innerWidth <= 760;
     // Starts once the transition is ~22% into the viewport; on phones 3.5 cm of
-    // scroll earlier.
-    const delay = phone ? Math.max(0, .22 * innerHeight - 3.5 * CM) : .22 * innerHeight;
+    // scroll later than that, so it does not form too early.
+    const delay = .22 * innerHeight + (phone ? 3.5 * CM : 0);
     const start = delay / (innerHeight + height);
     const finish = Math.max(start + .2, innerHeight * .82 / (innerHeight + height));
     const phase = Math.max(0, Math.min(1, (progress - start) / (finish - start)));
     const amplitude = .015 + .985 * phase * phase * (3 - 2 * phase);
-    const layout = Math.min(1, (box.height / 676) / ((box.width || 1) / 1920) / (phone ? PHONE_STEEPNESS : WIDE_STEEPNESS));
+    const layout = BELL_WIDTH;
     // Organic crest: the swell starts up to 6% broader and gathers into the
     // mountain as it rises. While it moves it leans slightly with its speed (lean
     // comes from Motion's spring velocity) and straightens as it settles.

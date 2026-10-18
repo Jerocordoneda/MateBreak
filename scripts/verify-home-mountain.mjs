@@ -102,19 +102,17 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       for (const s of [...down, ...up]) if (Math.abs(s.apex - s.header) > 1) assert.equal(s.light, s.apex <= s.header, `apex ${s.apex} header ${s.header}`);
     });
     await check(`${label} mountain rises at most 8 cm on screen (${(bottom.rise / bottom.cm).toFixed(2)} cm)`, () => assert.ok(bottom.rise / bottom.cm <= 8.01, `${bottom.rise}px`));
-    // Phones keep the 390 px phone bell; tablets/desktop a wider one (~1000 px, or the full width).
-    await check(`${label} bell proportions (steepness ${bottom.steepness.toFixed(3)}, ${Math.round(bottom.rise / bottom.steepness)} px wide)`, () => width === 320
-      ? assert.ok(bottom.steepness >= .5, 'narrow phones stay at least as steep')
-      : width <= 760 ? assert.ok(Math.abs(bottom.steepness - .51) < .02, `steepness ${bottom.steepness}`)
-        : assert.ok(bottom.steepness > .27 && bottom.steepness < .35 && bottom.rise / bottom.steepness >= Math.min(width, 990), `steepness ${bottom.steepness}`));
+    // The bell is 1.3 times the screen width on phones, tablets and desktop.
+    await check(`${label} bell is wider than the screen (${Math.round(bottom.rise / bottom.steepness)} px)`, () =>
+      assert.ok(Math.abs(bottom.rise / bottom.steepness / width - 1.3) < .05, `bell ${Math.round(bottom.rise / bottom.steepness)}px`));
     // Every mode, reduced included: the rise follows the visitor's scrolling and undoes on the way back.
     await check(`${label} wave rises progressively and returns on the way back`, () => {
       assert.ok(down[0].amp < .05, `start ${down[0].amp}`); assert.ok(bottom.amp > .99, `end ${bottom.amp}`);
       assert.ok(down.some(s => s.amp > .2 && s.amp < .8), 'intermediate states'); assert.ok(back.amp < .05, `back ${back.amp}`);
       assert.ok(visible.some(s => s.apex < height - 40), 'crest rises into view while the benefits are visible');
     });
-    // Desktop: flat until the box is ~22% into the viewport; phones start 3.5 cm of scroll earlier.
-    const flatUntil = (width <= 760 ? Math.max(0, height * .22 - 3.5 * 96 / 2.54) : height * .22) - 4;
+    // Flat until the box is ~22% into the viewport; phones start 3.5 cm of scroll later.
+    const flatUntil = height * .22 + (width <= 760 ? 3.5 * 96 / 2.54 : 0) - 4;
     await check(`${label} swell starts at the agreed point (flat while the box is < ${Math.round(flatUntil)} px in)`, () => {
       for (const s of down) if (height - s.boxY < flatUntil) assert.ok(s.amp < .03, `amp ${s.amp} with the box ${Math.round(height - s.boxY)}px in`);
       assert.ok(down.some(s => height - s.boxY < flatUntil + 140 && s.amp > .03), 'starts soon after');

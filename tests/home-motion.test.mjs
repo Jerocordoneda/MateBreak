@@ -138,12 +138,11 @@ test('Mountain: close sections, phone proportions everywhere, delayed swell, lea
   assert.match(curveCss, /height: min\(clamp\(210px, 35\.2vw, 620px\), 8\.45cm\);/);
   assert.match(curveCss, /--mb-wave-clearance: calc\(22px \+ min\(clamp\(21px, 3\.52vw, 62px\), \.845cm\)\);\n\s*margin-top: calc\(var\(--mb-wave-clearance\) - 120px\);/);
   assert.match(curveCss, /@media \(max-width: 1023px\) \{\n\s*\/\*[^*]*\*\/\n\s*\[data-home\] \.matebreak-transition\.mb-mountain-transition \{ margin-top: calc\(var\(--mb-wave-clearance\) - clamp\(36px, 6vw, 60px\)\); \}/);
-  // Phones keep the 390 px phone steepness; tablets and desktop get a wider bell (layout capped at 1).
-  assert.match(painter, /const PHONE_STEEPNESS = 1\.53;/);
-  assert.match(painter, /const WIDE_STEEPNESS = \.9;/);
-  assert.match(painter, /const layout = Math\.min\(1, \(box\.height \/ 676\) \/ \(\(box\.width \|\| 1\) \/ 1920\) \/ \(phone \? PHONE_STEEPNESS : WIDE_STEEPNESS\)\);/);
-  // Starts ~22% into the viewport; on phones 3.5 cm of scroll earlier.
-  assert.match(painter, /const delay = phone \? Math\.max\(0, \.22 \* innerHeight - 3\.5 \* CM\) : \.22 \* innerHeight;/);
+  // The bell is 1.3 times the screen width everywhere (sides meet the baseline just past the edges).
+  assert.match(painter, /const BELL_WIDTH = 1\.3;/);
+  assert.match(painter, /const layout = BELL_WIDTH;/);
+  // Starts ~22% into the viewport; on phones 3.5 cm of scroll later.
+  assert.match(painter, /const delay = \.22 \* innerHeight \+ \(phone \? 3\.5 \* CM : 0\);/);
   assert.match(painter, /const CM = 96 \/ 2\.54;/);
   // Reduced motion: the rise still follows scrolling; no crest morph, lean or glow change.
   assert.match(painter, /const amplitude = \.015 \+ \.985 \* phase \* phase \* \(3 - 2 \* phase\);/);
