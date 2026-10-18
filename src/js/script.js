@@ -12,27 +12,34 @@ document.addEventListener('DOMContentLoaded', () => {
   // The box size is cached (no layout reads per frame).
   let box = {width: curve.offsetWidth, height: curve.offsetHeight};
   if (waveShapes.length) new ResizeObserver(() => { box = {width: curve.offsetWidth, height: curve.offsetHeight}; }).observe(curve);
-  // Phone proportions on every screen: the stretched viewBox makes the bell this
-  // steep on a 390 px phone. Wider boxes narrow the bell to the same steepness and
-  // the flat gold shoulders fill the rest; phones keep their exact shape.
+  // Bell steepness: phones keep the shape the stretched viewBox gives a 390 px
+  // phone; from tablets up the bell is wider (~1000 px across at its 8 cm
+  // height), with flat gold shoulders filling the rest of the width.
   const PHONE_STEEPNESS = 1.53; // (210 / 676) / (390 / 1920)
-  if (waveShapes.length) curve.mbSetWave = (progress, still = false, height = transition.offsetHeight, lean = 0) => {
-    // Starts once the transition is ~22% into the viewport, not on first sight.
-    const start = .22 * innerHeight / (innerHeight + height);
+  const WIDE_STEEPNESS = .9;
+  const CM = 96 / 2.54; // CSS px per cm at 100% zoom
+  // reduced: prefers-reduced-motion. The rise still follows the visitor's own
+  // scrolling (like the mate's photograph sequence) but without spring, lean,
+  // crest morph, travel or glow changes.
+  if (waveShapes.length) curve.mbSetWave = (progress, reduced = false, height = transition.offsetHeight, lean = 0) => {
+    const phone = innerWidth <= 760;
+    // Starts once the transition is ~22% into the viewport; on phones 3.5 cm of
+    // scroll earlier.
+    const delay = phone ? Math.max(0, .22 * innerHeight - 3.5 * CM) : .22 * innerHeight;
+    const start = delay / (innerHeight + height);
     const finish = Math.max(start + .2, innerHeight * .82 / (innerHeight + height));
     const phase = Math.max(0, Math.min(1, (progress - start) / (finish - start)));
-    const amplitude = still ? 1 : .015 + .985 * phase * phase * (3 - 2 * phase);
-    const layout = Math.min(1, (box.height / 676) / ((box.width || 1) / 1920) / PHONE_STEEPNESS);
+    const amplitude = .015 + .985 * phase * phase * (3 - 2 * phase);
+    const layout = Math.min(1, (box.height / 676) / ((box.width || 1) / 1920) / (phone ? PHONE_STEEPNESS : WIDE_STEEPNESS));
     // Organic crest: the swell starts up to 6% broader and gathers into the
     // mountain as it rises. While it moves it leans slightly with its speed (lean
-    // comes from Motion's spring velocity) and straightens as it settles. Reduced
-    // motion and the resting state are the exact mountain with full glow.
-    const crest = still ? 1 : 1 + .06 * (1 - amplitude);
-    const tilt = still ? 0 : lean;
+    // comes from Motion's spring velocity) and straightens as it settles.
+    const crest = reduced ? 1 : 1 + .06 * (1 - amplitude);
+    const tilt = reduced ? 0 : lean;
     const spread = layout * crest;
     const matrix = [spread, 0, tilt * amplitude * layout, amplitude, 0, 0].map(n => +n.toFixed(5)).join(' ');
     for (const shape of waveShapes) shape.setAttribute('transform', `translate(960 640) matrix(${matrix}) translate(-960 -640)`);
-    ridgeGlow?.setAttribute('opacity', still ? '1' : (.45 + .55 * amplitude).toFixed(3));
+    ridgeGlow?.setAttribute('opacity', reduced ? '1' : (.45 + .55 * amplitude).toFixed(3));
     curve.style.setProperty('--wave-apex', `${(640 / 676 * (1 - amplitude) * 100).toFixed(5)}%`);
     Object.assign(curve.dataset, {waveAmplitude: amplitude.toFixed(5), waveCrest: crest.toFixed(5),
       waveLayout: layout.toFixed(5), waveSpread: spread.toFixed(5), waveLean: tilt.toFixed(5)});

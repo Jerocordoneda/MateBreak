@@ -138,14 +138,21 @@ test('Mountain: close sections, phone proportions everywhere, delayed swell, lea
   assert.match(curveCss, /height: min\(clamp\(210px, 35\.2vw, 620px\), 8\.45cm\);/);
   assert.match(curveCss, /--mb-wave-clearance: calc\(22px \+ min\(clamp\(21px, 3\.52vw, 62px\), \.845cm\)\);\n\s*margin-top: calc\(var\(--mb-wave-clearance\) - 120px\);/);
   assert.match(curveCss, /@media \(max-width: 1023px\) \{\n\s*\/\*[^*]*\*\/\n\s*\[data-home\] \.matebreak-transition\.mb-mountain-transition \{ margin-top: calc\(var\(--mb-wave-clearance\) - clamp\(36px, 6vw, 60px\)\); \}/);
-  // Same steepness as on a 390 px phone; phones keep their shape (layout capped at 1).
+  // Phones keep the 390 px phone steepness; tablets and desktop get a wider bell (layout capped at 1).
   assert.match(painter, /const PHONE_STEEPNESS = 1\.53;/);
-  assert.match(painter, /const layout = Math\.min\(1, \(box\.height \/ 676\) \/ \(\(box\.width \|\| 1\) \/ 1920\) \/ PHONE_STEEPNESS\);/);
-  assert.match(painter, /const start = \.22 \* innerHeight \/ \(innerHeight \+ height\);/);
-  assert.match(painter, /const crest = still \? 1 : 1 \+ \.06 \* \(1 - amplitude\);/);
-  assert.match(painter, /const tilt = still \? 0 : lean;/);
+  assert.match(painter, /const WIDE_STEEPNESS = \.9;/);
+  assert.match(painter, /const layout = Math\.min\(1, \(box\.height \/ 676\) \/ \(\(box\.width \|\| 1\) \/ 1920\) \/ \(phone \? PHONE_STEEPNESS : WIDE_STEEPNESS\)\);/);
+  // Starts ~22% into the viewport; on phones 3.5 cm of scroll earlier.
+  assert.match(painter, /const delay = phone \? Math\.max\(0, \.22 \* innerHeight - 3\.5 \* CM\) : \.22 \* innerHeight;/);
+  assert.match(painter, /const CM = 96 \/ 2\.54;/);
+  // Reduced motion: the rise still follows scrolling; no crest morph, lean or glow change.
+  assert.match(painter, /const amplitude = \.015 \+ \.985 \* phase \* phase \* \(3 - 2 \* phase\);/);
+  assert.match(painter, /const crest = reduced \? 1 : 1 \+ \.06 \* \(1 - amplitude\);/);
+  assert.match(painter, /const tilt = reduced \? 0 : lean;/);
   assert.match(painter, /\[spread, 0, tilt \* amplitude \* layout, amplitude, 0, 0\]/);
-  assert.match(painter, /ridgeGlow\?\.setAttribute\('opacity', still \? '1' : \(\.45 \+ \.55 \* amplitude\)\.toFixed\(3\)\);/);
+  assert.match(painter, /ridgeGlow\?\.setAttribute\('opacity', reduced \? '1' : \(\.45 \+ \.55 \* amplitude\)\.toFixed\(3\)\);/);
+  assert.match(curveScript, /curve\.mbSetWave\?\.\(progress, reduced\.matches, rect\.height\);/);
+  assert.match(curveScript, /'--curve-move', reduced\.matches \? '0px'/);
   assert.doesNotMatch(painter, /offsetWidth[^;]*;\s*\n\s*const start/, 'no layout reads inside the per-frame painter');
   // Markup: flat shoulders, a fixed white base below the baseline and the two-layer glow.
   assert.match(home, /<g filter="url\(#mb-ridge-glow\)" data-ridge-glow>/);

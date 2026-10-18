@@ -181,8 +181,10 @@ for (const viewport of viewports) {
       }
     } else {
       check(`${label} reduced: no pose, halo, glint, float or curve travel`, () => {
-        assert.ok(rows.every(r => r.pose === null && r.haloLayers === 0 && !r.floating && r.move === 0 && r.wave === 1), 'motion leaked');
+        assert.ok(rows.every(r => r.pose === null && r.haloLayers === 0 && !r.floating && r.move === 0), 'motion leaked');
       });
+      // The wave itself still rises with the visitor's scrolling (scroll-linked, like the frames).
+      check(`${label} reduced: the wave rises with scrolling`, () => assert.ok(rows[0].wave < .05 && rows.at(-1).wave > .99, `${rows[0].wave} -> ${rows.at(-1).wave}`));
       if (wide) check(`${label} reduced: scroll-driven photograph sequence still plays`, () => assert.equal(last.frame, 60));
     }
     report.runs.push({label, frames: [first.frame, last.frame], poses: poses.size, move: last.move});

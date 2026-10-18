@@ -94,3 +94,17 @@ px. `verify-home-curve-design.mjs` now asserts that clearance instead of
 
 `scripts/verify-home-mountain.mjs` adds the 8 cm cap, phone steepness at every
 width, the late start, and lean only while moving.
+
+## v3 on `warp/home-mountain-v3` (from `d7d8e4c`)
+
+- **Phones start the swell 3.5 cm of scroll earlier** (CSS cm): it begins once the
+  transition is `max(0, 22% of the viewport − 3.5cm)` inside it (54 px on an 844 px
+  phone instead of 186 px). Tablets and desktop keep ~22%.
+- **Wider bell on tablets/desktop:** steepness target .9 instead of the phone's
+  1.53, so the 8 cm mountain is ~1000 px across (full width on tablets). Phones
+  keep their shape.
+- **Reduced motion now shows the rise.** Like the mate's photograph sequence, the
+  wave follows the visitor's own scrolling and undoes on the way back; there is
+  no spring, lean, crest morph, curve travel, glint/halo or glow change. (The
+  development PC reports `prefers-reduced-motion: reduce` because Windows
+  animations are off, which is why the rise was not visible there.)
