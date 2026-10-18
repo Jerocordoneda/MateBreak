@@ -34,10 +34,15 @@ test('Home loads the local bundle first, deferred, with no CDN, React or bundler
   assert.doesNotMatch(home, /unpkg|jsdelivr|cdnjs|esm\.sh|framer-motion/);
 });
 
-test('The golden curve geometry and the legacy fallback stay untouched', () => {
+test('The Home mountain shares its travel with the Motion and legacy paths; other pages retain their curve', () => {
   assert.doesNotMatch(motionCss, /\.matebreak-(curve|transition)\s*[{,]/, 'home-motion.css must not restyle the arc or its clip box');
   assert.match(responsive, /\.matebreak-curve\{height:140%;bottom:-65%;border-radius:50% 50% 0 0 \/ 24% 24% 0 0;/);
-  assert.match(curveScript, /const travel = home \? \.65 : \.38;/);
+  assert.match(curveScript, /const travel = home \? Number\(transition.dataset.curveTravel \|\| \.65\) : \.38;/);
+  assert.match(home, /data-curve-travel=".18"/);
+  assert.match(home, /data-curve-ridge/);
+  assert.match(home, /vector-effect="non-scaling-stroke"/);
+  assert.doesNotMatch(home, /framerusercontent/);
+  assert.match(read('src/css/home-curve.css'), /background: #fff/);
   assert.match(curveScript, /hasAttribute\('data-mb-home-motion'\)\) return;/);
   // Other pages never receive the flag, so they keep the original curve maths.
   assert.doesNotMatch(motionSource, /querySelector\('\.matebreak-transition'\)/, 'layer is scoped to [data-home]');

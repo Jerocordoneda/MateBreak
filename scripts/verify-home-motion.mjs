@@ -64,12 +64,21 @@ const sample = page => page.evaluate(() => {
     light: header.classList.contains('header-dark'),
     glint: glint ? (() => { const m = new DOMMatrix(getComputedStyle(glint).transform), cs = getComputedStyle(curve).borderTopLeftRadius.split(' ');
       const px = (v, size) => v.endsWith('%') ? parseFloat(v) / 100 * size : parseFloat(v);
-      return {x: m.e + glint.offsetWidth / 2, y: m.f + glint.offsetHeight / 2, rx: px(cs[0], curve.offsetWidth), ry: px(cs[1] || cs[0], curve.offsetHeight)}; })() : null,
+      const result = {x: m.e + glint.offsetWidth / 2, y: m.f + glint.offsetHeight / 2, rx: px(cs[0], curve.offsetWidth), ry: px(cs[1] || cs[0], curve.offsetHeight)};
+      const ridge = curve.querySelector('[data-curve-ridge]');
+      if (ridge) {
+        const box = ridge.ownerSVGElement.viewBox.baseVal;
+        const x = result.x / curve.offsetWidth * box.width;
+        let lo = 0, hi = ridge.getTotalLength();
+        for (let i = 0; i < 20; i++) { const mid = (lo + hi) / 2; if (ridge.getPointAtLength(mid).x < x) lo = mid; else hi = mid; }
+        result.expectedY = ridge.getPointAtLength((lo + hi) / 2).y / box.height * curve.offsetHeight;
+      }
+      return result; })() : null,
     floating: img.getAnimations().some(a => a.playState === 'running'),
     haloLayers: document.querySelectorAll('.mb-curve-halo,.mb-curve-glint').length,
     overflow: document.documentElement.scrollWidth - innerWidth,
     // Vertical corner radius over curve height: the arch must never flatten.
-    arc: (() => { const v = getComputedStyle(curve).borderTopLeftRadius.split(' ')[1]; return v.endsWith('%') ? parseFloat(v) / 100 : parseFloat(v) / curve.offsetHeight; })()
+    arc: (() => { const ridge = curve.querySelector('[data-curve-ridge]'); if (ridge) return ridge.getPointAtLength(0).y / ridge.ownerSVGElement.viewBox.baseVal.height; const v = getComputedStyle(curve).borderTopLeftRadius.split(' ')[1]; return v.endsWith('%') ? parseFloat(v) / 100 : parseFloat(v) / curve.offsetHeight; })()
   };
 });
 
@@ -114,7 +123,7 @@ for (const viewport of viewports) {
     const first = await sample(page);
     const rows = await scrollThrough(page);
     const poses = new Set(rows.map(r => r.pose?.join()).filter(Boolean));
-    const last = rows.at(-1), travel = await page.evaluate(() => document.querySelector('.matebreak-transition').offsetHeight * .65);
+    const last = rows.at(-1), travel = await page.evaluate(() => document.querySelector('.matebreak-transition').offsetHeight * Number(document.querySelector('.matebreak-transition').dataset.curveTravel || .65));
     const wide = viewport.width > 760;
     check(`${label} no page errors`, () => assert.deepEqual(errors, []));
     check(`${label} golden arc keeps its curvature`, () => assert.ok(rows.every(r => r.arc > .2 && Math.abs(r.arc - first.arc) < .005), `arc ratio ${first.arc} -> ${last.arc}`));
@@ -132,9 +141,9 @@ for (const viewport of viewports) {
       const glints = [];
       await page.evaluate(() => scrollTo(0, document.querySelector('.matebreak-transition').getBoundingClientRect().top + scrollY - innerHeight * .55));
       for (let i = 0; i < 6; i++) { glints.push((await sample(page)).glint); await page.waitForTimeout(700); }
-      check(`${label} golden glint travels along the arc's own ellipse`, () => {
+      check(`${label} golden glint follows the actual SVG ridge or legacy ellipse`, () => {
         assert.ok(new Set(glints.map(g => Math.round(g.x))).size >= 3, 'glint did not move');
-        for (const g of glints) assert.ok(Math.abs(g.y - g.ry * (1 - Math.sqrt(Math.max(0, 1 - (g.x / g.rx) ** 2)))) < 2, `glint off the arc at x=${g.x}`);
+        for (const g of glints) assert.ok(Math.abs(g.y - (g.expectedY ?? g.ry * (1 - Math.sqrt(Math.max(0, 1 - (g.x / g.rx) ** 2))))) < 2, `glint off the arc at x=${g.x}`);
       });
       await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(900);
       const trace = await frameTrace(page, 2600);
@@ -194,7 +203,7 @@ for (const viewport of [viewports[0], viewports[3]]) {
   const rows = await scrollThrough(page);
   const last = rows.at(-1);
   check(`fallback ${viewport.name}: no errors and curve still rises`, () => {
-    assert.deepEqual(errors.filter(e => !/Motion/.test(e)), []); assert.ok(last.move < -50, `curve ${last.move}`);
+    assert.deepEqual(errors.filter(e => !/Motion/.test(e)), []); assert.ok(last.move < -20, `curve ${last.move}`);
     assert.equal(last.light, true);
   });
   if (viewport.width > 760) check('fallback desktop: photograph sequence still plays', () => assert.equal(last.frame, 60));

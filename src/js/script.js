@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Home's light surface rises from its centre without inertia or a clipped
     // flat edge. Keep other pages' existing transition untouched.
     const eased = home ? progress * progress * (3 - 2 * progress) : progress;
-    const travel = home ? .65 : .38;
+    const travel = home ? Number(transition.dataset.curveTravel || .65) : .38;
     curve.style.setProperty('--curve-move', reduced.matches ? '0px' : `${-rect.height * travel * eased}px`);
     document.dispatchEvent(new Event('mb:transition'));
   }

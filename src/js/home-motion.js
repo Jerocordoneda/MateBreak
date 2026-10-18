@@ -77,17 +77,35 @@
       curve.append(halo, glint);
       own(() => { halo.remove(); glint.remove(); curve.style.removeProperty('--curve-move'); });
 
-      // The glint rides the arc's own ellipse (read from the curve's CSS radii, so
-      // it keeps following the geometry if that is ever retuned). Only transform
-      // and opacity change per frame: no repaint of the large curve layer.
+      // The glint follows the local SVG ridge, or the legacy ellipse where no
+      // ridge is present. Only transform and opacity change per animation frame.
       let arc = {rx: 1, ry: 0, half: 1, gw: 0, gh: 0};
+      const ridge = curve.querySelector?.('[data-curve-ridge]');
       const radius = (value, size) => value.endsWith('%') ? parseFloat(value) / 100 * size : parseFloat(value);
       const measureArc = () => {
         const [rx, ry] = getComputedStyle(curve).borderTopLeftRadius.split(' ');
         arc = {rx: radius(rx, curve.offsetWidth) || 1, ry: radius(ry || rx, curve.offsetHeight) || 0,
           half: innerWidth * .56, gw: glint.offsetWidth, gh: glint.offsetHeight};
+        if (ridge) {
+          const box = ridge.ownerSVGElement.viewBox.baseVal;
+          const length = ridge.getTotalLength();
+          // Cache the local SVG outline on resize. No SVG/layout reads in the
+          // animation loop; the glint follows the actual mountain, not an ellipse.
+          arc.points = Array.from({length: 193}, (_, i) => {
+            const p = ridge.getPointAtLength(length * i / 192);
+            return {x: p.x / box.width * curve.offsetWidth, y: p.y / box.height * curve.offsetHeight};
+          });
+        }
       };
       const place = t => {
+        if (arc.points) {
+          const position = clamp(0, 1, (t + 1) / 2) * (arc.points.length - 1);
+          const a = Math.floor(position), b = Math.min(a + 1, arc.points.length - 1);
+          const x = lerp(arc.points[a].x, arc.points[b].x, position - a);
+          const y = lerp(arc.points[a].y, arc.points[b].y, position - a);
+          glint.style.transform = `translate3d(${(x - arc.gw / 2).toFixed(1)}px,${(y - arc.gh / 2).toFixed(1)}px,0)`;
+          return;
+        }
         const x = t * arc.half;
         const y = arc.ry * (1 - Math.sqrt(Math.max(0, 1 - (x / arc.rx) ** 2)));
         glint.style.transform = `translate3d(${(x - arc.gw / 2).toFixed(1)}px,${(y - arc.gh / 2).toFixed(1)}px,0)`;
@@ -97,17 +115,18 @@
 
       root.setAttribute('data-mb-home-motion', '');
       own(() => root.removeAttribute('data-mb-home-motion'));
-      let travel = transition.offsetHeight * .65;
-      const measure = new ResizeObserver(() => { travel = transition.offsetHeight * .65; measureArc(); });
+      const travelRatio = Number(transition.dataset?.curveTravel || .65);
+      let travel = transition.offsetHeight * travelRatio;
+      const measure = new ResizeObserver(() => { travel = transition.offsetHeight * travelRatio; measureArc(); });
       measure.observe(transition);
       own(() => measure.disconnect());
       follow(transition, p => {
-        // Same travel and easing as script.js (apex rises, never flattens); the
+        // Same configured travel and easing as script.js; the
         // header reads the rendered apex on mb:transition, so contact stays exact.
         curve.style.setProperty('--curve-move', `${(-travel * smoothstep(p)).toFixed(2)}px`);
         const peak = Math.sin(Math.PI * clamp(0, 1, p * 1.15));
         halo.style.opacity = (.4 + .6 * peak).toFixed(3);
-        glint.style.opacity = (.5 + .5 * peak).toFixed(3);
+        glint.style.opacity = ((ridge ? .4 : 1) * (.5 + .5 * peak)).toFixed(3);
         document.dispatchEvent(new Event('mb:transition'));
       }, {stiffness: 150, damping: 28, mass: .8, restDelta: .0003, restSpeed: .002});
 
