@@ -56,12 +56,16 @@ if(!process.argv.includes('--serve')){
               fill:c.querySelector('path[fill="#fff"]').getAttribute('fill'),stroke:getComputedStyle(ridge).strokeWidth,
               gap:white.top-(curve.bottom+curve.height),box:{width:curve.width,height:curve.height},
               overlap:t.previousElementSibling.getBoundingClientRect().bottom-curve.top,
+              // The box overlaps the benefits' empty bottom padding on purpose; what
+              // matters is that the white apex stays below their visible content.
+              clearance:c.querySelector('[data-curve-apex]').getBoundingClientRect().top-Math.max(...[...t.previousElementSibling.querySelectorAll('*')]
+                .filter(e=>!e.children.length&&e.getBoundingClientRect().height>0).map(e=>e.getBoundingClientRect().bottom)),
               pose:getComputedStyle(document.querySelector('[data-seq-img]').parentElement).transform,
               viewBox:[box.width,box.height]};
           });
           assert.equal(state.overflow,0);assert.equal(state.fill,'#fff');assert.equal(state.stroke,'2px');
           assert.ok(state.shape.edge-state.shape.middle>600,'Distinct mountain silhouette');
-          assert.ok(state.gap<=0,'White extension joins the next section');assert.ok(state.overlap<0,'Mountain does not cover benefits');
+          assert.ok(state.gap<=0,'White extension joins the next section');assert.ok(state.clearance>=8,'Mountain does not cover benefits');
           assert.notEqual(state.pose,pose,'Mate keeps its scroll-linked pose');
           for(const y of [top-120,top,top+600,top-120,0]){
             await page.evaluate(y=>scrollTo({top:y,behavior:'instant'}),y);await page.waitForTimeout(400);

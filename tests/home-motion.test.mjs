@@ -130,3 +130,17 @@ test('With motion allowed the layer builds once, pauses idle loops offscreen, an
   assert.equal(h.curve.children.length, 2);
   assert.equal(h.log.scroll, 2);
 });
+
+test('Mountain integration: closer sections, organic crest, glow tied to the swell and a livelier wave spring', () => {
+  const curveCss = read('src/css/home-curve.css'), painter = read('src/js/script.js');
+  // Only the clearance the risen apex needs remains above the box (padding: 120px, or clamp(36px, 6vw, 60px) below 1024px).
+  assert.match(curveCss, /--mb-wave-clearance: calc\(22px \+ clamp\(21px, 3\.52vw, 62px\)\);\n\s*margin-top: calc\(var\(--mb-wave-clearance\) - 120px\);/);
+  assert.match(curveCss, /@media \(max-width: 1023px\) \{\n\s*\/\*[^*]*\*\/\n\s*\[data-home\] \.matebreak-transition\.mb-mountain-transition \{ margin-top: calc\(var\(--mb-wave-clearance\) - clamp\(36px, 6vw, 60px\)\); \}/);
+  assert.match(painter, /const start = \.06;/);
+  assert.match(painter, /const spread = still \? 1 : 1 \+ \.06 \* \(1 - amplitude\);/);
+  assert.match(painter, /scale\(\$\{spread\.toFixed\(5\)\} \$\{amplitude\.toFixed\(5\)\}\)/);
+  assert.match(painter, /ridgeGlow\?\.setAttribute\('opacity', still \? '1' : \(\.45 \+ \.55 \* amplitude\)\.toFixed\(3\)\);/);
+  assert.match(home, /<g filter="url\(#mb-ridge-glow\)" data-ridge-glow>/);
+  assert.match(motionSource, /if \(curve\.mbSetWave\) follow\(transition, p => \{[\s\S]*?\}, \{stiffness: 120, damping: 15, mass: \.9/);
+  assert.match(motionSource, /\(lerp\(arc\.points\[a\]\.x, arc\.points\[b\]\.x, position - a\) - centre\) \* waveSpread/);
+});

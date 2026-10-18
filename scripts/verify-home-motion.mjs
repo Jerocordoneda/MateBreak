@@ -69,7 +69,9 @@ const sample = page => page.evaluate(() => {
       const ridge = curve.querySelector('[data-curve-ridge]');
       if (ridge) {
         const box = ridge.ownerSVGElement.viewBox.baseVal;
-        const x = result.x / curve.offsetWidth * box.width;
+        // Undo the crest's horizontal spread around the centre before sampling the ridge.
+        const spread = Number(curve.dataset.waveSpread || 1), centre = curve.offsetWidth / 2;
+        const x = (centre + (result.x - centre) / spread) / curve.offsetWidth * box.width;
         let lo = 0, hi = ridge.getTotalLength();
         for (let i = 0; i < 20; i++) { const mid = (lo + hi) / 2; if (ridge.getPointAtLength(mid).x < x) lo = mid; else hi = mid; }
         result.expectedY = ridge.getPointAtLength((lo + hi) / 2).y / box.height * curve.offsetHeight;

@@ -80,7 +80,7 @@
       // The glint follows the local SVG ridge, or the legacy ellipse where no
       // ridge is present. Only transform and opacity change per animation frame.
       let arc = {rx: 1, ry: 0, half: 1, gw: 0, gh: 0};
-      let waveAmplitude = 1, sweepPosition = -1;
+      let waveAmplitude = 1, waveSpread = 1, sweepPosition = -1;
       const ridge = curve.querySelector?.('[data-curve-ridge]');
       const radius = (value, size) => value.endsWith('%') ? parseFloat(value) / 100 * size : parseFloat(value);
       const measureArc = () => {
@@ -104,7 +104,8 @@
         if (arc.points) {
           const position = clamp(0, 1, (t + 1) / 2) * (arc.points.length - 1);
           const a = Math.floor(position), b = Math.min(a + 1, arc.points.length - 1);
-          const x = lerp(arc.points[a].x, arc.points[b].x, position - a);
+          const centre = curve.offsetWidth / 2;
+          const x = centre + (lerp(arc.points[a].x, arc.points[b].x, position - a) - centre) * waveSpread;
           const ridgeY = lerp(arc.points[a].y, arc.points[b].y, position - a);
           const y = arc.baseline + (ridgeY - arc.baseline) * waveAmplitude;
           glint.style.transform = `translate3d(${(x - arc.gw / 2).toFixed(1)}px,${(y - arc.gh / 2).toFixed(1)}px,0)`;
@@ -129,13 +130,21 @@
         // Same configured travel and easing as script.js; the
         // header reads the rendered apex on mb:transition, so contact stays exact.
         curve.style.setProperty('--curve-move', `${(-travel * smoothstep(p)).toFixed(2)}px`);
-        waveAmplitude = curve.mbSetWave?.(p, false, height) ?? 1;
-        if (ridge) place(sweepPosition);
         const peak = Math.sin(Math.PI * clamp(0, 1, p * 1.15));
         halo.style.opacity = (.4 + .6 * peak).toFixed(3);
         glint.style.opacity = ((ridge ? .4 : 1) * (.5 + .5 * peak)).toFixed(3);
         document.dispatchEvent(new Event('mb:transition'));
       }, {stiffness: 150, damping: 28, mass: .8, restDelta: .0003, restSpeed: .002});
+      // The swell has its own, slightly underdamped spring (damping ratio ~0.7):
+      // it settles with a soft overshoot instead of stopping dead and eases back
+      // when scrolling up. The curve travel above, which the header contact also
+      // follows, keeps its calmer spring.
+      if (curve.mbSetWave) follow(transition, p => {
+        waveAmplitude = curve.mbSetWave(p, false, height);
+        waveSpread = Number(curve.dataset.waveSpread || 1);
+        if (ridge) place(sweepPosition);
+        document.dispatchEvent(new Event('mb:transition'));
+      }, {stiffness: 120, damping: 15, mass: .9, restDelta: .0003, restSpeed: .002});
 
       const sweep = animate(-1, 1, {
         duration: 5.6, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.4, onUpdate: place
