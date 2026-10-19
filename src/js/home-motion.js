@@ -37,8 +37,9 @@
         const smooth = springValue(raw, spring);
         smooth.jump(raw.get());
         own(scroll(p => raw.set(p), {target: el, offset: ['start end', 'end start']}));
-        own(smooth.on('change', onFrame));
-        onFrame(smooth.get());
+        // onFrame also receives the raw scroll progress (no layout read).
+        own(smooth.on('change', value => onFrame(value, raw.get())));
+        onFrame(smooth.get(), raw.get());
         return smooth;
       }
 
@@ -147,10 +148,16 @@
       // While the swell moves it leans with its own speed (progress/s), like a
       // wave carried forward, and straightens as the spring settles: a light
       // undulation that only exists while the visitor scrolls.
+      // Scrolling back, the swell may trail the page by at most WAVE_SLACK of
+      // progress. Its soft spring otherwise kept a tall, narrow mountain in the
+      // middle of a phone screen while the visitor scrolled up. min() of two
+      // continuous values: no snap when the direction changes, and the rise
+      // (scrolling down, spring behind the scroll) is unchanged.
+      const WAVE_SLACK = .03;
       let waveSmooth = null;
-      if (curve.mbSetWave) waveSmooth = follow(transition, p => {
+      if (curve.mbSetWave) waveSmooth = follow(transition, (p, raw) => {
         waveLean = waveSmooth ? clamp(-.07, .07, -waveSmooth.getVelocity() * .06) : 0;
-        waveAmplitude = curve.mbSetWave(p, false, height, waveLean);
+        waveAmplitude = curve.mbSetWave(Math.min(p, raw + WAVE_SLACK), false, height, waveLean);
         waveSpread = Number(curve.dataset.waveSpread || 1);
         waveLayout = Number(curve.dataset.waveLayout || 1);
         if (ridge) place(sweepPosition);

@@ -162,6 +162,11 @@ test('Mountain: close sections, phone proportions everywhere, delayed swell, lea
   assert.match(home, /<path data-curve-ridge d="M0 640 C270 640 330 550 480 300 C600 100 730 0 960 0 C1190 0 1320 100 1440 300 C1590 550 1650 640 1920 640"/);
   // Motion: lean from the wave spring's own velocity; soft underdamped spring.
   assert.match(motionSource, /waveLean = waveSmooth \? clamp\(-\.07, \.07, -waveSmooth\.getVelocity\(\) \* \.06\) : 0;/);
-  assert.match(motionSource, /if \(curve\.mbSetWave\) waveSmooth = follow\(transition, p => \{[\s\S]*?\}, \{stiffness: 45, damping: 9, mass: \.9/);
+  assert.match(motionSource, /if \(curve\.mbSetWave\) waveSmooth = follow\(transition, \(p, raw\) => \{[\s\S]*?\}, \{stiffness: 45, damping: 9, mass: \.9/);
+  // Scrolling back the swell never lingers: it trails the real scroll progress by
+  // at most WAVE_SLACK (min of spring and raw + slack, continuous both ways).
+  assert.match(motionSource, /const WAVE_SLACK = \.03;/);
+  assert.match(motionSource, /waveAmplitude = curve\.mbSetWave\(Math\.min\(p, raw \+ WAVE_SLACK\), false, height, waveLean\);/);
+  assert.match(motionSource, /own\(smooth\.on\('change', value => onFrame\(value, raw\.get\(\)\)\)\);/);
   assert.match(motionSource, /\(lerp\(arc\.points\[a\]\.x, arc\.points\[b\]\.x, position - a\) - centre\) \* waveSpread\n\s*\+ waveLean \* waveLayout \* rise/);
 });
