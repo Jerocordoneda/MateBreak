@@ -1,4 +1,4 @@
-import {money as formatMoney} from '../../services/products.js';
+import {money as formatMoney, getProducts, getProductBySlug} from '../../services/products.js';
 import {pageTitle} from '../../js/page-meta.mjs';
 const direct=new URLSearchParams(location.search).get('directa')==='1';
 const $ = selector => document.querySelector(selector);
@@ -79,13 +79,39 @@ function updateSummary() {
   if(cart.error_cotizacion)$('#checkout-notice').textContent=cart.error_cotizacion;
   else if(quote && count)$('#checkout-notice').textContent=quote.descuento_promocional ? 'Promoción incluida. El envío y el total final se confirman en el checkout.' : 'Precio cotizado. El envío y el total final se confirman en el checkout.';
 }
+// The cart API carries no photo: take it from the public catalogue the site
+// already reads (a variant shows its own photo when it has one). The icon
+// stays until the image has loaded, and if there is none.
+const photos = new Map();
+function itemPhoto(item) {
+  const key = item.variante_id ? 'v' + item.variante_id : 'p' + item.producto_id;
+  if (!photos.has(key)) photos.set(key, (async () => {
+    const card = (await getProducts()).find(p => String(p.id_producto) === String(item.producto_id));
+    if (!card) return null;
+    if (item.variante_id) {
+      const variant = (await getProductBySlug(card.slug))?.variantes?.find(v => String(v.id) === String(item.variante_id));
+      if (variant?.imagen) return variant.imagen;
+    }
+    return card.imagen_principal || null;
+  })().catch(() => null));
+  return photos.get(key);
+}
+function showPhoto(frame, item) {
+  itemPhoto(item).then(url => {
+    if (!url || !frame.isConnected) return;
+    const img = document.createElement('img');
+    img.alt = ''; img.decoding = 'async'; img.width = 160; img.height = 160;
+    img.addEventListener('load', () => { if (frame.isConnected) { frame.replaceChildren(img); frame.classList.add('has-photo'); } }, { once: true });
+    img.src = url;
+  });
+}
 function renderCart() {
   $('#items').replaceChildren(); $('#items').setAttribute('aria-busy', String(cartBusy));
   if (!cart.items.length) $('#items').append(emptyState('A tu carrito le falta un buen mate.', 'Elegí ese compañero de todos los días. Nosotros te guardamos el lugar.', 'Explorar el catálogo', '/tienda'));
   for (const item of [...cart.items].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))) {
     const quoted = cart.cotizacion?.items.find(line => item.variante_id ? String(line.variante_id) === String(item.variante_id) : line.variante_id == null && String(line.producto_id) === String(item.producto_id));
     const row = el('article', undefined, 'cart-item' + (item.activo === false ? ' unavailable' : ''));
-    const symbol = el('div', undefined, 'product-symbol'); symbol.append(icon('mate'));
+    const symbol = el('div', undefined, 'product-symbol'); symbol.append(icon('mate')); showPhoto(symbol, item);
     const detail = el('div'); detail.append(el('h3', item.nombre));
     if(quoted && quoted.precio_original > quoted.precio_unitario)detail.append(el('del', `${money(quoted.precio_original)} precio original por unidad`, 'unit-price'));
     detail.append(el('p', `${money(quoted?.precio_unitario ?? item.precio)} por unidad${quoted && quoted.precio_original > quoted.precio_unitario ? ' · Promoción aplicada' : ''}`, 'unit-price'));
