@@ -56,6 +56,8 @@ test('Material Symbols downloads only the icons the site uses, and every used ic
 test('heavy photos ship as WebP; the Home corporate photos are sized and load with the page', () => {
   const home = read('index.html');
   for (const file of htmlPages) assert.doesNotMatch(read(file), /recortes\/foto-\d\.png|TU EMPRESA\.png/, file);
+  // The grid takes its final width before any photo arrives (it was 16x48 px while they were pending).
+  assert.match(home, /<div class="grid grid-cols-2 gap-4 max-w-sm w-full">/);
   const tiles = home.match(/<img[^>]*recortes\/foto-\d\.webp[^>]*>/g);
   assert.equal(tiles.length, 4);
   for (const tile of tiles) { assert.match(tile, /width="\d+" height="\d+" decoding="async">/); assert.doesNotMatch(tile, /loading="lazy"/); }
