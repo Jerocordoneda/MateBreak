@@ -67,3 +67,18 @@
   .catalog-card-body{min-width:0;gap:6px;}
   .catalog-price{font-size:clamp(14px,3.6vw,18px);}
 }
+/* Loading placeholders (catalog-ui.js skeletonCard): the real card geometry with
+   soft bars instead of text; never interactive. */
+.catalog-card-skeleton{cursor:default;pointer-events:none;}
+.catalog-card-skeleton .catalog-image{background:#22231f;}
+.catalog-card-skeleton .catalog-title,.catalog-card-skeleton .catalog-description{width:100%;}
+.catalog-card-skeleton .catalog-title h3,.catalog-card-skeleton .catalog-description,.catalog-card-skeleton .catalog-old,.catalog-card-skeleton .catalog-price{color:transparent;background:#2a2b27;border-radius:6px;}
+.catalog-card-skeleton .catalog-title h3{width:78%;}
+.catalog-card-skeleton .catalog-description{width:92%;}
+.catalog-card-skeleton .catalog-old{width:64px;text-decoration:none;}
+.catalog-card-skeleton .catalog-price{width:96px;}
+.catalog-card-skeleton .catalog-card-action{background:#2a2b27;border-color:transparent;}
+@media(prefers-reduced-motion:no-preference){.catalog-card-skeleton .catalog-image::before{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,#ffffff0d 50%,transparent 70%);transform:translateX(-100%);animation:catalog-shimmer 1.4s ease-in-out infinite;}@keyframes catalog-shimmer{to{transform:translateX(100%)}}}
+/* Empty and error states take the grid's full width. */
+.catalog-error{display:grid;justify-items:start;gap:12px;}
+.catalog-error p{margin:0;}

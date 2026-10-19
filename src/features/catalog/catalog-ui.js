@@ -58,17 +58,43 @@ export function productCard(p,{eager=false}={}) {
   card.addEventListener('click',event=>{if(event.target.closest('a,button,input,select,textarea,label,form')||window.getSelection()?.toString())return;location.assign(link.href);});
   return card;
 }
+// Loading placeholders reuse the real card classes, so they measure exactly like
+// the products that replace them: nothing moves when the API answers (CLS).
+// Most products show a crossed-out price, which sets the row height; so does the
+// placeholder's.
+// Non-breaking spaces keep each line its real height without placeholder text.
+const NBSP='\u00a0';
+export function skeletonCard(){
+  const card=node('article',null,'catalog-card catalog-card-skeleton');card.setAttribute('aria-hidden','true');
+  const body=node('div',null,'catalog-card-body'),title=node('div',null,'catalog-title');title.append(node('h3',NBSP));
+  const footer=node('div',null,'catalog-card-footer'),pricing=node('div',null,'catalog-card-pricing');
+  pricing.append(node('del',NBSP,'catalog-old'),node('strong',NBSP,'catalog-price'));
+  footer.append(pricing,node('span',null,'catalog-card-action'));
+  body.append(title,node('p',NBSP,'catalog-description'),footer,node('span',null,'catalog-card-feedback'));
+  card.append(node('span',null,'catalog-image'),body);
+  return card;
+}
+// Controls, status and grid exist from the first frame; only their contents
+// change when the products arrive. A search typed meanwhile is kept.
+function catalogShell(container,{category,search,filters,count}){
+  const typed=container.querySelector('.catalog-controls input')?.value;
+  let input,select,controls;
+  if(filters){
+    controls=node('div',null,'catalog-controls');const searchLabel=node('label','Buscá tu próximo mate');input=node('input');input.type='search';input.placeholder='Producto, equipo, material…';input.value=typed||search;searchLabel.append(input);
+    const categoryLabel=node('label','Categoría');select=node('select');select.append(new Option('Todo el catálogo',''));select.disabled=true;select.dataset.category=category;categoryLabel.append(select);controls.append(searchLabel,categoryLabel);
+  }
+  const status=node('p','Cargando catálogo…','catalog-results');status.setAttribute('aria-live','polite');
+  const grid=node('div',null,'catalog-grid');grid.append(...Array.from({length:count},skeletonCard));
+  container.setAttribute('aria-busy','true');
+  container.replaceChildren(...(controls?[controls]:[]),status,grid);
+  return {input,select,status,grid};
+}
 export async function mountCatalog(container,{category='',search='',featured=false,limit=null,filters=true}={}){
-  container.replaceChildren(node('p','Cargando catálogo…'));
+  const {input,select,status,grid}=catalogShell(container,{category,search,filters,count:limit||6});
   try {
     const all=await getProducts(),categories=[...new Map(all.flatMap(p=>p.categorias).map(c=>[c.slug,c])).values()].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es'));
-    const grid=node('div',null,'catalog-grid'),status=node('p',null,'catalog-results');status.setAttribute('aria-live','polite');
-    container.replaceChildren();let select,input;
-    if(filters){
-      const controls=node('div',null,'catalog-controls');const searchLabel=node('label','Buscá tu próximo mate');input=node('input');input.type='search';input.placeholder='Producto, equipo, material…';input.value=search;searchLabel.append(input);
-      const categoryLabel=node('label','Categoría');select=node('select');select.append(new Option('Todo el catálogo',''));categories.forEach(c=>select.append(new Option(c.nombre,c.slug)));select.value=category;categoryLabel.append(select);controls.append(searchLabel,categoryLabel);container.append(controls);
-    }
-    container.append(status,grid);
+    if(select){categories.forEach(c=>select.append(new Option(c.nombre,c.slug)));select.value=category;select.disabled=false;}
+    container.removeAttribute('aria-busy');
     const normalize=s=>s.normalize('NFD').replace(/\p{M}/gu,'').toLowerCase();
     function render(){
       const term=normalize(input?.value??search),cat=select?.value??category;
@@ -80,9 +106,19 @@ export async function mountCatalog(container,{category='',search='',featured=fal
           const empty=node('div',null,'catalog-empty');
           const browse=node('a','Ver catálogo','text-link');browse.href='/tienda';
           empty.append(node('p','Todavía no hay productos destacados.'),browse);grid.append(empty);
-        }else grid.append(node('p','No encontramos productos con esos filtros.'));
+        }else{
+          const empty=node('div',null,'catalog-empty');
+          empty.append(node('p',all.length?'No encontramos productos con esos filtros.':'Todavía no hay productos en el catálogo.'));grid.append(empty);
+        }
       }
     }
     if(input)input.oninput=render;if(select)select.onchange=render;render();
-  }catch(e){container.replaceChildren(node('p',e.message));const retry=node('button','Reintentar','button-secondary');retry.onclick=()=>mountCatalog(container,{category,search,featured,limit,filters});container.append(retry);}
+  }catch(e){
+    // The error takes the grid's place; the controls stay where they were.
+    container.removeAttribute('aria-busy');status.textContent='';
+    const state=node('div',null,'catalog-empty catalog-error'),message=node('p',e.message||'No pudimos cargar el catálogo.');message.setAttribute('role','alert');
+    const retry=node('button','Reintentar','button-secondary');retry.type='button';
+    retry.onclick=()=>mountCatalog(container,{category:select?.dataset.category??category,search:input?.value??search,featured,limit,filters});
+    state.append(message,retry);grid.replaceChildren(state);
+  }
 }

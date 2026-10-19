@@ -15,3 +15,13 @@ body[data-brand-shell]{font-family:var(--mb-body)}
 .commerce-sections a{padding:8px 0;border-bottom:1px solid transparent}.commerce-sections a[aria-current=page]{color:var(--copper);border-bottom-color:var(--copper)}
 .account-filters{display:flex;gap:16px;flex-wrap:wrap;margin:18px 0}.account-filters label{flex:1;min-width:180px}.account-filters label:last-child{flex:0 1 200px}.account-data-note{font-size:12px;line-height:1.8;color:var(--muted);margin:12px 0;overflow-wrap:anywhere}
 @media(max-width:760px){.mb-page-brand{margin:22px 0 6px}.mb-page-brand img{width:29px;height:29px}.mb-page-brand>span{font-size:26px;line-height:32px;letter-spacing:-1.3px}.commerce-sections{gap:22px;padding-top:12px;font-size:11px}.account-filters label,.account-filters label:last-child{flex:1 1 100%}}
+/* Before the shared header mounts (public-header.mjs), commerce pages already take
+   its final geometry: the fixed bar's band is reserved, the brand sits in it and
+   only the links that stay in the page remain, laid out like the shortcuts row.
+   Nothing shifts when the header arrives (CLS); without JavaScript all stays visible. */
+body[data-brand-shell="commerce"]:not(.mb-public-simple){padding-top:129px}
+body[data-brand-shell="commerce"]:not(.mb-public-simple) main>.mb-page-brand{position:fixed;top:16px;left:max(64px,calc(50% - 576px));margin:0;z-index:50}
+body[data-brand-shell="commerce"]:not(.mb-public-simple) main>.commerce-sections{display:flex;gap:16px;align-items:center;margin-block:12px;padding:0;font:inherit;font-size:12px}
+body[data-brand-shell="commerce"]:not(.mb-public-simple) main>.commerce-sections a{padding:0;border-bottom:0}
+body[data-brand-shell="commerce"]:not(.mb-public-simple) main>.commerce-sections :is([data-cart-link],[data-account-link],.mb-podcast-link){display:none}
+@media(max-width:760px){body[data-brand-shell="commerce"]:not(.mb-public-simple){padding-top:64px}body[data-brand-shell="commerce"]:not(.mb-public-simple) main>.mb-page-brand{top:16px;left:12px}}
