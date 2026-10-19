@@ -50,12 +50,15 @@ test('Material Symbols downloads only the icons the site uses, and every used ic
   for (const name of used) assert.ok(ICONS.includes(name), `icon ${name} missing from icon_names`);
 });
 
-test('heavy photos ship as WebP; off-screen Home photos are lazy and sized', () => {
+// Lazy loading the Home corporate photos was measured on public Staging: they
+// arrived mid-scroll and grew their unsized grid (CLS up to 0.19 on phones). As
+// WebP the four weigh ~45 KB, so they load with the page again.
+test('heavy photos ship as WebP; the Home corporate photos are sized and load with the page', () => {
   const home = read('index.html');
   for (const file of htmlPages) assert.doesNotMatch(read(file), /recortes\/foto-\d\.png|TU EMPRESA\.png/, file);
   const tiles = home.match(/<img[^>]*recortes\/foto-\d\.webp[^>]*>/g);
   assert.equal(tiles.length, 4);
-  for (const tile of tiles) assert.match(tile, /width="\d+" height="\d+" loading="lazy" decoding="async"/);
+  for (const tile of tiles) { assert.match(tile, /width="\d+" height="\d+" decoding="async">/); assert.doesNotMatch(tile, /loading="lazy"/); }
   assert.match(home, /data-seq-img src="src\/assets\/images\/frames-mate1\/ezgif-frame-001-removebg-preview\.webp" fetchpriority="high">/);
   assert.match(read('src/pages/regalos-empresariales.html'), /src="\/src\/assets\/imagenes\/matebreak-tu-empresa\.webp" width="900" height="600" decoding="async">/);
   for (const image of ['recortes/foto-1.webp', 'recortes/foto-3.webp', 'recortes/foto-5.webp', 'recortes/foto-6.webp', 'matebreak-tu-empresa.webp'])
