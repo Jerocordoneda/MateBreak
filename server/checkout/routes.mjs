@@ -12,10 +12,11 @@ import { provinces } from '../shipping/provinces.mjs';
 import { persistedSimulation } from './order-simulation.mjs';
 
 const fail = (status, message) => Object.assign(new Error(message), { status });
-const validateRecipient=(value,mode)=>validateRecipientFields(value,mode,provinces);
 const uuid = value => typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 
 export function checkoutRoutes(app, { admin, config, hashToken, correo, payment, mockCheckout }) {
+  const flexibleStreetNumber = config.flexibleStreetNumber === true;
+  const validateRecipient = (value, mode) => validateRecipientFields(value, mode, provinces, { flexibleStreetNumber });
   const pickupEnabled=Boolean(config.localPickupMock && !config.production && correo.mock && payment.mock);
   const directCookie = config.origin.startsWith('https:') ? '__Host-mb_direct' : 'mb_direct';
   const directToken = req => parseCookieHeader(req.headers.cookie || '').find(cookie => cookie.name === directCookie)?.value;
@@ -57,7 +58,7 @@ export function checkoutRoutes(app, { admin, config, hashToken, correo, payment,
     if (paymentError || deliveryError) throw fail(503, 'No se pudieron consultar los medios disponibles');
     const packages = correo.ready && deliveries.some(delivery => (delivery.activo || correo.mock) && delivery.codigo === 'correo_domicilio')
       ? await packagesFor(selection, { admin, config }) : null;
-    res.json({ requiresAuthentication: false, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock), mock_persistente: persistedMock(config), mercadopago_test: config.stagingMpTestEnabled===true,
+    res.json({ requiresAuthentication: false, cart: selection, quote, progress: shippingProgress(quote.subtotal), modo_prueba: Boolean(payment.mock), mock_persistente: persistedMock(config), mercadopago_test: config.stagingMpTestEnabled===true, numero_flexible: flexibleStreetNumber,
       payments: payments.map(p => ({ ...p, activo: mockCheckout ? p.codigo === 'mercadopago'
         : p.activo && (p.codigo !== 'mercadopago' || payment.ready) })),
       deliveries: deliveries.map(d => ({ ...d, activo: (d.activo || (mockCheckout && ['retiro','correo_domicilio'].includes(d.codigo)) || (pickupEnabled && !config.localPersistMock && d.codigo==='correo_sucursal')) && (d.codigo !== 'correo_sucursal' || pickupEnabled) &&

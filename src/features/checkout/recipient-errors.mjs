@@ -1,13 +1,13 @@
 import {recipientResult,recipientRequired} from './recipient-validation.mjs';
 import {streetNumber} from './street-number.mjs';
-export function recipientForm(form,{mode,provinces,notice}){
+export function recipientForm(form,{mode,provinces,notice,flexible=()=>false}){
  const controls=[...form.querySelectorAll('input[name]:not([type=radio]),select[name],#pickup-province,#pickup-agency')];
  form.noValidate=true;
  const nodes=new Map();
  // Home delivery sends the street height as the server accepts it (1234 bis → 1234 + a note in
  // Referencia). The visible fields keep what the shopper typed, so no generated note goes stale.
- function values(){const data=Object.fromEntries(new FormData(form));if(mode()!=='correo_domicilio'||data.numero===undefined)return {data};const street=streetNumber(data.numero,data.referencia);return {data:{...data,numero:street.numero,referencia:street.referencia},hint:street.hint,referenceHint:street.referenceHint};}
- function check(){const {data,hint,referenceHint}=values(),result=recipientResult(data,mode(),provinces());if(hint)result.fields.numero=hint;if(referenceHint)result.fields.referencia=referenceHint;return result;}
+ function values(){const data=Object.fromEntries(new FormData(form));if(mode()!=='correo_domicilio'||data.numero===undefined||flexible())return {data};const street=streetNumber(data.numero,data.referencia);return {data:{...data,numero:street.numero,referencia:street.referencia},hint:street.hint,referenceHint:street.referenceHint};}
+ function check(){const {data,hint,referenceHint}=values(),result=recipientResult(data,mode(),provinces(),{flexibleStreetNumber:flexible()});if(hint)result.fields.numero=hint;if(referenceHint)result.fields.referencia=referenceHint;return result;}
  for(const input of controls){
   const field=input.name||input.id;input.id ||= 'recipient-'+field;
   const label=input.closest('label');

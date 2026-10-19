@@ -23,10 +23,10 @@ export function calculateTotals({ merchandiseSubtotal, carrierCost, method }) {
 
 import {validateRecipient as validateFields} from '../../src/features/checkout/recipient-validation.mjs';
 import {province,provinces} from '../shipping/provinces.mjs';
-export function validateRecipient(value,mode='correo_domicilio',choices=provinces){
+export function validateRecipient(value,mode='correo_domicilio',choices=provinces,options){
  if(mode==='correo_domicilio'){
   try{value={...value,provincia:province(value?.provincia).name};}
   catch{} // Collect the province error together with all other field errors.
  }
- return validateFields(value,mode,choices);
+ return validateFields(value,mode,choices,options);
 }

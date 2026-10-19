@@ -2,8 +2,22 @@
 // address requirements; submitted totals, profile emails and unknown keys vanish.
 const limits={nombre:[2,100],apellido:[2,100],email:[3,254],telefono:[10,30],provincia:[2,100],ciudad:[2,100],codigo_postal:[4,8],calle:[2,150],numero:[1,20],piso:[0,20],departamento:[0,30],referencia:[0,300]};
 const messages={nombre:'Ingresá el nombre del destinatario',apellido:'Ingresá el apellido del destinatario',email:'Ingresá un correo electrónico válido',telefono:'Revisá el número de teléfono argentino',provincia:'Seleccioná una provincia',ciudad:'Ingresá la localidad',codigo_postal:'El código postal no corresponde al formato esperado',calle:'Ingresá la calle de la dirección',numero:'Ingresá la altura de la dirección',piso:'Revisá el piso',departamento:'Revisá el departamento',referencia:'Revisá la referencia de entrega'};
+// Street heights the 20261019120000 migration lets the database store. Off by default:
+// the deployed RPC still enforces numericHeight until that migration is applied.
+const numericHeight=/^[1-9]\d{0,5}[A-Za-z]?$/;
+export const flexibleHeight=/^(S\/N|KM [0-9]{1,4}(,[0-9]{1,3})?|[0-9]{1,6}([A-Za-z]| BIS| TER)?)$/;
+// One spelling per kind of height, so the browser, the BFF and the database agree.
+export function canonicalStreetNumber(value){
+ const text=String(value??'').trim().replace(/\s+/g,' ').toUpperCase();
+ if(/^(S ?\/ ?N|S\.? ?N\.?|SIN N[UÚ]MERO|SIN ALTURA)$/.test(text))return 'S/N';
+ const km=/^KM\.? ?([0-9]{1,4})(?:[.,]([0-9]{1,3}))?$/.exec(text);
+ if(km)return 'KM '+km[1]+(km[2]?','+km[2]:'');
+ const height=/^(?:(?:N(?:RO)?|N[º°O])\.? ?|# ?)?([0-9]{1,6})(?: ?(BIS|TER)| ?([A-Z]))?$/.exec(text);
+ if(height)return height[1]+(height[2]?' '+height[2]:height[3]||'');
+ return text;
+}
 export const recipientRequired=mode=>['nombre','apellido','email','telefono',...(mode==='correo_domicilio'?['provincia','ciudad','codigo_postal','calle','numero']:[])];
-export function recipientResult(value,mode='correo_domicilio',provinces){
+export function recipientResult(value,mode='correo_domicilio',provinces,{flexibleStreetNumber=false}={}){
  const data={},fields={},required=new Set(recipientRequired(mode));
  if(!['retiro','correo_domicilio','correo_sucursal'].includes(mode))return {data,fields:{envio:'Elegí una modalidad de entrega disponible'}};
  for(const [key,[min,max]]of Object.entries(limits)){
@@ -20,13 +34,14 @@ export function recipientResult(value,mode='correo_domicilio',provinces){
  if(mode==='correo_domicilio'){
   if(!/^(?:\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/.test(data.codigo_postal))fields.codigo_postal=messages.codigo_postal;
   data.codigo_postal=data.codigo_postal.toUpperCase();
-  if(!/^[1-9]\d{0,5}[A-Za-z]?$/.test(data.numero))fields.numero=messages.numero;
+  if(flexibleStreetNumber&&!fields.numero)data.numero=canonicalStreetNumber(data.numero);
+  if(!(flexibleStreetNumber?flexibleHeight:numericHeight).test(data.numero))fields.numero=messages.numero;
   if(provinces&&!provinces.some(p=>p.name===data.provincia))fields.provincia=messages.provincia;
  }
  return {data,fields};
 }
-export function validateRecipient(value,mode='correo_domicilio',provinces){
- const {data,fields}=recipientResult(value,mode,provinces);
+export function validateRecipient(value,mode='correo_domicilio',provinces,options){
+ const {data,fields}=recipientResult(value,mode,provinces,options);
  if(Object.keys(fields).length)throw Object.assign(Error('Hay campos que requieren corrección.'),{status:400,code:'INVALID_RECIPIENT',fields});
  return data;
 }

@@ -14,7 +14,8 @@ let context, recipient, delivery = 'retiro', shippingQuote = null, payment = '';
 let catalogImages = new Map();
 let agencies = [];
 let agencyRequest = 0;
-const recipientFields=recipientForm($('#recipient-form'),{mode:()=>delivery,provinces:()=>context?.provinces,notice:error});
+// The BFF says when the database accepts S/N, KM 12 and 1234 BIS (migration 20261019120000).
+const recipientFields=recipientForm($('#recipient-form'),{mode:()=>delivery,provinces:()=>context?.provinces,notice:error,flexible:()=>context?.numero_flexible===true});
 function renderPickup() {
   $('#pickup-selection').hidden = delivery !== 'correo_sucursal' || !context.pickupEnabled;
 }

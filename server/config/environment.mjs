@@ -26,6 +26,8 @@ const config = {
   trustedProxyAddresses:env.TRUSTED_PROXY_ADDRESSES?env.TRUSTED_PROXY_ADDRESSES.split(','):[],
   staging: env.APP_ENV === 'staging',
   stagingMpTestEnabled:env.MATEBREAK_STAGING_MP_TEST==='1',
+  // Only after migration 20261019120000 is applied: S/N, KM 12 and 1234 BIS street heights.
+  flexibleStreetNumber:env.CHECKOUT_FLEXIBLE_STREET_NUMBER==='1',
   stagingProjectRef: env.SUPABASE_STAGING_PROJECT_REF,
   stagingPersistMock: env.MATEBREAK_STAGING_PERSIST_MOCK === '1',
   localPersistMock: env.MATEBREAK_LOCAL_PERSIST_MOCK === '1',
