@@ -237,6 +237,11 @@
       "file": "20261013131229_manual_sale_explicit_accessories.sql",
       "status": "published-staging-explicit-manual-accessories",
       "sha256LF": "8e95e71a631a19879a6facf2544fafd433003603e5cc8186e36ff78b24d1bfc0"
+    },
+    {
+      "file": "20261019120000_flexible_street_number.sql",
+      "status": "prepared-not-applied-flexible-street-number",
+      "sha256LF": "1150375f9d3ad65db2bb53a373be030ba583d05b752a471c07d1de64e339f0f4"
     }
   ]
 }
