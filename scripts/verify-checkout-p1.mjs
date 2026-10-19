@@ -132,6 +132,12 @@ for (const [index, width] of [320, 390, 768, 1440].entries()) {
       assert.match(text, /servidor.*volvé a intentar/i);
     });
     if (proof) await page.screenshot({path: join(proof, `checkout-502-${width}.png`)});
+    await check(`${label} cold start: submitting before the retry keeps a Spanish message`, async () => {
+      await page.locator('#continue-payment').click();
+      const text = await page.locator('#checkout-error').textContent();
+      assert.doesNotMatch(text, /Cannot read|undefined|TypeError/);
+      assert.match(text, /Reintentar/);
+    });
     await check(`${label} cold start: "Reintentar" loads the checkout`, async () => {
       await page.locator('#checkout-retry').click({timeout: 2000});
       await page.waitForFunction(() => document.querySelectorAll('#recipient-form [name=provincia] option').length > 20, null, {timeout: 3000});
@@ -200,6 +206,14 @@ for (const [index, width] of [320, 390, 768, 1440].entries()) {
       assert.equal(quotes[0].destinatario.numero, '1234');
       assert.equal(quotes[0].destinatario.referencia, 'Altura 1234 bis');
       assert.match(await page.locator('#editable-summary').textContent(), /Ruta 226 1234/);
+      assert.equal(await page.locator('#recipient-form [name=numero]').inputValue(), '1234 bis', 'the form keeps what was typed');
+    });
+    if (numero === '1234 bis') await check(`${label} changing "1234 bis" to "1500" sends no stale note`, async () => {
+      await page.locator('#editable-summary button').first().click();
+      await page.locator('#recipient-form [name=numero]').fill('1500');
+      await page.locator('#continue-payment').click();
+      await page.locator('#payment-panel:not([hidden])').waitFor({timeout: 2000});
+      assert.deepEqual([quotes[1]?.destinatario.numero, quotes[1]?.destinatario.referencia], ['1500', '']);
     });
     else await check(`${label} address "${numero}" gets specific guidance on the field, no request`, async () => {
       await page.locator('[name=numero][aria-invalid=true]').waitFor({timeout: 2000});

@@ -17,8 +17,22 @@ test('"1234 bis" is sent as 1234 and keeps its wording in Referencia; the server
   assert.equal(streetNumber('1234 bis', 'Altura 1234 bis · Timbre 2').referencia, 'Altura 1234 bis · Timbre 2', 'a second read does not repeat the note');
 });
 
+test("Changing the height after a first read sends only the new height's note", () => {
+  // The form keeps what the shopper typed; every read starts from those fields.
+  assert.equal(streetNumber('1234 bis', 'Timbre 2').referencia, 'Altura 1234 bis · Timbre 2');
+  assert.equal(streetNumber('1500', 'Timbre 2').referencia, 'Timbre 2');
+  assert.equal(streetNumber('1500 ter', 'Timbre 2').referencia, 'Altura 1500 ter · Timbre 2');
+});
+
+test('A Referencia that would pass 300 characters with the note is flagged on Referencia', () => {
+  const long = 'x'.repeat(290);
+  const street = streetNumber('1234 bis', long);
+  assert.equal(street.referenceHint, streetNumberHints.reference);
+  assert.equal(streetNumber('1234', long).referenceHint, undefined);
+});
+
 test('Usual spellings of a height reach the server in its own format', () => {
-  for (const [typed, numero] of [['N° 1234', '1234'], ['Nº 1234', '1234'], ['nro. 1234', '1234'], ['#1234', '1234'], ['1234 b', '1234B'], ['1234B', '1234B'], [' 742 ', '742'], ['1234 ter', '1234']]) {
+  for (const [typed, numero] of [['N° 1234', '1234'], ['Nº 1234', '1234'], ['nro. 1234', '1234'], ['#1234', '1234'], ['1234 b', '1234B'], ['1234B', '1234B'], [' 742 ', '742'], ['1234 ter', '1234'], ['1234bis', '1234']]) {
     assert.equal(send(typed).sent.numero, numero, typed);
     assert.match(numero, databaseHeight);
   }

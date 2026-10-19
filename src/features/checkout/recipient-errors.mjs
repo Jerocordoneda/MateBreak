@@ -4,9 +4,10 @@ export function recipientForm(form,{mode,provinces,notice}){
  const controls=[...form.querySelectorAll('input[name]:not([type=radio]),select[name],#pickup-province,#pickup-agency')];
  form.noValidate=true;
  const nodes=new Map();
- // Home delivery reads the street height as the server accepts it (1234 bis → 1234 + Referencia).
- function values(){const data=Object.fromEntries(new FormData(form));if(mode()!=='correo_domicilio'||data.numero===undefined)return {data};const street=streetNumber(data.numero,data.referencia);return {data:{...data,numero:street.numero,referencia:street.referencia},hint:street.hint};}
- function check(){const {data,hint}=values(),result=recipientResult(data,mode(),provinces());if(hint)result.fields.numero=hint;return result;}
+ // Home delivery sends the street height as the server accepts it (1234 bis → 1234 + a note in
+ // Referencia). The visible fields keep what the shopper typed, so no generated note goes stale.
+ function values(){const data=Object.fromEntries(new FormData(form));if(mode()!=='correo_domicilio'||data.numero===undefined)return {data};const street=streetNumber(data.numero,data.referencia);return {data:{...data,numero:street.numero,referencia:street.referencia},hint:street.hint,referenceHint:street.referenceHint};}
+ function check(){const {data,hint,referenceHint}=values(),result=recipientResult(data,mode(),provinces());if(hint)result.fields.numero=hint;if(referenceHint)result.fields.referencia=referenceHint;return result;}
  for(const input of controls){
   const field=input.name||input.id;input.id ||= 'recipient-'+field;
   const label=input.closest('label');
@@ -17,5 +18,5 @@ export function recipientForm(form,{mode,provinces,notice}){
  }
  function clear(key){const n=nodes.get(key);if(!n)return;n.input.removeAttribute('aria-invalid');n.message.textContent='';n.message.hidden=true;}
  function show(fields){for(const key of nodes.keys())clear(key);for(const [key,text]of Object.entries(fields)){const n=nodes.get(key);if(n){n.input.setAttribute('aria-invalid','true');n.message.textContent=text;n.message.hidden=false;}}notice('Hay campos que requieren corrección. Revisá los mensajes indicados.');[...nodes.values()].find(n=>n.input.getAttribute('aria-invalid')==='true'&&!n.input.disabled)?.input.focus();}
- return {show,sync(){const required=new Set(recipientRequired(mode()));for(const [key,n]of nodes){if(key.startsWith('pickup-')){n.label.hidden=mode()!=='correo_sucursal';clear(key);continue;}const address=!['nombre','apellido','email','telefono'].includes(key);n.input.disabled=address&&mode()!=='correo_domicilio';n.label.hidden=n.input.disabled;n.input.required=required.has(key);clear(key);}},read(){const {data}=values();for(const key of ['numero','referencia'])if(data[key]!==undefined&&nodes.get(key))nodes.get(key).input.value=data[key];const result=check();if(mode()==='correo_sucursal')for(const [key,n]of nodes)if(key.startsWith('pickup-')&&!n.input.value)result.fields[key]=key==='pickup-province'?'Seleccioná la provincia de la sucursal':'Seleccioná una sucursal de retiro';if(Object.keys(result.fields).length){show(result.fields);throw Object.assign(Error('Hay campos que requieren corrección.'),{fields:result.fields});}return result.data;}};
+ return {show,sync(){const required=new Set(recipientRequired(mode()));for(const [key,n]of nodes){if(key.startsWith('pickup-')){n.label.hidden=mode()!=='correo_sucursal';clear(key);continue;}const address=!['nombre','apellido','email','telefono'].includes(key);n.input.disabled=address&&mode()!=='correo_domicilio';n.label.hidden=n.input.disabled;n.input.required=required.has(key);clear(key);}},read(){const result=check();if(mode()==='correo_sucursal')for(const [key,n]of nodes)if(key.startsWith('pickup-')&&!n.input.value)result.fields[key]=key==='pickup-province'?'Seleccioná la provincia de la sucursal':'Seleccioná una sucursal de retiro';if(Object.keys(result.fields).length){show(result.fields);throw Object.assign(Error('Hay campos que requieren corrección.'),{fields:result.fields});}return result.data;}};
 }
