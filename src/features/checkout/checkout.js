@@ -100,7 +100,8 @@ function summaryRow(title, value) {
   const change = node('button', 'Cambiar', 'text-link'); change.type = 'button';
   change.onclick = () => showStep('delivery'); row.append(copy, change); return row;
 }
-function showStep(step) {
+// A field error focuses (and scrolls to) the field itself, so it skips the step move.
+function showStep(step, {move = true} = {}) {
   const pay = step === 'payment';
   $('#delivery-panel').hidden = pay; $('#payment-panel').hidden = !pay;
   $('#step-delivery').setAttribute('aria-current', pay ? 'false' : 'step');
@@ -118,10 +119,11 @@ function showStep(step) {
     }
   }
   error('');
-  moveToStep(step, { heading: $(pay ? '#payment-panel h2' : '#delivery-panel h2'), status: $('#checkout-step-status'), view: window });
+  if (move) moveToStep(step, { heading: $(pay ? '#payment-panel h2' : '#delivery-panel h2'), status: $('#checkout-step-status'), view: window });
 }
 async function prepareDelivery(event) {
   event.preventDefault(); error('');
+  if (!context) { error('Todavía no pudimos cargar tu compra. Tocá "Reintentar".'); return; }
   try {
     recipient = selectedRecipient();
     const chosen = context.deliveries.find(option => option.codigo === delivery && option.activo);
@@ -135,7 +137,7 @@ async function prepareDelivery(event) {
       if (!shippingQuote) throw Error('No se pudo cotizar el envío');
     }
     renderOrder(); showStep('payment');
-  } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
+  } catch (cause) { if(cause.fields){showStep('delivery',{move:false});recipientFields.show(cause.fields);}else error(cause.message); }
 }
 function attemptStorage() { try { return sessionStorage; } catch { return null; } }
 const placeOrder = submitLock(async () => {
@@ -146,7 +148,7 @@ const placeOrder = submitLock(async () => {
     const result = await api('/checkout/pedidos', { method: 'POST', body: JSON.stringify({ idempotencia, ...choices }) });
     location.assign(result.redirectUrl || `/checkout/resultado?pedido=${encodeURIComponent(result.order.id)}`);
     return leaving;
-  } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
+  } catch (cause) { if(cause.fields){showStep('delivery',{move:false});recipientFields.show(cause.fields);}else error(cause.message); }
 }, { lock: () => { $('#place-order').disabled = true; }, release: () => { $('#place-order').disabled = !payment; } });
 async function init() {
   try {
@@ -176,7 +178,7 @@ async function init() {
     delivery = firstActive?.codigo || '';
     renderChoices(); recipientFields.sync(); renderOrder();
   } catch (cause) {
-    if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message);
+    if(cause.fields){showStep('delivery',{move:false});recipientFields.show(cause.fields);}else error(cause.message);
     // A cold Render start answers 502 before anything loads: offer the retry here.
     $('#checkout-retry').hidden = !cause.retryable;
   }
@@ -201,5 +203,5 @@ $('#download-manual-quote').addEventListener('click', async () => {
   const url=URL.createObjectURL(new Blob([JSON.stringify(request,null,2)],{type:'application/json'}));
   const link=node('a');link.href=url;link.download='matebreak-cotizacion-manual.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   error(request.message);
- } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
+ } catch (cause) { if(cause.fields){showStep('delivery',{move:false});recipientFields.show(cause.fields);}else error(cause.message); }
 });

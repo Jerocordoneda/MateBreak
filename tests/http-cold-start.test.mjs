@@ -36,6 +36,12 @@ test('A 200 answered with HTML (proxy fallback) is not treated as data', async (
   await assert.rejects(readJson(new Response('<html></html>', {status: 200})), error => error.message === serverUnavailable && error.retryable);
 });
 
+test('A non-JSON 4xx from a proxy is a refusal with the caller message, not a cold start', async () => {
+  await assert.rejects(readJson(new Response('<h1>404</h1>', {status: 404}), 'No pudimos iniciar la compra'), error =>
+    error.message === 'No pudimos iniciar la compra' && error.retryable === false);
+  await assert.rejects(readJson(new Response('<h1>408</h1>', {status: 408})), error => error.retryable === true);
+});
+
 test('A dropped connection says so in Spanish', async () => {
   await withFetch(async () => { throw new TypeError('Failed to fetch'); }, () =>
     assert.rejects(fetchJson('/api/checkout/contexto'), error => error.message === connectionLost && error.retryable && error.status === 0));

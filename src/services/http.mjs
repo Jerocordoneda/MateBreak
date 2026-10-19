@@ -8,7 +8,8 @@ export async function readJson(response, failure = 'No pudimos completar la oper
   let data = null;
   try { data = await response.json(); } catch { /* HTML error page, empty body or cut connection. */ }
   if (response.ok && data !== null) return data;
-  const retryable = data === null || response.status >= 500 || response.status === 429;
+  // A non-JSON 4xx (proxy or CDN page) is a refusal, not a cold start.
+  const retryable = response.status >= 500 || [408, 429].includes(response.status) || (response.ok && data === null);
   throw Object.assign(Error(data?.error || (retryable ? serverUnavailable : failure)),
     { status: response.status, fields: data?.fields, retryable });
 }
