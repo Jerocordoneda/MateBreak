@@ -3,6 +3,7 @@ import {populateProvinces} from './province-select.mjs';
 import { getProducts } from '../../services/products.js';
 import {submitLock, leaving} from '../../js/submit-lock.mjs';
 import {orderAttemptKey} from './order-attempt.mjs';
+import {fetchJson} from '../../services/http.mjs';
 
 const $ = selector => document.querySelector(selector);
 const money = value => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(value || 0));
@@ -32,12 +33,9 @@ async function loadPickupAgencies() {
   } catch (cause) { if (request === agencyRequest) error(cause.message); }
 }
 
-async function api(path, options = {}) {
-  const response = await fetch('/api' + path, { credentials: 'same-origin', ...options,
+function api(path, options = {}) {
+  return fetchJson('/api' + path, { credentials: 'same-origin', ...options,
     headers: options.body ? { 'Content-Type': 'application/json' } : {} });
-  const data = await response.json();
-  if (!response.ok) throw Object.assign(Error(data.error || 'No pudimos completar la operación'),{fields:data.fields});
-  return data;
 }
 function node(tag, text, className) {
   const element = document.createElement(tag);
@@ -175,7 +173,11 @@ async function init() {
     const firstActive = context.deliveries.find(option => option.activo && option.codigo !== 'correo_sucursal');
     delivery = firstActive?.codigo || '';
     renderChoices(); recipientFields.sync(); renderOrder();
-  } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
+  } catch (cause) {
+    if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message);
+    // A cold Render start answers 502 before anything loads: offer the retry here.
+    $('#checkout-retry').hidden = !cause.retryable;
+  }
 }
 $('#recipient-form').addEventListener('submit', prepareDelivery);
 $('#pickup-province').addEventListener('change', loadPickupAgencies);
@@ -186,6 +188,7 @@ $('#pickup-agency').addEventListener('change', () => {
 });
 
 $('#place-order').addEventListener('click', () => { if (payment) placeOrder(); });
+$('#checkout-retry').addEventListener('click', () => { $('#checkout-retry').hidden = true; error(''); init(); });
 // Coming back from Mercado Pago restores a page locked mid-navigation; reload the cart state.
 window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
 init();

@@ -4,6 +4,7 @@ import {resolveProductSelection} from './product-selection.mjs';
 import {addCartItem} from '../cart/add-item.js';
 import {setPageMeta,summarize} from '../../js/page-meta.mjs';
 import {submitLock,leaving} from '../../js/submit-lock.mjs';
+import {fetchJson} from '../../services/http.mjs';
 const root=document.querySelector('#product-content');
 async function init(){
   try{
@@ -55,8 +56,7 @@ async function init(){
       status.textContent=direct?'Preparando tu compra inmediata…':'Guardando…';
       try{
         if(direct){
-          const response=await fetch('/api/compra-directa',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({variante_id:v.id,cantidad:units,personalizacion:custom?.value||''})});
-          const result=await response.json();if(!response.ok)throw Error(result.error||'No pudimos iniciar la compra');
+          const result=await fetchJson('/api/compra-directa',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({variante_id:v.id,cantidad:units,personalizacion:custom?.value||''})},'No pudimos iniciar la compra');
           location.assign(result.next);return leaving;
         }
         await addCartItem(v.id,units,custom?.value);status.textContent='Producto agregado. Tu selección está guardada.';
