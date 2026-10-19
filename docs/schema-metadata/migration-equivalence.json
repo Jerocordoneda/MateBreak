@@ -358,5 +358,32 @@
     "localTokenMd5": "3d8f34acb4a5960b30c8aa691494c715",
     "remoteTokenMd5": null,
     "tokenEquivalent": null
+  },
+  {
+    "file": "20261013115607_admin_inventory_sale_costs.sql",
+    "version": "20261013115607",
+    "name": "admin_inventory_sale_costs",
+    "remoteVersion": null,
+    "localTokenMd5": "9ef94f57f2ba374ae09f6ad8fe3cbb9c",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261013131229_manual_sale_explicit_accessories.sql",
+    "version": "20261013131229",
+    "name": "manual_sale_explicit_accessories",
+    "remoteVersion": null,
+    "localTokenMd5": "591cede89f4c23863a11753be039aa1b",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
+  },
+  {
+    "file": "20261019120000_flexible_street_number.sql",
+    "version": "20261019120000",
+    "name": "flexible_street_number",
+    "remoteVersion": null,
+    "localTokenMd5": "b9d0d5c71860138a010aa987ff08e1aa",
+    "remoteTokenMd5": null,
+    "tokenEquivalent": null
   }
 ]
