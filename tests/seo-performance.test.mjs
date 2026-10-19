@@ -62,11 +62,11 @@ test('heavy photos ship as WebP; off-screen Home photos are lazy and sized', () 
     assert.ok(existsSync(new URL(`../src/assets/imagenes/${image}`, import.meta.url)), image);
 });
 
-test('carousel clips get their sources only after the page has loaded', () => {
+// Deferring the clips until after load was measured on public Staging: their
+// download then overlapped the mate photograph sequence (frames lagged, CLS rose).
+// The carousel keeps loading clip metadata with the page.
+test('carousel clips keep loading their metadata with the page', () => {
   const carousel = read('src/js/video-carousel.js');
-  assert.match(carousel, /video\.setAttribute\("data-src", cfg\.items\[i\]\.url\);/);
-  assert.match(carousel, /video\.preload = "none";/);
-  assert.doesNotMatch(carousel, /video\.src = cfg\.items/);
-  assert.match(carousel, /requestIdleCallback\(attachSources, \{ timeout: 2000 \}\)/);
-  assert.match(carousel, /window\.addEventListener\("load", scheduleSources, \{ once: true \}\);/);
+  assert.match(carousel, /video\.src = cfg\.items\[i\]\.url;/);
+  assert.match(carousel, /video\.preload = "metadata";/);
 });

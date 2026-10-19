@@ -1,6 +1,6 @@
 // Real-browser check of the SEO/performance changes: robots.txt and sitemap.xml
 // are served as files, the subset Material Symbols font still draws every icon as
-// a glyph, Home photos are WebP, and carousel clips load only after the page load.
+// a glyph, and the Home photos are WebP.
 //   node scripts/verify-seo-performance.mjs [--dist]   (or ORIGIN=<url> for a deployment)
 // Playwright: installed module, or MATEBREAK_BROWSER_MODULE=<path to playwright index.mjs>.
 // Google Fonts is reached for real: the check is about the icon subset it serves.
@@ -67,14 +67,7 @@ for (const [name, viewport, mobile] of [['desktop', {width: 1440, height: 900}, 
       assert.ok(await page.evaluate(() => document.fonts.check('24px "Material Symbols Outlined"', 'expand_more')));
       for (const font of fonts.filter(f => /materialsymbols|kit=/.test(f.url()))) assert.ok((await font.body()).length < 20000, 'icon font larger than the subset');
     });
-    if (path === '/') await check(`${label} WebP photos and clips that wait for the carousel`, async () => {
-      await page.waitForFunction(() => [...document.querySelectorAll('[data-video-carousel] video')].every(v => v.getAttribute('src')));
-      const timing = await page.evaluate(() => ({load: performance.getEntriesByType('navigation')[0].loadEventStart,
-        clips: performance.getEntriesByType('resource').filter(e => /\.mp4/.test(e.name)).map(e => e.startTime)}));
-      assert.ok(timing.clips.length > 0, 'no clip requested');
-      assert.ok(timing.clips.every(start => start >= timing.load), `clips started before load (${timing.clips.map(Math.round)} < ${Math.round(timing.load)})`);
-      await page.locator('[data-video-carousel]').scrollIntoViewIfNeeded();
-      await page.evaluate(() => scrollBy(0, -200));
+    if (path === '/') await check(`${label} WebP photos load when reached`, async () => {
       const tiles = await page.evaluate(async () => {
         const imgs = [...document.querySelectorAll('img[src*="recortes/"]')];
         for (const img of imgs) { img.scrollIntoView({block: 'center'}); await new Promise(done => img.complete ? done() : img.addEventListener('load', done, {once: true})); }
@@ -88,4 +81,4 @@ for (const [name, viewport, mobile] of [['desktop', {width: 1440, height: 900}, 
 }
 await browser.close(); server?.close();
 if (failures.length) { console.error(`${failures.length} FAILED:\n- ${failures.join('\n- ')}`); process.exit(1); }
-console.log('SEO/performance: crawler files, icon subset, WebP photos and deferred clips pass (desktop/mobile)');
+console.log('SEO/performance: crawler files, icon subset and WebP photos pass (desktop/mobile)');
