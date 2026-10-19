@@ -186,7 +186,9 @@
             var ch = cfg.cardHeight;
             var half = Math.floor(count / 2);
             var clusterW = cw + cfg.depth * 0.35 * 2 + cfg.spacing * 2;
-            var clusterH = ch + cfg.depth * 0.35 * 2;
+            // Only the room the hover zoom needs above and below the cards; the
+            // receding side cards are never taller than the active one.
+            var clusterH = Math.ceil(ch * cfg.hoverZoom) + 12;
 
             stage.style.width = clusterW + "px";
             stage.style.height = clusterH + "px";

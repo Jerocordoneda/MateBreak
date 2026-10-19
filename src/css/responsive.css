@@ -276,3 +276,7 @@ dialog::backdrop { background: #0009; }
   [data-home] main section.bg-white{width:calc(100% + 32px);margin-inline:-16px;}
   [data-home] main section.bg-white > [class~="px-margin-desktop"]{padding-inline:calc(16px + clamp(16px,4vw,32px));}
 }
+/* Home: the Instagram call, the video carousel and the FAQ read as one flow. */
+[data-home] [data-home-community] { padding-bottom: clamp(16px, 2.5vw, 32px); }
+[data-home] [data-home-community] > div > .text-center { margin-bottom: clamp(16px, 2vw, 28px); }
+[data-home] [data-home-faq] { padding-top: clamp(32px, 4.5vw, 64px); }
