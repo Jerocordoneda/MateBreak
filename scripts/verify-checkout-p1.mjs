@@ -229,6 +229,28 @@ for (const [index, width] of [320, 390, 768, 1440].entries()) {
     await context.close();
   }
 
+  // 2b. Once the BFF reports numero_flexible (migration applied), S/N travels as such.
+  {
+    const {context, page, errors} = await newPage(browser, width, 'no-preference');
+    const quotes = [];
+    await context.route(/\/api\/checkout\/contexto/, route => route.fulfill({json: {...checkoutContext, numero_flexible: true}}));
+    await context.route(/\/api\/checkout\/cotizar-envio/, route => {
+      quotes.push(JSON.parse(route.request().postData()));
+      return route.fulfill({json: [{id: quoteId, customerShippingCost: 0}]});
+    });
+    await page.goto(origin + '/checkout', {waitUntil: 'load'});
+    await page.waitForFunction(() => document.querySelectorAll('#recipient-form [name=provincia] option').length > 20);
+    await page.locator('#delivery-options input[value=correo_domicilio]').check();
+    await fill(page, {...contact, ...address, numero: 's/n'});
+    await page.locator('#continue-payment').click();
+    await check(`${label} flexible BFF: "s/n" is sent as S/N with no guidance`, async () => {
+      await page.locator('#payment-panel:not([hidden])').waitFor({timeout: 2000});
+      assert.deepEqual([quotes[0]?.destinatario.numero, quotes[0]?.destinatario.referencia], ['S/N', '']);
+    });
+    await check(`${label} flexible BFF: no page errors`, () => assert.deepEqual(errors, []));
+    await context.close();
+  }
+
   // 3. "Comprar ahora" on the product page.
   {
     const {context, page, errors} = await newPage(browser, width, 'no-preference');
