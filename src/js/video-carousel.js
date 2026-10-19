@@ -1,11 +1,13 @@
 (function () {
     "use strict";
 
+    // Each clip has a poster (its own frame): browsers that paint nothing for a
+    // paused, never-played video (iPhone Safari) still show every card behind.
     var DEFAULT_ITEMS = [
-        { url: "src/assets/videos/Download.mp4", poster: "" },
-        { url: "src/assets/videos/Download%20%281%29.mp4", poster: "" },
-        { url: "src/assets/videos/Download%20%282%29.mp4", poster: "" },
-        { url: "src/assets/videos/Download%20%283%29.mp4", poster: "" }
+        { url: "src/assets/videos/Download.mp4", poster: "src/assets/videos/posters/clip-0.webp" },
+        { url: "src/assets/videos/Download%20%281%29.mp4", poster: "src/assets/videos/posters/clip-1.webp" },
+        { url: "src/assets/videos/Download%20%282%29.mp4", poster: "src/assets/videos/posters/clip-2.webp" },
+        { url: "src/assets/videos/Download%20%283%29.mp4", poster: "src/assets/videos/posters/clip-3.webp" }
     ];
 
     var CHEV_PREV = '<svg width="18" height="18" viewBox="0 0 24 24" style="transform:rotate(180deg)"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';

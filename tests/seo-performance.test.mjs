@@ -70,3 +70,10 @@ test('carousel clips keep loading their metadata with the page', () => {
   assert.match(carousel, /video\.src = cfg\.items\[i\]\.url;/);
   assert.match(carousel, /video\.preload = "metadata";/);
 });
+
+test('every carousel clip has its own poster, so the cards behind are never blank', () => {
+  const carousel = read('src/js/video-carousel.js');
+  const posters = [...carousel.matchAll(/poster: "(src\/assets\/videos\/posters\/clip-\d\.webp)"/g)].map(m => m[1]);
+  assert.deepEqual(posters, [0, 1, 2, 3].map(i => `src/assets/videos/posters/clip-${i}.webp`));
+  for (const poster of posters) assert.ok(existsSync(new URL(`../${poster}`, import.meta.url)), poster);
+});
