@@ -1,0 +1,10 @@
+# MateBreak®
+# Private screens are not blocked here on purpose: they carry
+# <meta name="robots" content="noindex">, which crawlers must be able to read.
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /auth/
+Disallow: /interno/
+
+Sitemap: https://matebreak.com.ar/sitemap.xml

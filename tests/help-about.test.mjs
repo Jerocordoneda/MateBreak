@@ -19,6 +19,8 @@ test('Ayuda and Nosotros share the header, the layout stylesheet and the footer'
     assert.match(page, /^<!DOCTYPE html>\n<html lang="es">/);
     assert.match(page, /<script type="module" src="\/src\/js\/header-account\.js"><\/script>/);
     assert.match(page, /<link rel="stylesheet" href="\/src\/css\/info-pages\.css">/);
+    // Fonts ready at first paint: the hero facts never rewrap when they arrive (CLS).
+    assert.match(page, /<link rel="preload" href="\/src\/assets\/fonts\/geist-latin\.woff2" as="font" type="font\/woff2" crossorigin><link rel="preload" href="\/src\/assets\/fonts\/inter-latin\.woff2" as="font" type="font\/woff2" crossorigin><link rel="stylesheet" href="\/src\/css\/fonts\.css">/);
     assert.match(page, /<body data-marketing class="mb-info /);
     assert.match(page, /<header class="[^"]*mb-commerce-header">/);
     assert.match(page, /<section class="mb-info-hero[^"]*"/);

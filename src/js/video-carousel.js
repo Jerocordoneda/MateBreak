@@ -123,12 +123,12 @@
             var card = document.createElement("div");
             card.className = "vc-card";
             var video = document.createElement("video");
-            video.src = cfg.items[i].url;
+            video.setAttribute("data-src", cfg.items[i].url);
             if (cfg.items[i].poster) video.setAttribute("poster", cfg.items[i].poster);
             video.muted = true;
             video.playsInline = true;
             video.loop = true;
-            video.preload = "metadata";
+            video.preload = "none";
             card.appendChild(video);
             var shade = document.createElement("div");
             shade.className = "vc-shade";
@@ -280,9 +280,28 @@
             autoId = null;
         }
 
+        // The clips get their sources once the page has loaded and the browser
+        // is idle: they never compete with the first screen for bandwidth, and
+        // they are ready before the visitor scrolls through the golden mountain
+        // (attaching them mid-scroll would cost the wave animation frames).
+        function attachSources() {
+            videos.forEach(function (v) {
+                if (v.getAttribute("src") || !v.getAttribute("data-src")) return;
+                v.preload = "metadata";
+                v.src = v.getAttribute("data-src");
+            });
+        }
+        function scheduleSources() {
+            if ("requestIdleCallback" in window) requestIdleCallback(attachSources, { timeout: 2000 });
+            else setTimeout(attachSources, 200);
+        }
+        if (document.readyState === "complete") scheduleSources();
+        else window.addEventListener("load", scheduleSources, { once: true });
+
         var io = new IntersectionObserver(function (entries) {
             inView = entries[0].isIntersecting;
             if (inView) {
+                attachSources();
                 syncPlayback();
                 startAuto();
             } else {

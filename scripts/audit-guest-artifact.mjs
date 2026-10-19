@@ -15,14 +15,14 @@ assert.equal(approved.length,26);
 for(const p of approved)assert.equal(sha(readFileSync(resolve(root,p))),sha(execFileSync('git',['cat-file','--filters','3a8e596:'+p],{cwd:root,maxBuffer:20*1024*1024})),'Historical migration changed: '+p);
 const manifest={files:[],historicalMigrations:26,backend:process.env.STAGING_BACKEND_ORIGIN};
 for(const path of files(root+'/dist')){
- const name=relative(root+'/dist',path).replaceAll('\\','/');assert.ok(name==='index.html'||name.startsWith('src/'),'Unexpected artifact root');
+ const name=relative(root+'/dist',path).replaceAll('\\','/');assert.ok(['index.html','robots.txt','sitemap.xml'].includes(name)||name.startsWith('src/'),'Unexpected artifact root');
  assert.ok(!/(^|\/)(server|supabase|deploy|diagnostics|node_modules|\.env|\.git)(\/|$)|\.(sql|log|toml)$/i.test(name),'Private artifact');
  const body=readFileSync(path),source=readFileSync(resolve(root,name));
  // Match the explicit CRLF-to-LF transformation in build-frontend.mjs.
  // Binary files still require exact source bytes.
- const expected=/\.(html|css|js|mjs|json|svg|txt)$/.test(name)?Buffer.from(source.toString('utf8').replaceAll('\r\n','\n')):source;
+ const expected=/\.(html|css|js|mjs|json|svg|txt|xml)$/.test(name)?Buffer.from(source.toString('utf8').replaceAll('\r\n','\n')):source;
  assert.equal(sha(body),sha(expected),'Build source mismatch: '+name);
- if(/\.(html|js|mjs|css|json|txt|svg)$/i.test(name))assert.ok(!/(sb_secret_[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,})/.test(body.toString('utf8')),'Credential pattern in artifact');
+ if(/\.(html|js|mjs|css|json|txt|svg|xml)$/i.test(name))assert.ok(!/(sb_secret_[A-Za-z0-9_-]{16,}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|eyJ[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{30,}\.[A-Za-z0-9_-]{20,})/.test(body.toString('utf8')),'Credential pattern in artifact');
  manifest.files.push({path:name,sha256:sha(body),bytes:body.length});
 }
 const output=process.argv[2];if(output)writeFileSync(resolve(output),JSON.stringify(manifest,null,2)+'\n');
