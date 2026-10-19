@@ -45,6 +45,8 @@ test('Ayuda: searchable questions grouped by topic, and a way to reach a person'
 
 test('Nosotros keeps its title and typography, its texts, and uses only local photos', () => {
   assert.match(about, /<h1 id="about-title" class="font-display-lg text-display-lg text-on-surface uppercase tracking-tighter [^"]*">Somos MateBreak®<\/h1>/);
+  // The hero mate (a large transparent image under two drop-shadows) was removed: it cost scrolling smoothness.
+  assert.doesNotMatch(about + read('src/css/info-pages.css'), /mb-about-mate/);
   for (const text of ['Elevando el ritual. Artesanía, precisión y pasión por nuestra tierra en cada detalle.', 'El Origen del Ritual',
     'MateBreak nació de una necesidad profunda', 'Nuestra Filosofía', 'Calidad Inconmensurable', 'Diseño de Precisión', 'Comunidad'])
     assert.ok(about.includes(text), text);

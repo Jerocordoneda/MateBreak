@@ -129,7 +129,6 @@ a.mb-info-card:focus-visible { outline: 2px solid var(--info-peach); outline-off
 .mb-about-stats strong { display: block; color: var(--info-peach); font: 700 clamp(26px, 2.6vw, 32px)/1.1 var(--mb-heading, 'Geist'), sans-serif; letter-spacing: -.02em; }
 .mb-about-stats strong.is-gold { color: var(--info-gold); }
 .mb-about-stats span { display: block; margin-top: 6px; color: var(--info-muted); font: 600 12px/16px var(--mb-heading, 'Geist'), sans-serif; letter-spacing: .14em; text-transform: uppercase; }
-.mb-about-hero .mb-about-mate { display: block; width: clamp(110px, 13vw, 170px); height: auto; margin: 0 auto 20px; filter: drop-shadow(0 24px 40px rgba(0, 0, 0, .55)) drop-shadow(0 0 32px rgba(244, 187, 146, .18)); }
 
 /* Footer: the Home footer, shared by both pages */
 .mb-info-footer { background: #fff; color: rgba(62, 31, 11, .72); border-top: 1px solid rgba(81, 68, 60, .1); padding: 64px 0 40px; font: 400 16px/1.5 var(--mb-body, 'Inter'), sans-serif; }
