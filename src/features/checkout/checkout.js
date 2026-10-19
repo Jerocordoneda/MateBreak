@@ -4,6 +4,7 @@ import { getProducts } from '../../services/products.js';
 import {submitLock, leaving} from '../../js/submit-lock.mjs';
 import {orderAttemptKey} from './order-attempt.mjs';
 import {fetchJson} from '../../services/http.mjs';
+import {moveToStep} from './step-focus.mjs';
 
 const $ = selector => document.querySelector(selector);
 const money = value => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(value || 0));
@@ -116,7 +117,8 @@ function showStep(step) {
       summary.append(summaryRow('Sucursal de prueba', `${agency?.name || ''} · ${agency?.address?.postalCode || ''}`));
     }
   }
-  error(''); window.scrollTo({ top: 0, behavior: 'smooth' });
+  error('');
+  moveToStep(step, { heading: $(pay ? '#payment-panel h2' : '#delivery-panel h2'), status: $('#checkout-step-status'), view: window });
 }
 async function prepareDelivery(event) {
   event.preventDefault(); error('');
