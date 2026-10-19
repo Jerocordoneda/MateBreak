@@ -45,6 +45,8 @@ export const pages = {
     description: 'Regalos empresariales con mates personalizados: compra mayorista, grabado láser y packaging de lujo para tu equipo y tus clientes.'},
   'src/pages/podcast.html': {name: 'Podcast', path: '/podcast',
     description: 'Charlas reales de MateBreak Podcast. Mirá el episodio destacado y descubrí más conversaciones.'},
+  'src/pages/ayuda.html': {name: 'Ayuda', path: '/src/pages/ayuda.html',
+    description: 'Centro de ayuda de MateBreak®: envíos, pagos, personalización, cambios y estado de tu pedido. Buscá tu respuesta o escribinos.'},
   'src/pages/faqs.html': {name: 'Preguntas Frecuentes', path: '/src/pages/faqs.html',
     description: 'Respuestas a las consultas más comunes sobre nuestros productos, políticas y servicios.'},
   'src/pages/nosotros.html': {name: 'Nosotros', path: '/src/pages/nosotros.html',
