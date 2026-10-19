@@ -1,17 +1,19 @@
 // Real-browser check of the SEO/performance changes: robots.txt and sitemap.xml
 // are served as files, the subset Material Symbols font still draws every icon as
 // a glyph, and the Home photos are WebP.
-//   node scripts/verify-seo-performance.mjs [--dist]   (or ORIGIN=<url> for a deployment)
+//   node scripts/verify-seo-performance.mjs [--dist] [--proof <dir>]   (or ORIGIN=<url> for a deployment)
 // Playwright: installed module, or MATEBREAK_BROWSER_MODULE=<path to playwright index.mjs>.
 // Google Fonts is reached for real: the check is about the icon subset it serves.
 import http from 'node:http';
 import assert from 'node:assert/strict';
-import {readFile, stat} from 'node:fs/promises';
+import {readFile, stat, mkdir} from 'node:fs/promises';
 import {extname, join, normalize, resolve} from 'node:path';
 import {pathToFileURL} from 'node:url';
 
 const repo = resolve(import.meta.dirname, '..');
 const root = resolve(repo, process.argv.includes('--dist') ? 'dist' : '.');
+const proofDir = process.argv.includes('--proof') ? process.argv[process.argv.indexOf('--proof') + 1] : null;
+if (proofDir) await mkdir(proofDir, {recursive: true});
 const {chromium} = await import(process.env.MATEBREAK_BROWSER_MODULE
   ? pathToFileURL(process.env.MATEBREAK_BROWSER_MODULE).href : 'playwright');
 const rules = JSON.parse(await readFile(join(repo, 'vercel.json'), 'utf8')).rewrites
@@ -78,7 +80,25 @@ for (const [name, viewport, mobile] of [['desktop', {width: 1440, height: 900}, 
     });
     await context.close();
   }
+  // A phone that paints nothing for a never-played clip still shows every card:
+  // with the clips themselves unavailable, each card shows its own poster.
+  await check(`${name} every carousel card shows a poster even without the clips`, async () => {
+    const context = await browser.newContext({viewport, isMobile: mobile, hasTouch: mobile});
+    await context.route(/\.mp4/, route => route.abort());
+    const page = await context.newPage();
+    await page.goto(origin + '/', {waitUntil: 'load'});
+    await page.locator('[data-video-carousel]').scrollIntoViewIfNeeded();
+    const posters = await page.evaluate(async () => Promise.all([...document.querySelectorAll('[data-video-carousel] video')].map(video => new Promise(done => {
+      const src = video.getAttribute('poster'); if (!src) return done({src, ok: false});
+      const img = new Image(); img.onload = () => done({src, ok: img.naturalWidth > 0}); img.onerror = () => done({src, ok: false}); img.src = new URL(src, location.href).href;
+    }))));
+    assert.equal(posters.length, 4);
+    assert.deepEqual(posters.map(p => p.src), [0, 1, 2, 3].map(i => `src/assets/videos/posters/clip-${i}.webp`));
+    assert.ok(posters.every(p => p.ok), JSON.stringify(posters));
+    if (proofDir) await page.locator('[data-video-carousel]').screenshot({path: join(proofDir, `carrusel-posters-${name}.png`)});
+    await context.close();
+  });
 }
 await browser.close(); server?.close();
 if (failures.length) { console.error(`${failures.length} FAILED:\n- ${failures.join('\n- ')}`); process.exit(1); }
-console.log('SEO/performance: crawler files, icon subset and WebP photos pass (desktop/mobile)');
+console.log('SEO/performance: crawler files, icon subset, WebP photos and carousel posters pass (desktop/mobile)');
