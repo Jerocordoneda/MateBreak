@@ -1,12 +1,14 @@
 import {recipientForm} from './recipient-errors.mjs';
 import {populateProvinces} from './province-select.mjs';
 import { getProducts } from '../../services/products.js';
+import {submitLock, leaving} from '../../js/submit-lock.mjs';
+import {orderAttemptKey} from './order-attempt.mjs';
 
 const $ = selector => document.querySelector(selector);
 const money = value => new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(value || 0));
 const direct = new URLSearchParams(location.search).get('directa') === '1';
 const suffix = direct ? '?directa=1' : '';
-let context, recipient, delivery = 'retiro', shippingQuote = null, payment = '', busy = false;
+let context, recipient, delivery = 'retiro', shippingQuote = null, payment = '';
 let catalogImages = new Map();
 let agencies = [];
 let agencyRequest = 0;
@@ -135,23 +137,17 @@ async function prepareDelivery(event) {
     renderOrder(); showStep('payment');
   } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
 }
-async function placeOrder() {
-  if (busy || !payment) return;
-  busy = true; $('#place-order').disabled = true; error('');
+function attemptStorage() { try { return sessionStorage; } catch { return null; } }
+const placeOrder = submitLock(async () => {
+  error('');
   try {
-    const key = `mb_checkout_key_${context.cart.id}`;
-    let idempotencia = sessionStorage.getItem(key);
-    if (!idempotencia) { idempotencia = crypto.randomUUID(); sessionStorage.setItem(key, idempotencia); }
-    const result = await api('/checkout/pedidos', { method: 'POST', body: JSON.stringify({
-      idempotencia, destinatario: recipient, envio: delivery, pago: payment,
-      cotizacion_id: shippingQuote?.id || null, directa: direct,
-    }) });
-    sessionStorage.removeItem(key);
-    if (result.redirectUrl) { location.assign(result.redirectUrl); return; }
-    location.assign(`/checkout/resultado?pedido=${encodeURIComponent(result.order.id)}`);
+    const choices = { destinatario: recipient, envio: delivery, pago: payment, cotizacion_id: shippingQuote?.id || null, directa: direct };
+    const idempotencia = await orderAttemptKey(attemptStorage(), context.cart.id, choices);
+    const result = await api('/checkout/pedidos', { method: 'POST', body: JSON.stringify({ idempotencia, ...choices }) });
+    location.assign(result.redirectUrl || `/checkout/resultado?pedido=${encodeURIComponent(result.order.id)}`);
+    return leaving;
   } catch (cause) { if(cause.fields){showStep('delivery');recipientFields.show(cause.fields);}else error(cause.message); }
-  finally { busy = false; $('#place-order').disabled = !payment; }
-}
+}, { lock: () => { $('#place-order').disabled = true; }, release: () => { $('#place-order').disabled = !payment; } });
 async function init() {
   try {
     context = await api('/checkout/contexto' + suffix);
@@ -189,7 +185,9 @@ $('#pickup-agency').addEventListener('change', () => {
   $('#pickup-address').textContent = agency ? [agency.address?.streetName,agency.address?.streetNumber,agency.address?.city,agency.address?.postalCode].filter(Boolean).join(' ') : '';
 });
 
-$('#place-order').addEventListener('click', placeOrder);
+$('#place-order').addEventListener('click', () => { if (payment) placeOrder(); });
+// Coming back from Mercado Pago restores a page locked mid-navigation; reload the cart state.
+window.addEventListener('pageshow', event => { if (event.persisted) location.reload(); });
 init();
 
 $('#download-manual-quote').addEventListener('click', async () => {

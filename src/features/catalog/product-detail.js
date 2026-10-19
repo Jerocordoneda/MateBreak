@@ -3,6 +3,7 @@ import {node,setProductPhoto} from './catalog-ui.js';
 import {resolveProductSelection} from './product-selection.mjs';
 import {addCartItem} from '../cart/add-item.js';
 import {setPageMeta,summarize} from '../../js/page-meta.mjs';
+import {submitLock,leaving} from '../../js/submit-lock.mjs';
 const root=document.querySelector('#product-content');
 async function init(){
   try{
@@ -50,17 +51,21 @@ async function init(){
       showImage(preview?.imagen||galleryImages[0]?.url,p.nombre+(model?' · '+model:''));
     }
     selects.forEach(s=>s.onchange=update);form.append(availability,quantityLabel,button,buyNow,status,cartLink);info.append(pricing,form);
-    form.onsubmit=async event=>{
-      event.preventDefault();const direct=event.submitter===buyNow,v=selectedVariant(),units=Number(quantity.value);if(submitting||!v||!v.comprable||!v.con_stock||!Number.isInteger(units)||units<1||units>99)return;submitting=true;button.disabled=true;buyNow.disabled=true;status.textContent=direct?'Preparando tu compra inmediata…':'Guardando…';
+    const submit=submitLock(async(direct,v,units)=>{
+      status.textContent=direct?'Preparando tu compra inmediata…':'Guardando…';
       try{
         if(direct){
           const response=await fetch('/api/compra-directa',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({variante_id:v.id,cantidad:units,personalizacion:custom?.value||''})});
           const result=await response.json();if(!response.ok)throw Error(result.error||'No pudimos iniciar la compra');
-          location.assign(result.next);return;
+          location.assign(result.next);return leaving;
         }
         await addCartItem(v.id,units,custom?.value);status.textContent='Producto agregado. Tu selección está guardada.';
-      }catch(e){status.textContent=e.message;}finally{submitting=false;update();}
+      }catch(e){status.textContent=e.message;}
+    },{lock:()=>{submitting=true;button.disabled=true;buyNow.disabled=true;},release:()=>{submitting=false;update();}});
+    form.onsubmit=event=>{
+      event.preventDefault();const direct=event.submitter===buyNow,v=selectedVariant(),units=Number(quantity.value);if(submitting||!v||!v.comprable||!v.con_stock||!Number.isInteger(units)||units<1||units>99)return;submit(direct,v,units);
     };
+    window.addEventListener('pageshow',event=>{if(event.persisted){submit.reset();status.textContent='';}});
     layout.append(gallery,info);
     const copy=node('section',null,'product-copy');copy.append(node('h2','Cada detalle cuenta'),node('p',p.descripcion||'','product-description'));
     const descImages=node('div',null,'product-description-images');for(const image of p.imagenes.filter(i=>i.rol==='descripcion'&&typeof i.url==='string'&&i.url.trim())){const img=node('img');img.src=image.url;img.alt=image.alt||p.nombre;img.loading='lazy';descImages.append(img);}copy.append(descImages);
