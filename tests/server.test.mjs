@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createApp, hashToken } from '../server/app.mjs';
+import { createApp, hashToken } from './helpers/business-app.mjs';
 
 async function fixture(t, user = null, extraOverrides = {}) {
  const calls = [];

@@ -3,6 +3,8 @@
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { disposableContainer, sqlQuery, assertLocalTests } from './local-test-runtime.mjs';
+assertLocalTests();
 
 const root = resolve(import.meta.dirname, '..');
 const host = process.env.MB_LIFECYCLE_HOST || '127.0.0.1';
@@ -15,6 +17,8 @@ if (!['127.0.0.1', 'localhost', '::1'].includes(host) || port === '5432' ||
 }
 const args = ['-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1', '-h', host, '-p', port, '-U', 'postgres', '-d', database];
 function query(sql) {
+  if (process.env.MB_TEST_CONTAINER) return sqlQuery(sql, { container: disposableContainer,
+    database: 'matebreak_test_lifecycle', user: 'supabase_admin' });
   return new Promise(resolveResult => {
     const child = spawn(psql, args, { stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '', stderr = '';

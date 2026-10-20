@@ -1,13 +1,15 @@
-// Explicit remote test: node --env-file=.env tests/integration.mjs
+// Local-only test; credentials are discovered from this worktree's CLI runtime.
 // Creates and removes two dedicated test accounts, without sending emails.
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
-const url = process.env.SUPABASE_URL;
-assert.equal(new URL(url).hostname, 'nwpdfqwqxrkokluqqqfs.supabase.co');
-const admin = createClient(url, process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
+import { localStatus } from '../scripts/local-test-runtime.mjs';
+const status = localStatus();
+const url = status.API_URL;
+const admin = createClient(url, status.SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 const ids = [];
 const origin = process.env.APP_ORIGIN || 'http://localhost:3000';
+assert.ok(['localhost','127.0.0.1','[::1]'].includes(new URL(origin).hostname), 'BFF must be local');
 function client() {
  const jar = new Map();
  return async (route, method = 'GET', body) => {

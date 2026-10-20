@@ -87,21 +87,21 @@ begin
  if (select cantidad from public.catalogo_variante_componente where variante_id=mate_variant and producto_simple_id=box_id)<>1
   then raise exception 'Una edición directa duplicó las cajas'; end if;
 
- -- Seller's manual sale uses the same box pool without adding a priced line.
+ -- Seller sales reserve only their explicit lines; retail packaging above is unchanged.
  box_before:=(select stock from public.producto_simple where id_producto=box_id);
  sale:=public.mb_ventas(seller,'registrar',jsonb_build_object('idempotencia',gen_random_uuid(),
   'cliente','Cliente de prueba','telefono','','notas','',
   'estado','por_grabar','metodo_pago','efectivo',
   'items',jsonb_build_array(jsonb_build_object('producto_id',mate_id,'cantidad',2,'precio_unitario','100.00','personalizacion','Grabado de prueba'))));
  if (sale->>'total')::numeric<>200
-  or (select cantidad from private.venta_manual_empaque where venta_id=(sale->>'id')::uuid)<>2
-  or (select stock from public.producto_simple where id_producto=box_id)<>box_before-2
-  then raise exception 'Venta manual no consumió dos cajas físicas'; end if;
+  or exists(select 1 from private.venta_manual_empaque where venta_id=(sale->>'id')::uuid)
+  or (select stock from public.producto_simple where id_producto=box_id)<>box_before
+  then raise exception 'Venta manual reservó cajas no agregadas'; end if;
  perform public.mb_ventas(seller,'estado',jsonb_build_object('id',sale->>'id','estado','por_entregar'));
  perform public.mb_ventas(seller,'estado',jsonb_build_object('id',sale->>'id','estado','entregada'));
- if (select stock from public.producto_simple where id_producto=box_id)<>box_before-2
-  or (select count(*) from private.inventario_ajuste where producto_id=box_id and motivo like 'Entrega de venta manual %')<>1
-  then raise exception 'Entrega descontó dos veces o perdió auditoría de cajas'; end if;
+ if (select stock from public.producto_simple where id_producto=box_id)<>box_before
+  or (select count(*) from private.inventario_ajuste where producto_id=box_id and motivo like 'Entrega de venta manual %')<>0
+  then raise exception 'Entrega manual consumió cajas no agregadas'; end if;
 end $$;
 
 -- Quantity and mixed-cart regressions use stock only inside this rollback.

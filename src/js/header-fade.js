@@ -1,104 +1,54 @@
-// El header se funde con el fondo: en páginas con .matebreak-curve cambia
-// exactamente cuando --curve-move llega al disparador (blanco con letras
-// oscuras); en el resto interpola según la posición del primer sector claro.
-document.addEventListener("DOMContentLoaded", () => {
-    const header = document.querySelector("header");
-    if (!header) return;
-
-    const DARK = [19, 19, 19];       // fondo base del sitio (#131313)
-    const WHITE = [255, 255, 255];
-    const FADE_RANGE = 200;          // px de anticipación del difuminado
-    const CURVE_TRIGGER = -260;      // --curve-move donde el header pasa a blanco
-
-    // Capa de blur con máscara: se disuelve hacia abajo junto al fondo.
-    let blurLayer = header.querySelector(".header-fade-blur");
-    if (!blurLayer) {
-        blurLayer = document.createElement("div");
-        blurLayer.className = "header-fade-blur";
-        header.insertBefore(blurLayer, header.firstChild);
-    }
-
-    header.style.backgroundColor = "transparent";
-
-    const transitionEl = document.querySelector(".matebreak-transition");
-    const curve = document.querySelector(".matebreak-curve");
-
-    // Y en viewport del "límite de color": el borde superior de la curva
-    // (donde está dibujada la línea dorada), o del primer sector blanco
-    // en páginas sin curva.
-    function colorBoundary() {
-        if (transitionEl && curve) {
-            const rect = transitionEl.getBoundingClientRect();
-            const move = parseFloat(curve.style.getPropertyValue("--curve-move")) || 0;
-            const scale = parseFloat(curve.style.getPropertyValue("--curve-scale")) || 1;
-            return rect.top + 700 + move - 300 * scale;
-        }
-        const light = document.querySelector("section.bg-white, footer.bg-white");
-        return light ? light.getBoundingClientRect().top : null;
-    }
-
-    function lerp(a, b, t) { return a + (b - a) * t; }
-    function smooth(t) { return t * t * (3 - 2 * t); }
-    function clamp01(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
-
-    function paint(t) {
-        const r = Math.round(lerp(DARK[0], WHITE[0], t));
-        const g = Math.round(lerp(DARK[1], WHITE[1], t));
-        const b = Math.round(lerp(DARK[2], WHITE[2], t));
-
-        // Degradado: casi sólido arriba, se disuelve al llegar abajo
-        header.style.background =
-            "linear-gradient(to bottom," +
-            " rgba(" + r + ", " + g + ", " + b + ", 0.95) 0%," +
-            " rgba(" + r + ", " + g + ", " + b + ", 0.85) 40%," +
-            " rgba(" + r + ", " + g + ", " + b + ", 0.5) 75%," +
-            " rgba(" + r + ", " + g + ", " + b + ", 0) 100%)";
-    }
-
-    let lastP = -1;
-    let lastLight = null;
-    let lastCurveLight = null;
-
-    function frame() {
-        if (transitionEl && curve) {
-            // Cambio directo cuando --curve-move alcanza el disparador
-            const move = parseFloat(curve.style.getPropertyValue("--curve-move")) || 0;
-            const isLight = move <= CURVE_TRIGGER;
-            if (isLight !== lastCurveLight) {
-                lastCurveLight = isLight;
-                paint(isLight ? 1 : 0);
-                header.classList.toggle("header-dark", isLight);
-            }
-        } else {
-            const headerBottom = header.offsetHeight;
-            const y = colorBoundary();
-
-            let p = 0;
-            if (typeof y === "number" && isFinite(y)) {
-                // p=0 oscuro; p=1 blanco justo cuando la línea toca el header
-                p = clamp01((headerBottom + FADE_RANGE - y) / FADE_RANGE);
-            }
-
-            if (Math.abs(p - lastP) > 0.001 || lastP < 0) {
-                const t = smooth(p);
-                paint(t);
-
-                const isLight = p > 0.5;
-                if (isLight !== lastLight) {
-                    lastLight = isLight;
-                    header.classList.toggle("header-dark", isLight);
-                }
-                lastP = p;
-            }
-        }
-
-        requestAnimationFrame(frame);
-    }
-
-    requestAnimationFrame(frame);
-});
-
-// Accesos compartidos a carrito y cuenta desde todas las páginas del sitio.
 document.addEventListener('DOMContentLoaded', () => {
-    import('/src/js/header-account.js');
+  // Loaded once for every page through header-account.js.
+  if (window.mbHeaderTheme) return;
+  window.mbHeaderTheme = true;
+  const header = document.querySelector('header.mb-public-header, header');
+  if (!header) return;
+  const transition = document.querySelector('.matebreak-transition');
+  const curve = document.querySelector('.matebreak-curve');
+  const homeCurve = document.body.hasAttribute('data-home') && transition && curve;
+  let raf = null;
+  let lastLight = null;
+  // Tint the shared header with the page's own dark background so it blends in.
+  if (!homeCurve) for (const element of [document.body, document.documentElement]) {
+    const [r, g, b, a = 1] = (getComputedStyle(element).backgroundColor.match(/[\d.]+/g) || []).map(Number);
+    if (!(a > .5)) continue;
+    if (.2126 * r + .7152 * g + .0722 * b < 60) header.style.setProperty('--mb-header-tint', `${r}, ${g}, ${b}`);
+    break;
+  }
+  function paint() {
+    const rect = header.getBoundingClientRect();
+    // The Home curve's apex is the first visible border point to touch the
+    // full-width header. Its top is no longer clipped by the dark container.
+    const boundary = homeCurve ? (curve.querySelector('[data-curve-apex]') || curve).getBoundingClientRect().top : curve && transition
+      ? Math.max(transition.getBoundingClientRect().top, curve.getBoundingClientRect().top)
+      : document.querySelector('section.bg-white, footer.bg-white')?.getBoundingClientRect().top;
+    const light = boundary != null && boundary <= (homeCurve ? rect.bottom : rect.top + rect.height / 2);
+    if (homeCurve) {
+      const progress = Math.min(1, Math.max(0, window.scrollY / 180));
+      header.style.setProperty('--home-header-blur', `${(progress * 14).toFixed(2)}px`);
+      header.style.setProperty('--home-header-edge', progress.toFixed(3));
+      header.style.setProperty('--home-header-background', light
+        ? 'rgba(255,255,255,.94)' : `rgba(19,19,19,${(1 - progress * .12).toFixed(3)})`);
+      header.classList.toggle('header-dark', light);
+      lastLight = light;
+      return;
+    }
+    lastLight = light;
+    header.classList.toggle('header-dark', light);
+    // Over dark content the shared Podcast surface applies (transparent + masked
+    // blur in public-header.css). Over a light section the text turns dark, so the
+    // header needs an opaque light surface to keep its contrast.
+    header.style.background = light ? 'linear-gradient(rgba(255,255,255,.98),rgba(255,255,255,.98))' : '';
+  }
+  const schedule = () => {if (raf === null) raf = requestAnimationFrame(() => {raf=null;paint();});};
+  // Header translucency also changes before the curve enters the viewport.
+  // mb:transition repaints after the curve moves, keeping color contact aligned.
+  window.addEventListener('scroll', schedule, {passive:true});
+  window.addEventListener('resize', schedule, {passive:true});
+  window.addEventListener('pageshow', schedule);
+  document.addEventListener('mb:transition', paint);
+  document.addEventListener('visibilitychange', () => {if (!document.hidden) schedule();});
+  new ResizeObserver(schedule).observe(header);
+  paint();
 });

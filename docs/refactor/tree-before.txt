@@ -1,0 +1,322 @@
+MateBreak/
+├── .env.example
+├── .github/
+│   └── workflows/
+│       └── security.yml
+├── .gitignore
+├── docs/
+│   ├── auditoria-prepagos.md
+│   ├── baseline-adoption.md
+│   ├── baseline-rehearsal-validation.md
+│   ├── checkout-pagos.md
+│   ├── ciclo-pedido-real.md
+│   ├── comercio.md
+│   ├── concurrencia-stock-aislada.md
+│   ├── diff-classification.md
+│   ├── interfaz.md
+│   ├── iteration-validation.md
+│   ├── local-development.md
+│   ├── local-network.md
+│   ├── micorreo-architecture.md
+│   ├── migracion-catalogo.md
+│   ├── production-release-runbook.md
+│   ├── production-secrets.md
+│   ├── reconciliacion-inventario.md
+│   ├── reconciliacion-variantes.csv
+│   ├── release-candidate-blocker.md
+│   ├── release-candidate-validation.md
+│   ├── schema-metadata/
+│   │   ├── base-dependencies.json
+│   │   ├── base-public-schema.json
+│   │   ├── base-rls-event.json
+│   │   ├── base-role-defaults.json
+│   │   ├── baseline-rehearsal-result.json
+│   │   ├── local-final-reference.json
+│   │   ├── migration-equivalence.json
+│   │   ├── remote-final-reference.json
+│   │   ├── remote-migration-history.json
+│   │   └── schema-diff.json
+│   ├── schema-reconstruction.md
+│   ├── security-architecture.md
+│   ├── security-production-checklist.md
+│   └── security-threat-model.md
+├── index.html
+├── package-lock.json
+├── package.json
+├── README.md
+├── scripts/
+│   ├── audit-baseline.mjs
+│   ├── build-historical-catalog.mjs
+│   ├── catalog-source.mjs
+│   ├── compare-schema.mjs
+│   ├── import-matebreak-products.mjs
+│   ├── inspect-schema.mjs
+│   ├── local-supabase.mjs
+│   ├── local-test-runtime.mjs
+│   ├── reconcile-inventory.mjs
+│   ├── schema-comparison.mjs
+│   ├── sql/
+│   │   └── schema-metadata.sql
+│   ├── test-baseline-rehearsal.mjs
+│   ├── test-local-auth.mjs
+│   ├── test-local-commerce-rc.mjs
+│   ├── test-local-logistics.mjs
+│   ├── test-local-privileges.mjs
+│   ├── test-local-sql.mjs
+│   ├── test-local.mjs
+│   ├── test-order-lifecycle.mjs
+│   ├── test-stock-concurrency.mjs
+│   └── wire-catalog-pages.mjs
+├── server/
+│   ├── account.mjs
+│   ├── app.mjs
+│   ├── catalog.mjs
+│   ├── checkout/
+│   │   ├── mock-store.mjs
+│   │   ├── policy.mjs
+│   │   └── routes.mjs
+│   ├── index.mjs
+│   ├── inventory.mjs
+│   ├── payments/
+│   │   ├── mercadopago.mjs
+│   │   ├── mock.mjs
+│   │   ├── routes.mjs
+│   │   └── transferencia.mjs
+│   ├── private-ui/
+│   │   ├── inventory.css
+│   │   ├── inventory.html
+│   │   ├── inventory.js
+│   │   ├── logistics.css
+│   │   ├── logistics.html
+│   │   └── logistics.js
+│   ├── providers.mjs
+│   ├── security.mjs
+│   └── shipping/
+│       ├── admin.mjs
+│       ├── correo-argentino.mjs
+│       ├── jobs.mjs
+│       ├── mock.mjs
+│       ├── packaging.mjs
+│       └── snapshot.mjs
+├── src/
+│   ├── assets/
+│   │   ├── imagenes/
+│   │   │   ├── MATEBREAK & TU EMPRESA.png
+│   │   │   └── recortes/
+│   │   │       ├── foto-1.png
+│   │   │       ├── foto-2.png
+│   │   │       ├── foto-3.png
+│   │   │       ├── foto-4.png
+│   │   │       ├── foto-5.png
+│   │   │       └── foto-6.png
+│   │   ├── images/
+│   │   │   └── frames-mate1/
+│   │   │       ├── ezgif-frame-001-removebg-preview.webp
+│   │   │       ├── ezgif-frame-002-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-003-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-004-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-005-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-006-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-007-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-008-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-009-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-010-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-011-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-012-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-013-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-014-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-015-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-016-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-017-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-018-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-019-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-020-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-021-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-022-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-023-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-024-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-025-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-026-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-027-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-028-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-029-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-030-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-031-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-032-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-033-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-034-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-035-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-036-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-037-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-038-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-039-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-040-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-041-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-042-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-043-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-044-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-045-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-046-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-047-removebg-preview-convertido-de-png.webp
+│   │   │       ├── ezgif-frame-048-removebg-preview.webp
+│   │   │       ├── ezgif-frame-049-removebg-preview.webp
+│   │   │       ├── ezgif-frame-050-removebg-preview.webp
+│   │   │       ├── ezgif-frame-051-removebg-preview.webp
+│   │   │       ├── ezgif-frame-052-removebg-preview.webp
+│   │   │       ├── ezgif-frame-053-removebg-preview.webp
+│   │   │       ├── ezgif-frame-054-removebg-preview.webp
+│   │   │       ├── ezgif-frame-055-removebg-preview.webp
+│   │   │       ├── ezgif-frame-056-removebg-preview.webp
+│   │   │       ├── ezgif-frame-057-removebg-preview.webp
+│   │   │       ├── ezgif-frame-058-removebg-preview.webp
+│   │   │       ├── ezgif-frame-059-removebg-preview.webp
+│   │   │       └── ezgif-frame-060-removebg-preview.webp
+│   │   └── videos/
+│   │       ├── Download (1).mp4
+│   │       ├── Download (2).mp4
+│   │       ├── Download (3).mp4
+│   │       └── Download.mp4
+│   ├── css/
+│   │   ├── account.css
+│   │   ├── catalog.css
+│   │   ├── checkout.css
+│   │   ├── commerce.css
+│   │   ├── header-account.css
+│   │   ├── site-brand.css
+│   │   └── style.css
+│   ├── data/
+│   │   └── gen-data.json
+│   ├── i18n/
+│   │   └── es-source.json
+│   ├── js/
+│   │   ├── account-admin.js
+│   │   ├── account-data.js
+│   │   ├── account-orders.js
+│   │   ├── account-team.js
+│   │   ├── account.js
+│   │   ├── catalog-pages.js
+│   │   ├── catalog-ui.js
+│   │   ├── checkout-result.js
+│   │   ├── checkout.js
+│   │   ├── commerce.js
+│   │   ├── header-account.js
+│   │   ├── header-fade.js
+│   │   ├── product-detail.js
+│   │   ├── sales.js
+│   │   ├── script.js
+│   │   ├── scroll-sequence.js
+│   │   ├── site-brand.js
+│   │   └── video-carousel.js
+│   ├── pages/
+│   │   ├── accesorios.html
+│   │   ├── algarrobo-clasico.html
+│   │   ├── algarrobo.html
+│   │   ├── calabaza.html
+│   │   ├── camionero-premium.html
+│   │   ├── camionero.html
+│   │   ├── catalogo.html
+│   │   ├── checkout-resultado.html
+│   │   ├── checkout.html
+│   │   ├── cuenta.html
+│   │   ├── faqs.html
+│   │   ├── mates-personalizados.html
+│   │   ├── nosotros.html
+│   │   ├── producto.html
+│   │   ├── regalos-empresariales.html
+│   │   ├── sets-materos.html
+│   │   ├── sets-parrilleros.html
+│   │   ├── sets-premium.html
+│   │   ├── sets.html
+│   │   ├── termos-exclusivos.html
+│   │   ├── termos-personalizados.html
+│   │   ├── termos.html
+│   │   └── tienda.html
+│   └── services/
+│       └── products.js
+├── supabase/
+│   ├── .gitignore
+│   ├── catalog/
+│   │   ├── 20260928-public-store.json
+│   │   └── README.md
+│   ├── config.toml
+│   ├── migrations/
+│   │   ├── 20260907203437_bootstrap_legacy_catalog.sql
+│   │   ├── 20260907203438_commerce.sql
+│   │   ├── 20260907205528_restrict_rls_event_function.sql
+│   │   ├── 20260908093541_inventory_admin.sql
+│   │   ├── 20260908094753_inventory_query_aliases.sql
+│   │   ├── 20260908103049_account_roles_sales.sql
+│   │   ├── 20260909000858_account_admin_roles.sql
+│   │   ├── 20260909234040_admin_commercial_dashboard.sql
+│   │   ├── 20260928160916_catalog_import.sql
+│   │   ├── 20260928162849_catalog_reconcile_metadata.sql
+│   │   ├── 20260928162850_restore_historical_public_catalog.sql
+│   │   ├── 20260928210316_ars_variant_checkout.sql
+│   │   ├── 20260928232227_reconcile_camionero_algarrobo.sql
+│   │   ├── 20260929000621_physical_base_reconciliation.sql
+│   │   ├── 20260929000841_on_demand_and_preparation.sql
+│   │   ├── 20260929001114_receiving_and_engraving_operations.sql
+│   │   ├── 20260929001306_align_board_procurement.sql
+│   │   ├── 20260929122500_reconcile_thermo_publications.sql
+│   │   ├── 20260929130000_box_per_mate_and_combo_mapping.sql
+│   │   ├── 20260929131500_box_for_manual_sales.sql
+│   │   ├── 20260929133000_map_premium_personalized_knife_sheath.sql
+│   │   ├── 20260929144308_checkout_minorista_preparacion.sql
+│   │   ├── 20260929204150_fix_minorista_checkout_lifecycle.sql
+│   │   ├── 20260929214717_harden_default_privileges.sql
+│   │   ├── 20261001003824_micorreo_logistics_snapshots.sql
+│   │   └── 20261001112820_logistics_admin_recovery.sql
+│   ├── platform/
+│   │   └── harden-admin-defaults.sql
+│   └── tests/
+│       ├── account-sales.sql
+│       ├── admin-dashboard.sql
+│       ├── admin-roles.sql
+│       ├── box-per-mate.sql
+│       ├── catalog-integrity.sql
+│       ├── catalog.sql
+│       ├── checkout-minorista.sql
+│       ├── commerce.sql
+│       ├── fixtures/
+│       │   └── local-members.sql
+│       ├── inventory.sql
+│       ├── logistics/
+│       │   └── snapshots.sql
+│       ├── physical-operations.sql
+│       ├── prepayment-cart.sql
+│       ├── prepayment-e2e.sql
+│       ├── prepayment-preparation.sql
+│       ├── prepayment-receipts.sql
+│       ├── prepayment-stock-expiration.sql
+│       ├── reconciliation.sql
+│       ├── thermo-publications.sql
+│       └── variant-checkout.sql
+├── tests/
+│   ├── account-data.test.mjs
+│   ├── account-preview.mjs
+│   ├── account.test.mjs
+│   ├── baseline-guards.test.mjs
+│   ├── catalog-api.test.mjs
+│   ├── catalog-source.test.mjs
+│   ├── checkout.test.mjs
+│   ├── concurrency/
+│   │   ├── isolated-schema.sql
+│   │   ├── minorista-lifecycle.sql
+│   │   └── minorista-schema.sql
+│   ├── integration.mjs
+│   ├── inventory-preview.mjs
+│   ├── inventory.test.mjs
+│   ├── local-persist-mock.test.mjs
+│   ├── local-supabase.test.mjs
+│   ├── local-test-guards.test.mjs
+│   ├── logistics-admin.test.mjs
+│   ├── micorreo.test.mjs
+│   ├── mock-checkout.test.mjs
+│   ├── packaging.test.mjs
+│   ├── preview.mjs
+│   ├── providers.test.mjs
+│   ├── registration-roles.test.mjs
+│   ├── security-privileges.sql
+│   └── server.test.mjs
+└── tools/
+    └── extract-strings.mjs

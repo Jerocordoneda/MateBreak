@@ -1,11 +1,13 @@
 (function () {
     "use strict";
 
+    // Each clip has a poster (its own frame): browsers that paint nothing for a
+    // paused, never-played video (iPhone Safari) still show every card behind.
     var DEFAULT_ITEMS = [
-        { url: "src/assets/videos/Download.mp4", poster: "" },
-        { url: "src/assets/videos/Download%20%281%29.mp4", poster: "" },
-        { url: "src/assets/videos/Download%20%282%29.mp4", poster: "" },
-        { url: "src/assets/videos/Download%20%283%29.mp4", poster: "" }
+        { url: "src/assets/videos/Download.mp4", poster: "src/assets/videos/posters/clip-0.webp" },
+        { url: "src/assets/videos/Download%20%281%29.mp4", poster: "src/assets/videos/posters/clip-1.webp" },
+        { url: "src/assets/videos/Download%20%282%29.mp4", poster: "src/assets/videos/posters/clip-2.webp" },
+        { url: "src/assets/videos/Download%20%283%29.mp4", poster: "src/assets/videos/posters/clip-3.webp" }
     ];
 
     var CHEV_PREV = '<svg width="18" height="18" viewBox="0 0 24 24" style="transform:rotate(180deg)"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -186,7 +188,9 @@
             var ch = cfg.cardHeight;
             var half = Math.floor(count / 2);
             var clusterW = cw + cfg.depth * 0.35 * 2 + cfg.spacing * 2;
-            var clusterH = ch + cfg.depth * 0.35 * 2;
+            // Only the room the hover zoom needs above and below the cards; the
+            // receding side cards are never taller than the active one.
+            var clusterH = Math.ceil(ch * cfg.hoverZoom) + 12;
 
             stage.style.width = clusterW + "px";
             stage.style.height = clusterH + "px";

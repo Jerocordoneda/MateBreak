@@ -1,0 +1,26 @@
+# Frontend-only upload. The remote build copies only index.html and src/.
+.env
+.env.*
+.git/
+.github/
+.vscode/
+.vercel/
+vercel.staging.generated.json
+/README.md
+/tools/extract-strings.mjs
+/tools/staging-idempotency-replay.js
+node_modules/
+dist/
+server/
+supabase/
+deploy/
+docs/
+tests/
+.catalog-import/
+.baseline-rehearsal/
+scripts/**
+!scripts/build-frontend.mjs
+!scripts/build-staging.mjs
+!scripts/staging-config.mjs
+*.sql
+*.log

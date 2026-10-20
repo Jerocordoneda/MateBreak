@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 test('variant cart accepts only the selected variant, quantity and bounded customization',async t=>{
  const calls=[];const {app}=createApp({url:'https://example.supabase.co',secret:'test',publishable:'test',origin:'https://matebreak.test',production:true},{admin:{rpc:async(name,args)=>{calls.push({name,args});return {data:{items:[],total:0}};}},authFactory:()=>({auth:{getUser:async()=>({data:{user:null}})}})});
  const server=app.listen(0,'127.0.0.1');await new Promise(r=>server.once('listening',r));t.after(()=>new Promise(r=>server.close(r)));

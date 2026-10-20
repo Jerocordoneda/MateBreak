@@ -1,0 +1,17 @@
+# Catálogo completo para QA manual en Staging
+
+Fixture explícito `qa-catalog-2026-10-07-v1`, exclusivamente proyecto Supabase `rxccjczyywhewqqdfgxm`. No es inventario real y no es una migración. No se activa desde el backend, CI o deploy. El generador offline `scripts/staging-qa-stock.mjs` no tiene conexión Cloud ni descubre credenciales.
+
+Sólo los componentes 1, 2, 5, 6, 7, 8 y 118 pasan de cero a 100, con siete ingresos en el ledger existente `private.inventario_ajuste`, identificadores deterministas y actor de sistema explícito. Los componentes 3 y 119 permanecen en 79/79. La tabla 11 sigue en cero y conserva `a_pedido`: no bloquea la disponibilidad, no se transforma en stock inventado. Mappings, caja por mate físico, precios, promociones y catálogo permanecen iguales.
+
+Antes de ejecutar, obtener el `protectedQuery` exportado por el módulo exclusivamente mediante un conector readonly del proyecto Staging. Guardar ese JSON y el diagnóstico de las 217 variantes. Usar `fixtureSql(baseline,'apply')` para generar la transacción y `fixtureSql(baseline,'rollback')` para preparar la reversión. Las operaciones Cloud se realizan mediante el conector explícitamente fijado al proyecto aprobado; no hay CLI de aplicación genérica.
+
+Dentro de BEGIN, antes de los locks, el operador debe declarar `SET LOCAL matebreak.environment='staging'` y `SET LOCAL matebreak.qa_stock_project='rxccjczyywhewqqdfgxm'`. Estos marcadores no bastan: el SQL exige la identidad comercial específica de #1010 pagado, Payment 181813204213, observación TEST del collector 3741487042, ausencia de observaciones productivas y fingerprints exactos del catálogo e historia. Un target o baseline distinto falla cerrado. No copiar el fixture ni sus marcadores a Production.
+
+La transacción comparte el lock de inventario/checkout, bloquea las tablas protegidas y valida SKU, abastecimiento, stock esperado, ausencia de reservas del componente y mappings existentes. Registra cada ingreso en el ledger antes de hacer COMMIT; cualquier error revierte todo. Una repetición verifica las siete operaciones y no vuelve a cargar stock, incluso después de consumo QA. No cambia las 40 migraciones.
+
+Rollback conserva la historia y agrega siete egresos auditados; sólo restaura a cero si stock y baseline siguen exactamente iguales. Si hubo compras QA, ingresos reales, cambios de reservas o catálogo, se detiene: revisar el remanente ficticio y preparar un ajuste explícito mediante inventario antes de cargar stock real. Nunca se resetea stock por encima de operaciones comerciales posteriores. Una repetición del rollback no crea egresos adicionales, y un fixture revertido no puede reaplicarse silenciosamente.
+
+Validación SQL: `node scripts/test-staging-qa-stock-sql.mjs` en el contenedor aislado verificado `matebreak-wholesale-isolated`. Cubre identidad TEST/target, rechazo de Production, fallo atómico, disponibilidad de 217 variantes, concurrencia/idempotencia, no reposición al repetir, preservación de 79/79 e historia, rollback condicionado y repetible. CI ejecuta esa prueba; no aplica stock Cloud.
+
+Después: comparar fingerprints, recalcular las 217 variantes y probar UI pública invitada/autenticada de productos antes agotados, sin confirmar checkout ni generar pedido/Preference. El único recheck oficial firmado de #1010 es una notificación manual desde el panel que vuelve a consultar el Payment autenticado; debe preservar todos los hashes comerciales y stock.

@@ -1,0 +1,31 @@
+{
+  "checkedAt": "2026-10-01T18:18:35.210Z",
+  "approvedStagingProject": {
+    "name": "matebreak-staging",
+    "ref": "rxccjczyywhewqqdfgxm",
+    "url": "https://rxccjczyywhewqqdfgxm.supabase.co",
+    "region": "Oregon",
+    "status": "Healthy; reported by responsible, not queried",
+    "githubIntegration": "not connected; reported"
+  },
+  "nodeTests": {
+    "passed": 165,
+    "failed": 0
+  },
+  "staticFrontendBuild": "PASS",
+  "stagingBuildWithRealRender": "BLOCKED/PENDING: URL not supplied",
+  "stagingBuildMissingUrlGuard": "PASS (expected rejection)",
+  "renderRuntimeSmoke": "PASS localhost health/PORT/process; no Docker, dotenv or Supabase query",
+  "architecture": "PASS",
+  "syntaxFiles": 120,
+  "migrationHashesUnchanged": 26,
+  "dependencyVulnerabilities": 0,
+  "secretPatternScan": "no findings",
+  "vercelGitAutoDeploy": false,
+  "renderTemplateAutoDeploy": "off",
+  "workerCreated": false,
+  "cronCreated": false,
+  "remoteMigrationsExecuted": false,
+  "deploymentsPerformed": false,
+  "externalFunctionalTests": "PENDING"
+}

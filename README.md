@@ -1,59 +1,142 @@
 # MateBreak
 
-**Tienda minorista de mates y accesorios** con catálogo, carrito, checkout, inventario físico y operación interna. El proyecto combina una interfaz adaptable con reglas comerciales verificadas en el servidor y reservas transaccionales en PostgreSQL.
+MateBreak es una tienda minorista de mates y accesorios con catálogo por variantes, carrito, checkout, inventario físico y administración. Resuelve la diferencia entre vender una publicación comercial (por ejemplo, un set personalizado) y reservar las piezas físicas que realmente la componen.
 
-> **Estado:** catálogo y stock validados; el checkout minorista se puede recorrer localmente con proveedores de prueba. Los cobros reales y las tarifas oficiales permanecen deshabilitados hasta conectar y probar las credenciales.
+Desarrollado por **Copplex**, el proyecto integra frontend, APIs, autenticación y transacciones. La lógica financiera y de stock se valida en el backend/PostgreSQL; el navegador presenta datos y recoge decisiones del comprador.
 
-| Área | Qué hace | Código principal |
-| --- | --- | --- |
-| Tienda | 106 productos, 217 variantes y 56 combos; detalle por `/productos/:slug` | [`server/catalog.mjs`](server/catalog.mjs), [`src/js/catalog-ui.js`](src/js/catalog-ui.js) |
-| Compra | Carrito, compra directa separada, Entrega → Pago y resumen editable | [`server/checkout/`](server/checkout/), [`src/js/checkout.js`](src/js/checkout.js) |
-| Inventario | Composición física, cajas, stock, reservas y expiración | [`supabase/migrations/`](supabase/migrations/), [`server/inventory.mjs`](server/inventory.mjs) |
-| Pagos | Transferencia manual y adaptador seguro para Mercado Pago Checkout Pro | [`server/payments/`](server/payments/) |
-| Envío | Política de cajas MateBreak y adaptador MiCorreo; cotizaciones guardadas con el pedido | [`server/shipping/`](server/shipping/) |
-| Administración | Roles, ventas, preparación, inventario y revisión de transferencias | [`server/account.mjs`](server/account.mjs), [`src/js/account-admin.js`](src/js/account-admin.js) |
+## Stack tecnológico
+
+**Frontend**
+
+![HTML5](https://img.shields.io/badge/HTML5-333?style=flat&logo=html5) ![CSS3](https://img.shields.io/badge/CSS3-333?style=flat&logo=css) ![JavaScript](https://img.shields.io/badge/JavaScript-333?style=flat&logo=javascript)
+
+**Backend**
+
+![Node.js 22](https://img.shields.io/badge/Node.js-22-333?style=flat&logo=nodedotjs) ![Express 5](https://img.shields.io/badge/Express-5-333?style=flat&logo=express)
+
+**Datos e infraestructura**
+
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-333?style=flat&logo=postgresql) ![PL/pgSQL](https://img.shields.io/badge/PL%2FpgSQL-333?style=flat) ![Supabase](https://img.shields.io/badge/Supabase-333?style=flat&logo=supabase) ![Vercel](https://img.shields.io/badge/Vercel-333?style=flat&logo=vercel) ![Render](https://img.shields.io/badge/Render-333?style=flat&logo=render)
+
+**Desarrollo y CI**
+
+![Git](https://img.shields.io/badge/Git-333?style=flat&logo=git) ![GitHub](https://img.shields.io/badge/GitHub-333?style=flat&logo=github) ![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-333?style=flat&logo=githubactions)
+
+Frontend HTML/CSS/JavaScript con ES modules y BFF Node.js 22/Express 5. PostgreSQL/Supabase concentra transacciones, RPC en PL/pgSQL y RLS; Supabase Auth administra identidad y Storage las imágenes. Frontend y backend se despliegan por separado en Vercel y Render. Node test runner, SQL y GitHub Actions verifican contratos y concurrencia; Docker aloja entornos locales descartables.
+
+Python se utiliza sólo en scripts auxiliares del procesamiento del catálogo (por ejemplo, los contact sheets de termos en el directorio local de importación); no forma parte del runtime web. Cheerio y los SDK de Supabase complementan la importación y el BFF.
 
 ```mermaid
 flowchart LR
-  UI[Catálogo / carrito / checkout] --> API[Backend Node]
-  API --> SQL[(Supabase PostgreSQL)]
-  SQL --> STOCK[Reservas y auditoría de stock]
-  API --> PROV[Selector de proveedores]
-  PROV --> MOCK[Mocks de desarrollo]
-  PROV -. credenciales pendientes .-> MP[Mercado Pago / MiCorreo]
+  UI[HTML y features JS] --> API[Express createApp]
+  API --> AUTH[Supabase Auth]
+  API --> DB[(PostgreSQL RPC y RLS)]
+  UI --> IMG[Storage: imágenes públicas]
+  API --> P[Adaptadores de pago y envío]
+  P --> MOCK[Mocks locales]
+  P -. pendiente de verificación real .-> REAL[Mercado Pago y MiCorreo]
 ```
 
-## Ejecutar localmente
+```text
+index.html                    Entrada pública
+src/
+  features/account/           Cuenta, administración y ventas
+  features/catalog/           Catálogo y detalle
+  features/cart/              Carrito
+  features/checkout/          Compra y resultado
+  js/                         Interacciones del sitio y entradas compatibles
+  services/                   Consulta pública de productos
+  pages/ css/ assets/          HTML, estilos y multimedia
+server/
+  index.mjs app.mjs            Arranque y composición de Express
+  config/                     Lectura y validación de entorno
+  modules/auth/ cart/          Rutas de autenticación y carrito
+  modules/account/            Perfil, direcciones, permisos y operación
+  modules/catalog/ inventory/ Catálogo e inventario
+  checkout/                   Orquestación y política comercial
+  payments/                   Adaptadores, webhook y transferencias
+  shipping/                   Embalaje, MiCorreo, snapshots, jobs y administración
+  integrations/supabase/      Adaptador de cookies Auth
+  jobs/                       Expiración de reservas
+  private-ui/                 Pantallas internas protegidas
+supabase/                     config, migrations, platform y tests/fixtures
+scripts/                      Importación, auditoría y tests locales
+ tests/                       Node, concurrencia y seguridad
+ docs/                        Guías, contratos y evidencia
+.github/workflows/            CI
+```
 
-Requiere **Node.js 22+** y un proyecto Supabase configurado. Para levantar una copia descartable con Docker Desktop, seguí la [guía de desarrollo local en Windows](docs/local-development.md). Docker aloja solo Supabase; el frontend y el backend Node siguen ejecutándose normalmente. `.env.example` apunta a localhost y debe completarse con claves generadas por **Supabase local**.
+Se mantienen `src/` y `server/`: renombrarlos no aportaría una responsabilidad nueva y cambiaría innecesariamente contratos estáticos y scripts. `src/js/` conserva entradas compatibles; las implementaciones de comercio están en `src/features/`. No hay carpetas vacías ni un framework nuevo. Ver [decisiones y árboles completos](docs/architecture.md), [inventario de movimientos](docs/refactor/moves.json) y [mapa de dependencias](docs/refactor/after.json).
+
+## Instalar y ejecutar localmente
+
+Requisitos: Node.js 22+, npm y Docker Desktop con el motor Linux activo. Desde este checkout:
 
 ```bash
-npm install
+npm ci
+npm run supabase:start
+```
+
+Copiá `.env.example` a `.env` solo si no existe. Completá las claves generadas por el stack **local**, según [desarrollo local](docs/local-development.md). No copiar credenciales productivas. Luego:
+
+```bash
 npm run dev
 ```
 
-La app se abre en `http://localhost:3000/`. Rutas principales: `/tienda` para el catálogo, `/carrito` para la selección, `/checkout` para finalizar y `/mi-cuenta` para pedidos y operación. Usá el servidor Node; Live Server no expone la API ni la sesión.
+El mismo proceso sirve frontend y backend en `http://localhost:3000`. No hace falta un servidor frontend separado. `npm start` inicia el mismo backend con el entorno elegido. Live Server no reproduce API ni cookies. `npm run build:frontend` genera exclusivamente `dist/index.html` y `dist/src/` para un futuro hosting estático; requiere el proxy descrito en [hosting](docs/hosting.md).
 
-Con `SHIPPING_MODE=mock`, `PAYMENTS_MODE=mock` y `MOCK_PAYMENT_RESULT=approved` (valores por defecto en desarrollo), agregá un mate o set al carrito, elegí Correo Argentino a domicilio, completá dirección y CP, y confirmá el pago de prueba. El resultado muestra un identificador `TEST-…` y **no cobra ni reserva stock**. Se permite continuar como invitado en este modo. Las cotizaciones y pedidos de prueba se pierden al reiniciar el servidor; el carrito y el catálogo siguen usando Supabase.
+Rutas públicas: `/`, `/tienda`, `/productos/:slug`, `/carrito`, `/checkout`, `/checkout/resultado`, `/mi-cuenta`. Pantallas internas: `/interno/inventario` y `/interno/logistica`, con autenticación y autorización. `/healthz` informa disponibilidad del proceso; no certifica la conexión a PostgreSQL.
 
-Para probar rechazo o pendiente, cambiá `MOCK_PAYMENT_RESULT` a `rejected` o `pending` y reiniciá el servidor. `SHIPPING_MODE=real` usa MiCorreo; `PAYMENTS_MODE=real` usa Checkout Pro. En producción los mocks están prohibidos, y el inicio falla si se selecciona un proveedor real sin sus credenciales. La [guía de pagos y envíos](docs/checkout-pagos.md) detalla la activación pendiente.
+## Variables de entorno
+
+Los nombres necesarios para el arranque son `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `APP_ORIGIN`; `PORT` y `NODE_ENV` controlan ejecución. Alias compatibles: `SUPABASE_ANON_KEY` y `SUPABASE_SERVICE_ROLE_KEY`.
+
+| Grupo | Nombres |
+| --- | --- |
+| Local y mocks | `MATEBREAK_LOCAL_ONLY`, `SHIPPING_MODE`, `PAYMENTS_MODE`, `MOCK_PAYMENT_RESULT`, `MOCK_ORIGIN_POSTAL_CODE`, `MATEBREAK_LOCAL_PERSIST_MOCK`, `MATEBREAK_LOCAL_PICKUP_MOCK` |
+| Mercado Pago | `MP_ACCESS_TOKEN`, `MERCADOPAGO_ACCESS_TOKEN` (alias), `MERCADOPAGO_WEBHOOK_SECRET`; `MP_PUBLIC_KEY` está en el ejemplo original, pero este backend no la utiliza |
+| MiCorreo | `CORREO_MICORREO_ENVIRONMENT`, `CORREO_ENVIRONMENT` (alias), `CORREO_MICORREO_USER`, `CORREO_MICORREO_PASSWORD`, `CORREO_MICORREO_CUSTOMER_ID`, `CORREO_ORIGIN_POSTAL_CODE` |
+| Embalaje aprobado | `CORREO_VERIFIED_PARCELS_JSON`, `CORREO_APPROVED_RETAIL_PROFILES_JSON` |
+
+Esta iteración preserva `.env.example` byte por byte. Los perfiles nuevos y la separación de entornos se explican en [embalaje](docs/packaging.md) y [hosting](docs/hosting.md). Secretos y datos de clientes no deben llegar al bundle ni a logs.
+
+## Pruebas
 
 ```bash
 npm test
+npm run test:architecture
+npm run catalog:historical:check
+node scripts/audit-baseline.mjs --check
+npm audit
+npm run supabase:start
+npm run test:full
+npm run supabase:start
+npm run test:baseline:local
 ```
 
-Las migraciones están en [`supabase/migrations/`](supabase/migrations/) y las pruebas SQL con rollback en [`supabase/tests/`](supabase/tests/). La [prueba reproducible de concurrencia real](docs/concurrencia-stock-aislada.md) utiliza PostgreSQL aislado.
+`test:full` usa exclusivamente el stack local propiedad de este checkout y PostgreSQL descartable. Incluye SQL histórico 18/18, logística, privilegios, stock concurrente 20/20, lifecycle 9/9, checkout concurrente 2/2, Auth/JWT/RLS y Storage. Hace reset local de limpieza y detiene Supabase; por eso hay que iniciarlo otra vez antes del rehearsal. El rehearsal reconstruye y compara el baseline local, verifica fallo intermedio/convergencia y vuelve a detener el stack. Son pruebas destructivas **solo sobre fixtures locales descartables**, nunca sobre un proyecto remoto.
 
-## Organización
+Para finalizar una sesión local: `npm run supabase:stop`. Los guards rechazan credenciales heredadas, URLs remotas y contenedores de otros checkouts. Los [resultados de esta iteración](docs/refactor/validation.md) distinguen verificaciones ejecutadas de limitaciones.
 
-- `src/pages/`, `src/js/`, `src/css/`: vistas, comportamiento y estilos de la interfaz.
-- `server/checkout/`: validación comercial, compra directa, cotizaciones y creación de pedidos.
-- `server/payments/`: transferencia, Checkout Pro y notificaciones verificadas.
-- `server/shipping/`: política de embalaje, proveedor simulado y contrato oficial de Correo Argentino.
-- `supabase/migrations/`: esquema, funciones SQL, locks, RLS y auditoría.
-- `tests/` y `supabase/tests/`: regresiones Node y SQL.
-- `docs/`: decisiones operativas e historial técnico.
+## Estado funcional
 
-La [guía de pagos y envíos](docs/checkout-pagos.md) detalla qué está implementado y qué falta para habilitarlo. El [ciclo de vida del pedido real](docs/ciclo-pedido-real.md) documenta estados, reservas, idempotencia y las pruebas SQL aisladas; su migración correctiva todavía no se desplegó. La [auditoría previa a pagos](docs/auditoria-prepagos.md) y la [guía de comercio](docs/comercio.md) completan las garantías existentes.
+| Funcionalidad | Estado |
+| --- | --- |
+| Catálogo, variantes, carrito, cuenta, roles, inventario | Implementados y cubiertos por Node/SQL/Auth local |
+| Compra directa y checkout | Implementados; recorrido local con mocks y persistencia opcional de pedidos/reservas reales en PostgreSQL local |
+| Pago approved/rejected/pending | Verificado con mocks; no equivale a un cobro real |
+| Transferencias | Flujo de confirmación administrativa implementado; operación bancaria real pendiente |
+| Cotización, snapshot, importación y recuperación MiCorreo | Contratos HTTP y flujo local/mock probados; tarifas, cuenta y despacho reales pendientes |
+| Entrega a sucursal | Restringida al modo local/mock explícito; agencias ficticias |
+| Pedidos grandes y mixtos | Uno/dos bultos si hay perfiles aprobados; descarga para cotización manual si faltan |
+| Mayorista | Futuro: edición manual por bulto, tipos de caja y más de dos paquetes |
 
-La seguridad está documentada en el [modelo de amenazas](docs/security-threat-model.md), la [arquitectura y matriz de acceso SQL](docs/security-architecture.md) y el [checklist de producción](docs/security-production-checklist.md). Los checks Node corren en GitHub Actions; las pruebas SQL y de concurrencia usan una base PostgreSQL local descartable. Ninguna de las dos migraciones más recientes se aplicó al proyecto Supabase real.
+Los mocks normales usan pedidos efímeros y no reservan stock. `MATEBREAK_LOCAL_PERSIST_MOCK` activa un recorrido local que sí reserva stock y persiste pedidos usando RPC reales, con proveedores simulados. Producción rechaza proveedores mock.
+
+## Producción y próximos pasos
+
+No se publicó la tienda ni se conectaron proveedores. Faltan verificaciones con credenciales de prueba oficiales, mediciones de embalajes grandes, sender y procesos operativos/logísticos reales, ensayo de proxy/cookies en staging y aprobación manual de producción. Las pruebas locales no acreditan esas integraciones.
+
+Supabase Deploy to production permanece **OFF por decisión manual del responsable**, según su instrucción para esta iteración; no se inspeccionó ni modificó la configuración externa. Los documentos anteriores que describen un bloqueo con deploy ON son evidencia histórica de la RC. Se conserva su contenido, pero no representan el estado comunicado para esta iteración.
+
+La rama nueva deriva de `4870fc7`; su PR apunta a `local-supabase-validation`, sin merge a `main`, migraciones remotas ni deploy automático. Ver [seguridad](docs/security-architecture.md), [runbook de producción](docs/production-release-runbook.md), [guía para estudiar](docs/learning-guide.md) y [diagramas de flujos](docs/flows.md).

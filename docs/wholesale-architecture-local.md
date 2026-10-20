@@ -1,0 +1,41 @@
+# Compra Mayorista: decisiones previas al desarrollo local
+
+Base cf1df37 en worktree aislado. El checkout minorista, sus tres correcciones y los 14 pendientes del worktree anterior se conservan. Ningún cambio Cloud ni precio comercial real se autoriza mediante este ensayo.
+
+La entidad venta_manual representa ventas/reservas de vendedor y descuenta inventario al registrar. No se reutiliza para captación: una solicitud inicial no es venta ni reserva. Se agrega un registro privado de solicitudes con referencias a catalogo_variante/producto, trazabilidad de estado y referencias opcionales a pedido o venta_manual existentes. El cierre real permanece en esos flujos de inventario ya autorizados, sin una segunda implementación de cobro o descuento de stock.
+
+No existe una tarifa mayorista canónica actualmente: mb_ventas recibe precios negociados por el vendedor. Se propone una única configuración de oferta mayorista por variante que referencia el catálogo actual, precio explícito y equivalencia de unidades elegibles. No se inventa un descuento ni se infieren elegibilidad/precio por categoría/nombre. La migración no activa ofertas, no configura vendedores/campañas ni modifica precios históricos. Los precios especiales del ensayo son exclusivamente fixtures sintéticos en la base desechable. Antes de publicar deben aprobarse ofertas, precios, equivalencias de combos y número comercial.
+
+Mínimo configurable, inicialmente 10 unidades elegibles. Productos complementarios pueden tener equivalencia cero. Sets/combos sólo con equivalencia explícita; se cotiza la variante una vez y no se suman sus componentes. Precio, cantidad y mínimo se recalculan en la RPC transaccional al registrar.
+
+Solicitudes e items permanecen privados, con RLS y sin grants para anon/authenticated. RPC SECURITY INVOKER sólo service_role; identidad de administrador/vendedor siempre verificada por backend y mb_rol. Idempotencia ligada a cookie HttpOnly de solicitud y payload canónico, bloqueo transaccional y respuesta sin detalles personales. No se proporciona lookup público por número ni UUID.
+
+Atribución por referencia configurada: ausencia → web_sin_referencia, nunca orgánico. Una referencia válida identifica un enlace comercial, no prueba la autenticidad de un clic de publicidad. Existe organico_verificado únicamente para una referencia configurada con nota de evidencia verificable por administración; SQL exige esa evidencia y no crea referencias ni infiere ese origen automáticamente. La referencia se fija en una cookie HttpOnly, se valida en SQL y queda inmutable al registrar. Una cookie no prueba identidad ni origen humano: el registro representa el enlace identificado. Se distinguen origen/vendedor originador y vendedor de cierre; no hay porcentajes ni pagos de comisión, y las solicitudes no se suman a la facturación.
+
+WhatsApp se prepara después de persistir, por navegación iniciada por el usuario. El número proviene de una sola configuración de backend. Mensaje sin contacto, domicilio, tokens ni credenciales; el comentario opcional se conserva en el registro privado y se omite del mensaje compartido para evitar divulgación accidental de información sensible. El cliente puede copiar el mensaje o reabrir la conversación: no se afirma que lo haya enviado.
+
+Administración puede recorrer estados comerciales; venta_concretada requiere referencia a una operación existente válida. No se confirma ni reserva stock desde la solicitud. No se inicia SMTP, scheduler, transporte WhatsApp ni proveedores de pago/envío. Ensayo completo exclusivamente PostgreSQL aislado sin puertos publicados, fixture local y frontend/backend loopback.
+
+## Contratos y reproducción
+
+GET /api/mayorista/catalogo devuelve ofertas activas de variantes vigentes/publicadas, mínimo, provincias canónicas y disponibilidad del contacto. POST /cotizar acepta sólo id y cantidad de cada variante. POST /solicitudes recibe comprador, selección y UUID de idempotencia: ignora importes y atribución enviados por el navegador, recalcula la oferta y devuelve número MAY, estado y resumen no vinculante. El backend lee WHOLESALE_WHATSAPP_NUMBER; sin configuración válida rechaza antes de persistir. Los contactos, comentarios y huellas de sesión no se incluyen en WhatsApp ni en logs.
+
+No se prometen existencias desde una solicitud: producción, plazo y disponibilidad se coordinan comercialmente. La operación definitiva usa los flujos existentes y su bloqueo de inventario. Vincular una venta manual exige que pertenezca al vendedor de cierre. Los enlaces a pedido/venta son únicos y no generan facturación adicional. Seña acreditada exige una referencia comercial ingresada por administración, no confirma un cobro bancario mediante esta pantalla.
+
+Los reintentos conservan payload y UUID. Tras una respuesta perdida se congelan campos y se repite la misma solicitud; el SQL rechaza una clave con datos diferentes. Sólo se guarda el UUID opaco en sessionStorage, no datos del comprador. Recargar conserva esa clave; una diferencia obliga a revisar la solicitud, no a inventar otra clave. Tras éxito, Preparar otra solicitud inicia explícitamente una oportunidad diferente. El borrado de almacenamiento/cookies o una pestaña nueva no puede deduplicarse universalmente: no se prometen garantías fuera de la identidad y clave originales.
+
+Mínimo configurable y equivalencias en private.wholesale_settings/offer; configuración únicamente administrativa bajo autorización posterior, sin grants de escritura para los roles API. No hay API pública para activar ofertas. Registro de referencias con originador validado por mb_rol; el cierre se asigna separadamente. Los estados y atribuciones son auditados mediante wholesale_event. RLS sin políticas de cliente y RPC SECURITY INVOKER ejecutable sólo por service_role: no se introduce acceso SQL anónimo.
+
+La única modificación al contrato de hosting es la nueva ruta estática /mayorista. Se actualiza la configuración esperada junto con vercel.json; isDeepStrictEqual y el rechazo de cualquier otra propiedad siguen intactos. Las cuatro rutas de backend, dominio Render, noindex/no-store y Git desactivado se conservan.
+
+Pruebas (Node 22.23.3): npm ci; npm test; node scripts/audit-baseline.mjs --check; npm run catalog:historical:check; npm audit --omit=dev --audit-level=high; npm run build con STAGING_BACKEND_ORIGIN aprobado. Ensayo SQL: node scripts/test-wholesale-local.mjs sobre el contenedor propio matebreak-wholesale-isolated (postgres:17.11, sin puertos, etiquetas verificadas por el runtime). Crea y elimina exclusivamente una base temporal propia. El setup Auth local es reducido: prueba roles/RLS/ACL, no sustituye un preflight de Supabase Cloud.
+
+Navegador: definir MATEBREAK_PLAYWRIGHT_MODULE al módulo Playwright instalado y MATEBREAK_EVIDENCE_DIR fuera del repositorio; ejecutar tests/wholesale-browser.mjs (Chrome instalado, Express y SQL locales) y tests/guest-ux-browser.mjs (dist, APIs sintéticas interceptadas). WhatsApp se intercepta y nunca se contacta ni envía. Los fixtures comerciales sólo existen en bases descartables; no son parte de la migración.
+
+## Pendientes y orden de publicación propuesto
+
+Antes de autorizar una publicación: aprobar tarifas/ofertas reales, equivalencias y exclusiones, número comercial, referencias y evidencia de origen, responsables de cierre y política de acceso/retención de datos comerciales. No se establecen comisiones. El límite antispam actual es por proceso; un despliegue con réplicas requerirá un límite compartido. No se implementan nuevos proveedores, scheduler o pagos mayoristas.
+
+Orden propuesto, sujeto a autorización independiente: revisar diff/manifiestos y baseline Staging actual; integrar la rama local sin incluir pendientes anteriores; push/CI; respaldo scoped y ensayo representativo; aplicar sólo la nueva migración y auditar; configurar ofertas/contacto previamente aprobados; un deployment manual backend; prebuilt nuevo/auditado y un deployment manual frontend. No ejecutar fixtures de ensayo en Cloud. La migración agrega tablas/RPC privadas y no cambia el checkout minorista ni sus migraciones.
+
+El baseline Cloud 3 pedidos/3 pagos mock/stock 97/97 es el último informado, no una comprobación actual de esta iteración. No hubo consultas ni escrituras remotas durante el desarrollo.

@@ -1,0 +1,30 @@
+/* Home motion layers (see src/js/home-motion.js). They exist only while Motion
+   is active; nothing here changes the curve's geometry or the header palette. */
+
+/* Soft golden halo that swells as the arc crosses the viewport. */
+.mb-curve-halo,
+.mb-curve-glint {
+  position: absolute; pointer-events: none; opacity: 0;
+}
+.mb-curve-halo {
+  left: 0; right: 0; top: -2px; height: 100%; border-radius: inherit;
+  box-shadow: 0 -10px 30px rgba(244, 214, 160, .55), 0 -28px 72px rgba(244, 214, 160, .3);
+  will-change: opacity;
+}
+/* A small specular glint that travels along the arc. Positioned and moved with
+   transform only (see place() in home-motion.js), so the big curve layer is
+   never repainted. */
+.mb-curve-glint {
+  left: 50%; top: 0; width: min(46vw, 560px); height: 120px;
+  background: radial-gradient(closest-side, rgba(255, 240, 205, .95), rgba(244, 214, 160, .42) 42%, rgba(244, 214, 160, 0));
+  /* Light only on the dark side of the arc; the white surface stays clean. */
+  clip-path: inset(0 0 50% 0);
+  will-change: transform, opacity;
+}
+@media (max-width: 760px) {
+  .mb-curve-glint { width: 78vw; height: 84px; }
+  .mb-curve-halo { box-shadow: 0 -8px 22px rgba(244, 214, 160, .5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mb-curve-halo, .mb-curve-glint { display: none; }
+}

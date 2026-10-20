@@ -1,0 +1,17 @@
+
+> build:staging
+> node scripts/build-staging.mjs
+
+file:///C:/Users/Administrator/.codex/worktrees/staging-preparation/MateBreak/scripts/staging-config.mjs:6
+ if(!value)throw Error('Staging deploy blocked: STAGING_BACKEND_ORIGIN is missing');
+                 ^
+
+Error: Staging deploy blocked: STAGING_BACKEND_ORIGIN is missing
+    at validateBackendOrigin (file:///C:/Users/Administrator/.codex/worktrees/staging-preparation/MateBreak/scripts/staging-config.mjs:6:18)
+    at assertStagingVercelReady (file:///C:/Users/Administrator/.codex/worktrees/staging-preparation/MateBreak/scripts/staging-config.mjs:20:15)
+    at file:///C:/Users/Administrator/.codex/worktrees/staging-preparation/MateBreak/scripts/build-staging.mjs:5:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.19.0

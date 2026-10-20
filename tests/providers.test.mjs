@@ -1,13 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createProviders, resolveProviderModes } from '../server/providers.mjs';
+import { createProviders, resolveProviderModes,resolveMiCorreoEnvironment } from '../server/providers.mjs';
 import { createMockShipping } from '../server/shipping/mock.mjs';
 import { quotePackages, MATE_BOX, SET_BOX } from '../server/shipping/packaging.mjs';
 import { createMockPayment } from '../server/payments/mock.mjs';
 
+test('MiCorreo environment supports canonical name, legacy alias and fails closed on conflict',()=>{
+  assert.equal(resolveMiCorreoEnvironment({}),'test');
+  assert.equal(resolveMiCorreoEnvironment({CORREO_MICORREO_ENVIRONMENT:'production'}),'production');
+  assert.equal(resolveMiCorreoEnvironment({CORREO_ENVIRONMENT:'production'}),'production');
+  assert.equal(resolveMiCorreoEnvironment({CORREO_MICORREO_ENVIRONMENT:'test',CORREO_ENVIRONMENT:'test'}),'test');
+  assert.throws(()=>resolveMiCorreoEnvironment({CORREO_MICORREO_ENVIRONMENT:'test',CORREO_ENVIRONMENT:'production'}),/disagree/);
+  assert.throws(()=>resolveMiCorreoEnvironment({CORREO_MICORREO_ENVIRONMENT:'invalid'}),/inválido/);
+});
 test('development defaults to mock and production defaults to real', () => {
   assert.deepEqual(resolveProviderModes({}), { shippingMode:'mock',paymentsMode:'mock' });
-  assert.deepEqual(resolveProviderModes({ NODE_ENV:'production' }), { shippingMode:'real',paymentsMode:'real' });
+  assert.throws(()=>resolveProviderModes({ NODE_ENV:'production' }), /mock no se permiten/);
+  assert.deepEqual(resolveProviderModes({ NODE_ENV:'production',SHIPPING_MODE:'real' }), { shippingMode:'real',paymentsMode:'real' });
   assert.throws(()=>resolveProviderModes({SHIPPING_MODE:'invalid'}));
   assert.throws(()=>resolveProviderModes({NODE_ENV:'production',PAYMENTS_MODE:'mock'}));
   assert.throws(()=>resolveProviderModes({SHIPPING_MODE:'mock',PAYMENTS_MODE:'real'}));

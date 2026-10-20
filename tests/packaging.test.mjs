@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { MATE_BOX, SET_BOX, planPackages, quotePackages } from '../server/shipping/packaging.mjs';
-import { createApp } from '../server/app.mjs';
+import { createApp } from './helpers/business-app.mjs';
 
 const products = [
   { id: '1', tipo: 'simple', categorias: ['mates-grabados'] },
@@ -29,9 +29,8 @@ test('one set plus one loose mate produces separate conservative parcels', () =>
 test('three sets split into two large parcels', () => {
   assert.deepEqual(planPackages([set(3)], products), [{ ...SET_BOX, weight: 2600 }, SET_BOX]);
 });
-test('mixed orders group sets first, then mate boxes, regardless of line order', () => {
-  const expected = [{ ...SET_BOX, weight: 2600 }, SET_BOX,
-    { length: 34, width: 17, height: 17, weight: 1100 }, MATE_BOX];
+test('mixed orders beyond two approved parcels require manual quotation regardless of line order', () => {
+  const expected = null;
   assert.deepEqual(planPackages([mate(3), set(3)], products), expected);
   assert.deepEqual(planPackages([set(1), mate(2), set(2), mate(1)], products), expected);
 });
@@ -61,7 +60,7 @@ test('checkout quotes the server-derived parcels and persists only carrier-retur
   const seen = { dimensions: [], inserted: null };
   const selection = { id:'11111111-1111-4111-8111-111111111111', items:[set(1),mate(1)], total:70_000 };
   const admin = {
-    rpc:async name=>({data:name==='mb_comercio'?selection:{items:[],subtotal:70_000,moneda:'ARS'},error:null}),
+    rpc:async name=>({data:name==='mb_comercio'?selection:name==='mb_shipping_fingerprint'?'a'.repeat(64):{items:[],subtotal:70_000,moneda:'ARS'},error:null}),
     from:table=>{
       if(table==='producto') return {select:()=>({in:async()=>({data:[
         {id_producto:1,tipo:'simple',catalogo_producto_categoria:[{catalogo_categoria:{slug:'mates-grabados'}}]},

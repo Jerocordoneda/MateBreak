@@ -5,7 +5,9 @@ revoke all on table public.producto, public.combo, public.combo_item from anon, 
 revoke all on sequence public.producto_id_producto_seq, public.catalogo_categoria_id_seq,
   public.catalogo_variante_id_seq from anon, authenticated;
 
--- Supabase projects may create objects as either postgres or supabase_admin.
+-- Application migrations create objects as postgres. supabase_admin is a
+-- protected platform role; postgres cannot change its default privileges.
+-- Its separate operator-only hardening is in supabase/platform/ below.
 -- Keep service_role's existing grants; remove only implicit browser-role grants.
 alter default privileges for role postgres in schema public revoke all on tables from anon, authenticated;
 alter default privileges for role postgres in schema public revoke all on sequences from anon, authenticated;
@@ -13,7 +15,3 @@ alter default privileges for role postgres in schema public revoke all on sequen
 -- REVOKE cannot remove it, so remove it for each creator role globally.
 alter default privileges for role postgres revoke execute on functions from public;
 alter default privileges for role postgres in schema public revoke execute on functions from anon, authenticated;
-alter default privileges for role supabase_admin in schema public revoke all on tables from anon, authenticated;
-alter default privileges for role supabase_admin in schema public revoke all on sequences from anon, authenticated;
-alter default privileges for role supabase_admin revoke execute on functions from public;
-alter default privileges for role supabase_admin in schema public revoke execute on functions from anon, authenticated;

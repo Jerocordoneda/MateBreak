@@ -1,0 +1,45 @@
+/* Home only: local vector mountain, with room for its subtle 18% rise. */
+[data-home] .matebreak-transition.mb-mountain-transition {
+  /* The mountain (baseline to crest = 640/676 of the box) rises at most 8 cm on
+     screen at 100% zoom: CSS cm = 37.8 px, so the box is capped at 8.45cm. Phones
+     (210 px box, ~5.3 cm) are unchanged; wide screens keep the phone steepness. */
+  height: min(clamp(210px, 35.2vw, 620px), 8.45cm);
+  /* The box's upper part is empty dark space reserved for the rising wave, so it
+     overlaps the benefits section's bottom padding and the two sections read as
+     one. What remains above the box is just what the risen apex needs to stay
+     clear of the benefits text (its travel is ~10% of the box height, so this
+     tracks the capped height), plus a
+     margin; scripts/verify-home-mountain.mjs measures that clearance. */
+  --mb-wave-clearance: calc(22px + min(clamp(21px, 3.52vw, 62px), .845cm));
+  margin-top: calc(var(--mb-wave-clearance) - 120px);
+}
+@media (max-width: 1023px) {
+  /* responsive.css: [data-marketing] py-section-gap-lg = clamp(36px, 6vw, 60px) */
+  [data-home] .matebreak-transition.mb-mountain-transition { margin-top: calc(var(--mb-wave-clearance) - clamp(36px, 6vw, 60px)); }
+}
+[data-home] .matebreak-curve.mb-curve-mountain {
+  top: 0; bottom: auto; left: 0; width: 100%; height: 100%;
+  border: 0; border-radius: 0; box-shadow: none; background: transparent;
+  transform: translateY(var(--curve-move, 0px));
+}
+.mb-curve-mountain > svg {
+  display: block; position: relative; z-index: 1;
+  width: 100%; height: 100%; overflow: visible;
+}
+.mb-curve-mountain [data-curve-apex] {
+  position: absolute; left: 50%; top: var(--wave-apex, 0%);
+  width: 1px; height: 1px; pointer-events: none;
+}
+/* The translated SVG always joins the following white section, including on
+   resize and with Motion disabled. The container clips this extension below. */
+.mb-curve-mountain::after {
+  content: ''; position: absolute; top: calc(100% - 1px); left: 0;
+  width: 100%; height: 100%; background: #fff;
+}
+.mb-curve-mountain .mb-curve-halo { display: none; }
+.mb-curve-mountain .mb-curve-glint {
+  /* Keep the glint below the opaque SVG fill: light can only tint the dark
+     side of the ridge, including on its steep shoulders. */
+  z-index: 0; left: 0; width: clamp(70px, 16vw, 140px); height: 34px;
+  background: radial-gradient(closest-side, #fff5d9aa, #dcc29544 45%, #dcc29500);
+}

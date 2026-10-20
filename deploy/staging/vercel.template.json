@@ -1,0 +1,49 @@
+{
+  "git": {
+    "deploymentEnabled": false
+  },
+  "buildCommand": "npm run build:staging",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/tienda",
+      "destination": "/src/pages/catalogo.html"
+    },
+    {
+      "source": "/carrito",
+      "destination": "/src/pages/tienda.html"
+    },
+    {
+      "source": "/checkout/resultado",
+      "destination": "/src/pages/checkout-resultado.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/src/pages/checkout.html"
+    },
+    {
+      "source": "/productos/:slug",
+      "destination": "/src/pages/producto.html"
+    },
+    {
+      "source": "/mi-cuenta",
+      "destination": "/src/pages/cuenta.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ]
+}

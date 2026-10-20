@@ -1,0 +1,5 @@
+
+> build:frontend
+> node scripts/build-frontend.mjs
+
+Built dist/index.html and dist/src; use the documented same-origin API proxy.

@@ -1,0 +1,5 @@
+
+> test:staging:fixtures:local
+> node scripts/test-staging-fixtures-local.mjs
+
+PASS staging fixtures: missing/production marker rejected; synthetic catalog/stock verified and restored by rollback

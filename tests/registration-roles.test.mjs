@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createApp} from '../server/app.mjs';
+import {createApp} from './helpers/business-app.mjs';
 const actor='eeeeeeee-1111-4111-8111-111111111111',target='ffffffff-1111-4111-8111-111111111111';
 async function fixture(t,{role='cliente',confirmed=true,session=false}={}){
  const calls=[];
@@ -10,14 +10,14 @@ async function fixture(t,{role='cliente',confirmed=true,session=false}={}){
  return {calls,request:(path,method='GET',body)=>fetch(`http://127.0.0.1:${server.address().port}${path}`,{method,headers:{origin:'https://matebreak.test','content-type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)})};
 }
 test('registration allowlists display name only and never accepts a role',async t=>{
- const {request,calls}=await fixture(t);const r=await request('/api/auth/registro','POST',{email:' CLIENT@example.invalid ',nombre:' Cliente nuevo ',password:'long-enough-password',rol:'administrador',user_metadata:{role:'vendedor'}});
+ const {request,calls}=await fixture(t);const r=await request('/api/auth/registro','POST',{email:' CLIENT@example.invalid ',nombre:' Cliente ',apellido:'nuevo',whatsapp:'+54 011 12345678',provincia:'Buenos Aires',localidad:'Tandil',password:'long-enough-password',rol:'administrador',user_metadata:{role:'vendedor'}});
  assert.equal(r.status,200);assert.equal((await r.json()).sesion_iniciada,false);
- assert.deepEqual(calls,[{name:'signup',args:{email:'client@example.invalid',password:'long-enough-password',options:{data:{nombre:'Cliente nuevo'},emailRedirectTo:'https://matebreak.test/auth/callback'}}}]);
+ assert.deepEqual(calls,[{name:'signup',args:{email:'client@example.invalid',password:'long-enough-password',options:{data:{nombre:'Cliente nuevo',mayorista:{nombre:'Cliente nuevo',whatsapp:'+54 011 12345678',provincia:'Buenos Aires',localidad:'Tandil',empresa:''}},emailRedirectTo:'https://matebreak.test/auth/callback'}}}]);
 });
 test('registration validates name, email and password before Auth',async t=>{
- const {request,calls}=await fixture(t);for(const patch of [{nombre:''},{email:'bad'},{password:'short'}])assert.equal((await request('/api/auth/registro','POST',{nombre:'Cliente',email:'client@example.invalid',password:'long-password',...patch})).status,400);assert.equal(calls.length,0);
+ const {request,calls}=await fixture(t);for(const patch of [{nombre:''},{email:'bad'},{password:'short'}])assert.equal((await request('/api/auth/registro','POST',{nombre:'Cliente',apellido:'Local',whatsapp:'1123456789',provincia:'Buenos Aires',localidad:'Tandil',email:'client@example.invalid',password:'long-password',...patch})).status,400);assert.equal(calls.length,0);
 });
-test('registration supports projects with immediate sessions',async t=>{const {request}=await fixture(t,{session:true});assert.equal((await (await request('/api/auth/registro','POST',{nombre:'Cliente',email:'client@example.invalid',password:'long-password'})).json()).sesion_iniciada,true);});
+test('registration supports projects with immediate sessions',async t=>{const {request}=await fixture(t,{session:true});assert.equal((await (await request('/api/auth/registro','POST',{nombre:'Cliente',apellido:'Local',whatsapp:'1123456789',provincia:'Buenos Aires',localidad:'Tandil',email:'client@example.invalid',password:'long-password'})).json()).sesion_iniciada,true);});
 test('customer and seller cannot list users or change roles despite metadata',async t=>{
  for(const role of ['cliente','vendedor']){const {request,calls}=await fixture(t,{role});assert.equal((await request('/api/admin/usuarios')).status,403);assert.equal((await request('/api/admin/usuarios/'+target+'/rol','PUT',{rol:'administrador',anterior:'cliente'})).status,403);assert.equal(calls.filter(c=>c.name==='mb_admin_roles').length,0);}
 });

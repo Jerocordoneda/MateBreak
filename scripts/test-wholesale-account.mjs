@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+import {createWholesaleDatabase,literal as l} from './wholesale-local-runtime.mjs';
+const db=createWholesaleDatabase({skipAccountMigration:true}),q=db.query;
+const alice='11111111-1111-4111-8111-111111111111',bob='22222222-2222-4222-8222-222222222222',sa='aaaaaaaa-1111-4111-8111-111111111111',sb='bbbbbbbb-1111-4111-8111-111111111111',key='cccccccc-1111-4111-8111-111111111111';
+const buyer={nombre:'Fixture account',email:'edited@example.invalid',whatsapp:'1100000000',localidad:'Tandil',provincia:'Buenos Aires'},items=[{id:'700006',cantidad:10,price:1}];
+const read=sql=>{const result=q('set role service_role;'+sql);return result==='t'?true:result==='f'?false:JSON.parse(result);};
+try{
+ q(readFileSync(new URL('../deploy/staging/wholesale-commercial.sql',import.meta.url),'utf8'));
+ for(const c of ['a','b'])read('select public.mb_wholesale_submit('+l(c.repeat(64))+','+l(key)+','+l(buyer)+','+l(items)+',null);');
+ const legacy=q("select md5(string_agg(to_jsonb(r)::text,'' order by number)) from private.wholesale_request r;"),events=q("select md5(string_agg(to_jsonb(e)::text,'' order by id)) from private.wholesale_event e;");
+ q(readFileSync(new URL('../supabase/migrations/20261003230752_wholesale_account_access.sql',import.meta.url),'utf8'));
+ assert.equal(q("select md5(string_agg((to_jsonb(r)-'account_id')::text,'' order by number)) from private.wholesale_request r;"),legacy);
+ assert.equal(q("select md5(string_agg(to_jsonb(e)::text,'' order by id)) from private.wholesale_event e;"),events);
+ assert.equal(q('select count(*) from private.wholesale_request where account_id is null;'),'2');
+ q('insert into auth.users(id,email_confirmed_at)values('+l(alice)+',now()),('+l(bob)+',now());insert into auth.sessions(id,user_id)values('+l(sa)+','+l(alice)+'),('+l(sb)+','+l(bob)+');');
+ assert.equal(read('select public.mb_wholesale_access('+l(alice)+','+l(sa)+');'),true);
+ assert.equal(read('select public.mb_wholesale_access('+l(alice)+','+l(sb)+');'),false);
+ const invoke=(id,session)=>'select public.mb_wholesale_submit_account('+[id,session,key,buyer,items,null].map(l).join(',')+');';
+ const submissions=await Promise.all(Array.from({length:3},()=>db.parallel('set role service_role;'+invoke(alice,sa))));
+ assert.equal(new Set(submissions).size,1);assert.equal(JSON.parse(submissions[0]).quote.total,50000);
+ assert.equal(q('select count(*) from private.wholesale_request where account_id='+l(alice)+';'),'1');
+ const own=(id,session,requestId=null)=>read('select public.mb_wholesale_own('+[id,session,requestId].map(l).join(',')+');');
+ const a=own(alice,sa);assert.equal(a.length,1);assert.equal(a[0].number,'MAY-0003');assert.equal(a[0].buyer.email,buyer.email);
+ assert.deepEqual(own(bob,sb,a[0].id),[]);assert.deepEqual(own(bob,sb),[]);
+ const b=read(invoke(bob,sb));assert.equal(b.number,'MAY-0004');
+ q('update private.wholesale_commercial_offer set price_10=4900 where id=700006;');assert.equal(read(invoke(alice,sa)).quote.total,50000);
+ assert.throws(()=>q('set role service_role;update private.wholesale_request set account_id=null where account_id='+l(alice)+';'));
+ assert.throws(()=>q('set role service_role;update private.wholesale_request set account_id='+l(alice)+' where number=1;'));
+ for(const role of ['anon','authenticated'])for(const sql of ['select * from private.wholesale_request;','select public.mb_wholesale_access('+l(alice)+','+l(sa)+');',invoke(alice,sa)])assert.throws(()=>q('set role '+role+';'+sql));
+ assert.equal(q("select to_regprocedure('public.mb_wholesale_submit(text,uuid,jsonb,jsonb,text)') is null;"),'t');
+ q('delete from auth.sessions where id='+l(sa)+';');assert.equal(read('select public.mb_wholesale_access('+l(alice)+','+l(sa)+');'),false);assert.throws(()=>q('set role service_role;'+invoke(alice,sa)));
+ q('update auth.sessions set not_after=now()-interval \'1 minute\' where id='+l(sb)+';');assert.equal(read('select public.mb_wholesale_access('+l(bob)+','+l(sb)+');'),false);
+ assert.equal(q('select count(*) from private.wholesale_request;'),'4');assert.equal(q('select count(*) from public.pedido;'),'0');assert.equal(q('select count(*) from public.pago;'),'0');
+ assert.equal(q("select count(*) from pg_proc where proname like 'mb_wholesale_%' and prosecdef;"),'0');
+ console.log('PASS complete local migration replay; MAY-0001/0002 + event hashes preserved; account/session isolation; 3 concurrent submits=1; per-account idempotency; prices/snapshots; immutable ownership; revoked/expired session; invoker/RLS/ACL; no retail writes');
+}finally{db.close();}

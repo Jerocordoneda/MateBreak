@@ -1,0 +1,33 @@
+/* Home shares the exact surface color from its first paint, before JS loads. */
+[data-home] > header.fixed {
+  background-image: none !important;
+  background-color: var(--home-header-background, #131313) !important;
+  backdrop-filter: blur(var(--home-header-blur, 0px)) !important;
+  -webkit-backdrop-filter: blur(var(--home-header-blur, 0px)) !important;
+  transition: background-color 360ms ease, backdrop-filter 180ms linear !important;
+}
+[data-home] > header.mb-public-header::before { content: none; }
+[data-home] > header::after {
+  content: ''; position: absolute; inset: 100% 0 auto; height: 18px;
+  pointer-events: none; opacity: var(--home-header-edge, 0);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  mask-image: linear-gradient(#000, transparent);
+  -webkit-mask-image: linear-gradient(#000, transparent);
+}
+[data-home] header.mb-public-header .mb-public-mainbar,
+[data-home] header.mb-public-header .mb-public-brand span,
+[data-home] header.mb-public-header .mb-category-nav,
+[data-home] header.mb-public-header a,
+[data-home] header.mb-public-header button {
+  transition: color 360ms ease, background-color 360ms ease !important;
+}
+[data-home] header.mb-public-header .mb-public-brand img { transition: filter 360ms ease; }
+@media (min-width: 761px) {
+  [data-home] header.mb-public-header.header-dark .mb-categorybar { background: transparent; }
+}
+[data-home] header.mb-public-header .mb-categorybar,
+[data-home] header.mb-public-header .dropdown-menu > div { transition: background-color 360ms ease, border-color 360ms ease; }
+@media (prefers-reduced-motion: reduce) {
+  [data-home] > header.fixed,
+  [data-home] header.mb-public-header * { transition: none !important; }
+}

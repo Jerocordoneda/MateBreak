@@ -1,0 +1,133 @@
+{
+  "project": "nwpdfqwqxrkokluqqqfs",
+  "capturedDate": "2026-09-30",
+  "mode": "READ ONLY",
+  "history": [
+    {
+      "name": "inventory_admin",
+      "version": "20260908093949",
+      "statements_md5": "b291e91f65719741a17ed6e05539fded",
+      "statement_count": 1,
+      "sql_token_md5": "706f31b46fa221cbb5a1f461c69b6567"
+    },
+    {
+      "name": "inventory_query_aliases",
+      "version": "20260908094715",
+      "statements_md5": "658ed1ba0100f6f798953557c44c2ec6",
+      "statement_count": 1,
+      "sql_token_md5": "fff7721ee3795332aafe4bea0e64619f"
+    },
+    {
+      "name": "account_roles_sales",
+      "version": "20260908103456",
+      "statements_md5": "7f0533e764208261ce00eb5202074171",
+      "statement_count": 1,
+      "sql_token_md5": "82708b11a41205de2ebe9ddcce3f63c4"
+    },
+    {
+      "name": "account_admin_roles",
+      "version": "20260909001422",
+      "statements_md5": "037f9993b554f20e5d327c16e7fabe0e",
+      "statement_count": 1,
+      "sql_token_md5": "7a2325d2dba9ec2f6aba0cfa158bb329"
+    },
+    {
+      "name": "admin_commercial_dashboard",
+      "version": "20260909234523",
+      "statements_md5": "1a262752ace45d505bbe5e619448bdde",
+      "statement_count": 1,
+      "sql_token_md5": "cbdb5544e4152750fb3dcd68e30cbc87"
+    },
+    {
+      "name": "catalog_import",
+      "version": "20260928161630",
+      "statements_md5": "cc4efc4e09d4178a2f9c3b2d8d000356",
+      "statement_count": 1,
+      "sql_token_md5": "997fd15e1bf546be1ea93be9fd871aad"
+    },
+    {
+      "name": "catalog_reconcile_metadata",
+      "version": "20260928162830",
+      "statements_md5": "6f9d9c461e7e0f89ed219e77cfe40c1b",
+      "statement_count": 1,
+      "sql_token_md5": "17c956c2d2897427501a6aacae3faa8c"
+    },
+    {
+      "name": "ars_variant_checkout",
+      "version": "20260928210655",
+      "statements_md5": "6c8a0645869f86fef672471f060c3a14",
+      "statement_count": 1,
+      "sql_token_md5": "2fadce353db945ce13e9866a586b1fa4"
+    },
+    {
+      "name": "reconcile_camionero_algarrobo",
+      "version": "20260928232220",
+      "statements_md5": "32b784344b6a9ab2e50fb2a1462a897d",
+      "statement_count": 1,
+      "sql_token_md5": "d6859f7c3ca2281123d4e49f8bacaa76"
+    },
+    {
+      "name": "physical_base_reconciliation",
+      "version": "20260929000708",
+      "statements_md5": "4bf513f0d15014bfa4dbab69cb3e4383",
+      "statement_count": 1,
+      "sql_token_md5": "25fc1204746a5a9a4ae2045d909ee1d4"
+    },
+    {
+      "name": "on_demand_and_preparation",
+      "version": "20260929001006",
+      "statements_md5": "922d1a088ade0f5d63b69057bd495d6b",
+      "statement_count": 1,
+      "sql_token_md5": "c6ee87aeef68d4d52b4c3d3407a38f83"
+    },
+    {
+      "name": "receiving_and_engraving_operations",
+      "version": "20260929001144",
+      "statements_md5": "2ad4d54db6ba042b8c6d2bcf4a2723a6",
+      "statement_count": 1,
+      "sql_token_md5": "5cec899994069af7f7deaa1a12d9018d"
+    },
+    {
+      "name": "align_board_procurement",
+      "version": "20260929001227",
+      "statements_md5": "1368ea6a0f5a6f429fb553954e9455c0",
+      "statement_count": 1,
+      "sql_token_md5": "39ac08c9486e1231a956916efc6c9c46"
+    },
+    {
+      "name": "reconcile_thermo_publications",
+      "version": "20260929004131",
+      "statements_md5": "3ae39fe1bb06a6f0b148ad7eb67aed5f",
+      "statement_count": 1,
+      "sql_token_md5": "80bff113f99f97a6c0b5ca7f88971ce9"
+    },
+    {
+      "name": "box_per_mate_and_combo_mapping",
+      "version": "20260929005101",
+      "statements_md5": "dd1115d3898c366b0e7caa87f36d1739",
+      "statement_count": 1,
+      "sql_token_md5": "2c94759b5fc564dd91c117e44125f4ec"
+    },
+    {
+      "name": "box_for_manual_sales",
+      "version": "20260929005232",
+      "statements_md5": "458974e0bc75356ff491c22efb1eec8c",
+      "statement_count": 1,
+      "sql_token_md5": "45321ca3e7517939d06828b79ec37e91"
+    },
+    {
+      "name": "map_premium_personalized_knife_sheath",
+      "version": "20260929020225",
+      "statements_md5": "6e61f7d80e165838bfb191c93b09f151",
+      "statement_count": 1,
+      "sql_token_md5": "d5cd0d1de2d9ca758aa364ad6de69f39"
+    },
+    {
+      "name": "checkout_minorista_preparacion",
+      "version": "20260929150203",
+      "statements_md5": "dfa422070c4cead29ccfb7321a622682",
+      "statement_count": 1,
+      "sql_token_md5": "a2de12314e284962839012aebab5ce50"
+    }
+  ]
+}

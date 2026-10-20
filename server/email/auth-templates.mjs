@@ -1,0 +1,11 @@
+const escape=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+// Supabase performs Auth delivery via its own SMTP integration. No backend email
+// is sent for Auth. Confirmation uses a token hash in the fragment, consumed
+// only by an explicit POST; recovery retains the existing PKCE provider link.
+export function renderAuthTemplate({kind,origin}) {
+ const u=new URL(origin);if(u.protocol!=='https:'||u.origin!==origin||u.username||u.password)throw Error('Explicit HTTPS origin required');
+ if(!['confirmation','recovery'].includes(kind))throw Error('Unknown Auth email');
+ const recovery=kind==='recovery',title=recovery?'Recuperá tu contraseña':'Confirmá tu cuenta',button=recovery?'Cambiar contraseña':'Confirmar mi cuenta';
+ const confirmationLink=recovery?'{{ .ConfirmationURL }}':escape(origin)+'/auth/confirmar#token_hash={{ .TokenHash }}&amp;type=email{{ if eq .RedirectTo "'+escape(origin)+'/auth/callback?volver=mayorista" }}&amp;volver=mayorista{{ else if eq .RedirectTo "'+escape(origin)+'/auth/callback?volver=carrito" }}&amp;volver=carrito{{ end }}';
+ return {subject:`MateBreak · ${title}`,html:`<!doctype html><html lang="es"><body style="margin:0;background:#eae5dc;font-family:Geist,Inter,Arial,Helvetica,sans-serif;color:#171713"><table role="presentation" width="100%"><tr><td align="center"><table role="presentation" width="600" style="max-width:100%;background:#faf8f3"><tr><td style="padding:32px;background:#171713;color:white;font-size:32px;font-weight:bold"><img src="${escape(origin)}/src/assets/email/matebreak-logo.png" width="96" height="96" alt="Logo MateBreak" style="display:block;border:0">MateBreak</td></tr><tr><td style="padding:32px"><h1>${title}</h1><p>${recovery?'Recibimos una solicitud para cambiar tu contraseña.':'Gracias por crear tu cuenta en MateBreak.'}</p><p><a href="${confirmationLink}" style="display:inline-block;padding:16px 24px;background:#d8c3a5;color:#171713;text-decoration:none">${button}</a></p><p>Si no solicitaste este correo, podés ignorarlo.</p><p>Este enlace es personal. No lo compartas.</p><a href="${escape(origin)}" style="color:#171713">MateBreak</a></td></tr></table></td></tr></table></body></html>`};
+}

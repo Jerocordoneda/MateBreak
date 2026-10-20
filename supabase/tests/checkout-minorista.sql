@@ -10,7 +10,7 @@ declare
  recipient jsonb:=jsonb_build_object('nombre','Ana','apellido','Pérez','email','ana@example.test',
   'telefono','2494123456','codigo_postal','7000','provincia','Buenos Aires','ciudad','Tandil',
   'calle','Pinto','numero','623','piso','','departamento','','referencia','');
- quote_id uuid; before_reservations bigint; reservation_count bigint;
+ quote_id uuid; before_reservations bigint; reservation_count bigint; shipping_snap jsonb;
 begin
  select id into buyer from auth.users order by created_at limit 1;
  select usuario_id into admin_id from private.equipo_inventario where activo limit 1;
@@ -62,8 +62,14 @@ begin
  -- The server-side shipping quote is authoritative; browser cost is ignored.
  token:=md5(random()::text)||md5(random()::text);
  cart:=public.mb_comercio(token,buyer,'variante',jsonb_build_object('variante_id',variant,'cantidad',1));
- insert into public.checkout_cotizacion_envio(carrito_id,usuario_id,destinatario,modalidad,proveedor,servicio,costo_transportista,valido_hasta)
- values((cart->>'id')::uuid,buyer,recipient,'correo_domicilio','correo_argentino','CP',7755,now()+interval '10 minutes') returning id into quote_id;
+ shipping_snap:=jsonb_build_object('version',1,'environment','mock','deliveryType','D','cartItems',
+   (select jsonb_agg(jsonb_build_object('variant',cv.variante_id::text,'product',v.producto_id::text,
+     'quantity',cv.cantidad,'personalization',cv.personalizacion) order by cv.variante_id)
+    from public.carrito_variante cv join public.catalogo_variante v on v.id=cv.variante_id where cv.carrito_id=(cart->>'id')::uuid),
+   'parcels',jsonb_build_array(jsonb_build_object('dimensions',jsonb_build_object('weight',550,'height',17,'width',17,'length',17),'carrierCost',7755)));
+ insert into public.checkout_cotizacion_envio(carrito_id,usuario_id,destinatario,modalidad,proveedor,servicio,costo_transportista,valido_hasta,snapshot,fingerprint)
+ values((cart->>'id')::uuid,buyer,recipient,'correo_domicilio','correo_argentino','CP',7755,now()+interval '10 minutes',
+  shipping_snap,public.mb_shipping_fingerprint((cart->>'id')::uuid,shipping_snap)) returning id into quote_id;
  order_one:=public.mb_checkout_minorista(token,buyer,jsonb_build_object('idempotencia',gen_random_uuid(),
   'pago','transferencia','envio','correo_domicilio','cotizacion_id',quote_id,
   'destinatario',recipient,'costo_envio',0));

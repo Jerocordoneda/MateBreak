@@ -1,0 +1,148 @@
+{
+  "tables": {
+    "referenceCount": 47,
+    "candidateCount": 50,
+    "missing": [],
+    "added": [
+      "private.envio_accion_admin",
+      "private.envio_bulto",
+      "private.envio_importacion_intento"
+    ],
+    "changed": []
+  },
+  "columns": {
+    "referenceCount": 302,
+    "candidateCount": 341,
+    "missing": [],
+    "added": [
+      "private.envio_accion_admin.accion",
+      "private.envio_accion_admin.actor_id",
+      "private.envio_accion_admin.anterior",
+      "private.envio_accion_admin.bulto",
+      "private.envio_accion_admin.claim_id",
+      "private.envio_accion_admin.creado_en",
+      "private.envio_accion_admin.fuente",
+      "private.envio_accion_admin.id",
+      "private.envio_accion_admin.intento",
+      "private.envio_accion_admin.nuevo",
+      "private.envio_accion_admin.pedido_id",
+      "private.envio_accion_admin.provider_created_at",
+      "private.envio_accion_admin.referencia",
+      "private.envio_accion_admin.verificacion",
+      "private.envio_bulto.bulto",
+      "private.envio_bulto.claim_id",
+      "private.envio_bulto.created_at",
+      "private.envio_bulto.error_tipo",
+      "private.envio_bulto.estado",
+      "private.envio_bulto.ext_order_id",
+      "private.envio_bulto.iniciado_en",
+      "private.envio_bulto.intento",
+      "private.envio_bulto.pedido_id",
+      "private.envio_bulto.proximo_intento",
+      "private.envio_importacion_intento.bulto",
+      "private.envio_importacion_intento.claim_id",
+      "private.envio_importacion_intento.error_tipo",
+      "private.envio_importacion_intento.iniciado_en",
+      "private.envio_importacion_intento.intento",
+      "private.envio_importacion_intento.pedido_id",
+      "private.envio_importacion_intento.provider_status",
+      "private.envio_importacion_intento.request_id",
+      "private.envio_importacion_intento.resultado",
+      "private.envio_importacion_intento.terminado_en",
+      "public.checkout_cotizacion_envio.fingerprint",
+      "public.checkout_cotizacion_envio.snapshot",
+      "public.envio.estado_integracion",
+      "public.envio.snapshot",
+      "public.pedido.cotizacion_envio_id"
+    ],
+    "changed": []
+  },
+  "indexes": {
+    "referenceCount": 106,
+    "candidateCount": 111,
+    "missing": [],
+    "added": [
+      "private.envio_accion_admin.envio_accion_admin_bulto",
+      "private.envio_accion_admin.envio_accion_admin_pkey",
+      "private.envio_bulto.envio_bulto_ext_order_id_key",
+      "private.envio_bulto.envio_bulto_pkey",
+      "private.envio_importacion_intento.envio_importacion_intento_pkey"
+    ],
+    "changed": []
+  },
+  "policies": {
+    "referenceCount": 9,
+    "candidateCount": 9,
+    "missing": [],
+    "added": [],
+    "changed": []
+  },
+  "triggers": {
+    "referenceCount": 7,
+    "candidateCount": 12,
+    "missing": [],
+    "added": [
+      "private.envio_accion_admin.envio_admin_audit_immutable",
+      "public.checkout_cotizacion_envio.quote_immutable",
+      "public.envio.envio_snapshot_immutable",
+      "public.pedido.pedido_logistics_paid",
+      "public.pedido.pedido_quote_immutable"
+    ],
+    "changed": []
+  },
+  "functions": {
+    "referenceCount": 35,
+    "candidateCount": 46,
+    "missing": [],
+    "added": [
+      "private.mb_checkout_minorista_v1.p_token_hash text, p_usuario_id uuid, p_datos jsonb",
+      "private.mb_logistics_audit_immutable",
+      "private.mb_logistics_immutable",
+      "private.mb_logistics_paid",
+      "private.mb_logistics_refresh.p_order uuid",
+      "private.mb_order_quote_immutable",
+      "private.mb_quote_immutable",
+      "public.mb_claim_shipment.p_environment text",
+      "public.mb_finish_shipment.p_claim_id uuid, p_result jsonb",
+      "public.mb_logistics_admin.p_actor_id uuid, p_action text, p_data jsonb",
+      "public.mb_shipping_fingerprint.p_carrito_id uuid, p_snapshot jsonb"
+    ],
+    "changed": [
+      {
+        "key": "public.mb_checkout_minorista.p_token_hash text, p_usuario_id uuid, p_datos jsonb",
+        "fields": [
+          "definition"
+        ]
+      }
+    ]
+  },
+  "sequences": {
+    "referenceCount": 4,
+    "candidateCount": 4,
+    "missing": [],
+    "added": [],
+    "changed": []
+  },
+  "constraints": {
+    "referenceCount": 220,
+    "candidateCount": 234,
+    "missing": [],
+    "added": [
+      "private.envio_accion_admin.envio_accion_admin_accion_check",
+      "private.envio_accion_admin.envio_accion_admin_actor_id_fkey",
+      "private.envio_accion_admin.envio_accion_admin_pedido_id_bulto_fkey",
+      "private.envio_accion_admin.envio_accion_admin_pkey",
+      "private.envio_accion_admin.envio_accion_admin_verificacion_check",
+      "private.envio_bulto.envio_bulto_bulto_check",
+      "private.envio_bulto.envio_bulto_estado_check",
+      "private.envio_bulto.envio_bulto_ext_order_id_key",
+      "private.envio_bulto.envio_bulto_pedido_id_fkey",
+      "private.envio_bulto.envio_bulto_pkey",
+      "private.envio_importacion_intento.envio_importacion_intento_pedido_id_bulto_fkey",
+      "private.envio_importacion_intento.envio_importacion_intento_pkey",
+      "public.envio.envio_estado_integracion_check",
+      "public.pedido.pedido_cotizacion_envio_id_fkey"
+    ],
+    "changed": []
+  }
+}

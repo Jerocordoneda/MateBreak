@@ -1,0 +1,108 @@
+{
+  "checkedAt": "2026-10-01T13:36:56.656Z",
+  "prs": [
+    {
+      "baseRefName": "main",
+      "headRefName": "local-supabase-validation",
+      "headRefOid": "4870fc733d4dccac1dd714e6485e071430eb4b89",
+      "mergeable": "MERGEABLE",
+      "state": "OPEN",
+      "statusCheckRollup": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-01T12:21:59Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/Jerocordoneda/MateBreak/actions/runs/36861230975/job/110365659729",
+          "name": "node",
+          "startedAt": "2026-10-01T12:21:43Z",
+          "status": "COMPLETED",
+          "workflowName": "Security checks"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-01T12:21:39Z",
+          "conclusion": "SKIPPED",
+          "detailsUrl": "https://supabase.com/dashboard/project/nwpdfqwqxrkokluqqqfs/settings/integrations",
+          "name": "Supabase Preview",
+          "startedAt": "2026-10-01T12:21:39Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ],
+      "url": "https://github.com/Jerocordoneda/MateBreak/pull/2"
+    },
+    {
+      "baseRefName": "local-supabase-validation",
+      "headRefName": "codex/modular-refactor",
+      "headRefOid": "7e02c3e11ae164f43567b5165b270684986640c7",
+      "mergeable": "MERGEABLE",
+      "state": "OPEN",
+      "statusCheckRollup": [
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-01T13:06:03Z",
+          "conclusion": "SUCCESS",
+          "detailsUrl": "https://github.com/Jerocordoneda/MateBreak/actions/runs/36866234272/job/110382315094",
+          "name": "node",
+          "startedAt": "2026-10-01T13:05:49Z",
+          "status": "COMPLETED",
+          "workflowName": "Security checks"
+        },
+        {
+          "__typename": "CheckRun",
+          "completedAt": "2026-10-01T13:05:35Z",
+          "conclusion": "SKIPPED",
+          "detailsUrl": "https://supabase.com/dashboard/project/nwpdfqwqxrkokluqqqfs/branches",
+          "name": "Supabase Preview",
+          "startedAt": "2026-10-01T13:05:35Z",
+          "status": "COMPLETED",
+          "workflowName": ""
+        }
+      ],
+      "url": "https://github.com/Jerocordoneda/MateBreak/pull/3"
+    }
+  ],
+  "simulations": [
+    {
+      "base": "origin/local-supabase-validation",
+      "resultTree": "4ba93c992298581f823a7a8a927198cb1e717cd1",
+      "exitCode": 0
+    },
+    {
+      "base": "origin/main",
+      "resultTree": "4ba93c992298581f823a7a8a927198cb1e717cd1",
+      "exitCode": 0
+    }
+  ],
+  "migrations": {
+    "supabase/migrations/20260907203437_bootstrap_legacy_catalog.sql": "c983798cccc76f98c8843dad75fd8889b3d278a046ab94947087af7718e938ea",
+    "supabase/migrations/20260907203438_commerce.sql": "59953ab62a3be591152b07d9c37d46089f26ef599cf0402126e29445416da19f",
+    "supabase/migrations/20260907205528_restrict_rls_event_function.sql": "be330fbfd4db089308b9daea11e16b97ab256a20b5b484c0fd36feaa34562a3c",
+    "supabase/migrations/20260908093541_inventory_admin.sql": "b35a4943321bb7d469f209e5970c231bbe3723f15a1357e805fd09042e22a65e",
+    "supabase/migrations/20260908094753_inventory_query_aliases.sql": "896ad8213d160f786c81f1129cd8d8c36ca838f57977f6130136a230c259587a",
+    "supabase/migrations/20260908103049_account_roles_sales.sql": "a3fc3999d231734343b7348c1102d999b833c0e5d118dc6de9c3f7b5573ff172",
+    "supabase/migrations/20260909000858_account_admin_roles.sql": "7dcded862e3f6cf89dd8282f9d25a55f7f41fcea7b84147d036bc2d8559d68c7",
+    "supabase/migrations/20260909234040_admin_commercial_dashboard.sql": "b756c19555664e3382522e77cd901c21e9e1693b9723c8ea21b27a2656e609da",
+    "supabase/migrations/20260928160916_catalog_import.sql": "ca263db61f1888307d3ce90c190fe0b04138b9d4d2f0f883e68d3d27cc3701f9",
+    "supabase/migrations/20260928162849_catalog_reconcile_metadata.sql": "8dfefc811de54e4faaa933532c3c1c74c8f750932e52b5633fd4fc4724984e3d",
+    "supabase/migrations/20260928162850_restore_historical_public_catalog.sql": "13d2f2e2b8372d6c9dfe2822b44fb9b068a5f61c1c5b788771447a8c5e2bd324",
+    "supabase/migrations/20260928210316_ars_variant_checkout.sql": "7fb3571abf76fd3c49d34fb10f4483d117208721bb01d0a1795ae40f79a1e608",
+    "supabase/migrations/20260928232227_reconcile_camionero_algarrobo.sql": "f693d545838e6e78dc3df198626f34e4f250cd12a1d86b641aec998b16166dd9",
+    "supabase/migrations/20260929000621_physical_base_reconciliation.sql": "d8af75892d4b7636301b0c249f5252d48a5aa1ce782023bede1e56f13852de76",
+    "supabase/migrations/20260929000841_on_demand_and_preparation.sql": "ed9ddd1ca6257cdc2ec5f8678afe65bdf35c8aa28efa5b748da67b4907738866",
+    "supabase/migrations/20260929001114_receiving_and_engraving_operations.sql": "2e1cdd007da1892699d544bec7e3118dabc697110861d26c4a5a77cf764b4e2d",
+    "supabase/migrations/20260929001306_align_board_procurement.sql": "963bc44b2f169c4b94921345149f3753d188e2c78999158e2da9ed9f0172f93d",
+    "supabase/migrations/20260929122500_reconcile_thermo_publications.sql": "69a31ba6b6491e073d64e56a14b3d571cbe1cf527ed7666aec1c850d1558821d",
+    "supabase/migrations/20260929130000_box_per_mate_and_combo_mapping.sql": "024a0fc3e3cd1e7619448d164589522731762b9325ce2d0d20ff5dc8ba4d9706",
+    "supabase/migrations/20260929131500_box_for_manual_sales.sql": "f896a9c10a4e3e5b51b68cfe9d1e6db3f47ff612d42d44743ffc483067fbdf1d",
+    "supabase/migrations/20260929133000_map_premium_personalized_knife_sheath.sql": "2a312346cdd3ec0c36d9cc3b23c2b8e763194685a765c50424ac5e2280c6ad34",
+    "supabase/migrations/20260929144308_checkout_minorista_preparacion.sql": "7d237713af60851ff18230cc561e6dd1c31737db371d5e1993f321deef61d453",
+    "supabase/migrations/20260929204150_fix_minorista_checkout_lifecycle.sql": "17981494c569d705acd27bf38052b34f1d4881b371a4a74f1f519934c651c98b",
+    "supabase/migrations/20260929214717_harden_default_privileges.sql": "2e6c4391ac6f88ad7bf4895e6ec51c759e0db645ea9355f1129258aa49f0f5c5",
+    "supabase/migrations/20261001003824_micorreo_logistics_snapshots.sql": "00bca3f50c9b0064c21319fa6950f8df44d037249ceba04fffe2d5252d1a4297",
+    "supabase/migrations/20261001112820_logistics_admin_recovery.sql": "d1e7e6940b7c92551c84f9f022434f8cd1a1bcfbfca5dc67f17ff1c3c2306939"
+  },
+  "mergePerformed": false,
+  "finalRecheckedAt": "2026-10-01T13:48:41.277Z",
+  "remoteRefsUnchangedAtFinalReview": true
+}
